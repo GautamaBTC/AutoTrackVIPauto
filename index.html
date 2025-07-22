@@ -1,1 +1,38 @@
-html
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AutoTrack - Дашборд Директора</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <h1>AutoTrack: Учёт за день</h1>
+    <table id="dashboard">
+        <thead>
+            <tr>
+                <th>Мастер</th>
+                <th>Заработано (50%)</th>
+                <th>Бонус (1-5)</th>
+                <th>Комментарий</th>
+                <th>Итог с бонусом</th>
+            </tr>
+        </thead>
+        <tbody>
+            <!-- Пример строки для мастера -->
+            <tr data-master="Владимир А.">
+                <td>Владимир А.</td>
+                <td>5000 руб. (из ремонтов + комплектующие)</td>
+                <td><input type="range" min="1" max="5" value="3" class="bonus-slider"></td>
+                <td><input type="text" placeholder="Опоздание или усердие" class="comment"></td>
+                <td class="total">Calculated...</td>
+            </tr>
+            <!-- Добавь строки для остальных: Владимир, Андрей, Данила, Максим, Артём -->
+            <tr data-master="Владимир"> <!-- Аналогично --></tr>
+            <!-- ... -->
+        </tbody>
+    </table>
+    <button id="generate-report">Сгенерировать отчёт</button>
+    <script src="scripts.js"></script>
+</body>
+</html>
