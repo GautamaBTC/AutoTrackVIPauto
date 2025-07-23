@@ -2,14 +2,15 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>VIPavto — Вход</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>VIPавто — Авторизация</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         :root {
             --dusty-green: #8a9b8f;
             --olive: #6b7d63;
             --pastel-green: #c5d1c3;
+            --dark-olive: #5a6b52;
             --dusty-brown: #a68a64;
             --dark-green: #3a4a3f;
             --light-beige: #f0e6d2;
@@ -23,13 +24,17 @@
             padding: 0;
         }
         
+        html, body {
+            height: 100%;
+            overflow: hidden;
+        }
+        
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             background-color: var(--pastel-green);
             display: flex;
             justify-content: center;
             align-items: center;
-            min-height: 100vh;
             padding: 20px;
         }
         
@@ -49,6 +54,7 @@
             padding: 25px;
             text-align: center;
             border-bottom: 1px solid var(--dusty-brown);
+            position: relative;
         }
         
         .login-header h1 {
@@ -61,6 +67,15 @@
             font-size: 36px;
             margin-bottom: 15px;
             color: var(--light-beige);
+        }
+        
+        .current-time {
+            position: absolute;
+            top: 10px;
+            right: 15px;
+            font-size: 13px;
+            color: rgba(255,255,255,0.8);
+            font-weight: 300;
         }
         
         .login-form {
@@ -97,7 +112,7 @@
         .btn-login {
             width: 100%;
             padding: 14px;
-            background: var(--dusty-brown);
+            background: var(--dark-olive);
             color: white;
             border: none;
             border-radius: 6px;
@@ -109,7 +124,7 @@
         }
         
         .btn-login:hover {
-            background: var(--olive);
+            background: var(--dark-green);
         }
         
         .password-container {
@@ -133,13 +148,14 @@
             display: none;
         }
         
-        .credentials-hint {
+        .footer-info {
             text-align: center;
             margin-top: 20px;
-            font-size: 13px;
+            font-size: 12px;
             color: var(--dusty-green);
             border-top: 1px dashed var(--dusty-green);
             padding-top: 15px;
+            line-height: 1.5;
         }
 
         @media (max-width: 480px) {
@@ -160,9 +176,10 @@
 <body>
     <div class="login-container">
         <div class="login-header">
+            <div class="current-time" id="current-time"></div>
             <i class="fas fa-car-alt"></i>
-            <h1>VIPavto</h1>
-            <p>Авторизация в системе</p>
+            <h1>VIPавто</h1>
+            <p>Авторизация в облачном журнале</p>
         </div>
         <form id="login-form" class="login-form">
             <div class="form-group">
@@ -180,13 +197,32 @@
             <button type="submit" class="btn-login">
                 <i class="fas fa-sign-in-alt"></i> Войти
             </button>
-            <div class="credentials-hint">
-                Тестовые данные: admin / admin009
+            <div class="footer-info">
+                Тестовый доступ: admin / admin009<br>
+                Версия 2.1.4 (2024) | Cloud Journal System<br>
+                © VIPавто Технологии
             </div>
         </form>
     </div>
 
     <script>
+        // Обновление времени в реальном времени
+        function updateTime() {
+            const now = new Date();
+            const options = { 
+                weekday: 'long', 
+                day: 'numeric', 
+                month: 'long', 
+                hour: '2-digit', 
+                minute: '2-digit' 
+            };
+            document.getElementById('current-time').textContent = 
+                now.toLocaleDateString('ru-RU', options);
+        }
+        
+        setInterval(updateTime, 1000);
+        updateTime();
+
         // Показать/скрыть пароль
         document.getElementById('toggle-password').addEventListener('click', function() {
             const passwordInput = document.getElementById('password');
@@ -224,6 +260,9 @@
                 }, 3000);
             }
         });
+
+        // Блокировка скролла
+        document.body.style.overflow = 'hidden';
     </script>
 </body>
 </html>
