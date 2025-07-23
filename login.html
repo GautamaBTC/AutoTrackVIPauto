@@ -3,128 +3,154 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>VIPavto — Вход в систему</title>
+    <title>VIPavto — Вход</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         :root {
-            --primary: #2c3e50;
-            --secondary: #3498db;
-            --success: #27ae60;
-            --danger: #e74c3c;
-            --light: #ecf0f1;
-            --dark: #2c3e50;
+            --dusty-green: #8a9b8f;
+            --olive: #6b7d63;
+            --pastel-green: #c5d1c3;
+            --dusty-brown: #a68a64;
+            --dark-green: #3a4a3f;
+            --light-beige: #f0e6d2;
+            --accent-orange: #e67e22;
+            --accent-blue: #3498db;
         }
+        
         * {
             box-sizing: border-box;
             margin: 0;
             padding: 0;
         }
+        
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            background-color: var(--pastel-green);
             display: flex;
             justify-content: center;
             align-items: center;
             min-height: 100vh;
             padding: 20px;
         }
+        
         .login-container {
             width: 100%;
             max-width: 400px;
             background: white;
-            border-radius: 15px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            border-radius: 12px;
+            box-shadow: 0 8px 24px rgba(58, 74, 63, 0.1);
             overflow: hidden;
-            animation: fadeIn 0.5s ease;
+            border: 1px solid var(--dusty-green);
         }
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(-20px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
+        
         .login-header {
-            background: var(--primary);
+            background: var(--olive);
             color: white;
             padding: 25px;
             text-align: center;
+            border-bottom: 1px solid var(--dusty-brown);
         }
+        
         .login-header h1 {
             font-size: 24px;
             margin-bottom: 5px;
+            font-weight: 500;
         }
+        
         .login-header i {
-            font-size: 40px;
+            font-size: 36px;
             margin-bottom: 15px;
-            color: var(--secondary);
+            color: var(--light-beige);
         }
+        
         .login-form {
             padding: 25px;
+            background-color: var(--light-beige);
         }
+        
         .form-group {
             margin-bottom: 20px;
         }
+        
         .form-group label {
             display: block;
             margin-bottom: 8px;
-            font-weight: 600;
-            color: var(--dark);
+            color: var(--dark-green);
+            font-size: 14px;
         }
+        
         .form-control {
             width: 100%;
             padding: 12px 15px;
-            border: 2px solid #ddd;
-            border-radius: 8px;
-            font-size: 16px;
-            transition: all 0.3s;
+            border: 1px solid var(--dusty-green);
+            border-radius: 6px;
+            font-size: 15px;
+            background-color: rgba(255,255,255,0.8);
+            color: var(--dark-green);
         }
+        
         .form-control:focus {
-            border-color: var(--secondary);
-            box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.2);
+            border-color: var(--dusty-brown);
             outline: none;
         }
-        .btn {
+        
+        .btn-login {
             width: 100%;
-            padding: 12px;
-            background: var(--secondary);
+            padding: 14px;
+            background: var(--dusty-brown);
             color: white;
             border: none;
-            border-radius: 8px;
+            border-radius: 6px;
             font-size: 16px;
-            font-weight: 600;
+            font-weight: 500;
             cursor: pointer;
-            transition: all 0.3s;
+            transition: background 0.3s;
+            margin-top: 10px;
         }
-        .btn:hover {
-            background: #2980b9;
-            transform: translateY(-2px);
+        
+        .btn-login:hover {
+            background: var(--olive);
         }
-        .btn:active {
-            transform: translateY(0);
-        }
+        
         .password-container {
             position: relative;
         }
+        
         .toggle-password {
             position: absolute;
             right: 15px;
             top: 50%;
             transform: translateY(-50%);
             cursor: pointer;
-            color: #7f8c8d;
+            color: var(--dusty-green);
         }
+        
         .error-message {
-            color: var(--danger);
+            color: #c0392b;
             text-align: center;
             margin-top: 15px;
             font-size: 14px;
             display: none;
         }
+        
+        .credentials-hint {
+            text-align: center;
+            margin-top: 20px;
+            font-size: 13px;
+            color: var(--dusty-green);
+            border-top: 1px dashed var(--dusty-green);
+            padding-top: 15px;
+        }
+
         @media (max-width: 480px) {
             .login-container {
-                border-radius: 10px;
+                border-radius: 8px;
             }
+            
             .login-header {
                 padding: 20px;
             }
+            
             .login-form {
                 padding: 20px;
             }
@@ -151,9 +177,12 @@
             <div class="error-message" id="error-message">
                 Неверный логин или пароль
             </div>
-            <button type="submit" class="btn">
+            <button type="submit" class="btn-login">
                 <i class="fas fa-sign-in-alt"></i> Войти
             </button>
+            <div class="credentials-hint">
+                Тестовые данные: admin / admin009
+            </div>
         </form>
     </div>
 
@@ -173,7 +202,7 @@
             const password = document.getElementById('password').value;
             const errorElement = document.getElementById('error-message');
 
-            // Проверка учетных данных (временная реализация)
+            // Проверка учетных данных
             if ((username === 'admin' && password === 'admin009') || 
                 (username === 'Владимир А.' && password === 'vlad123') ||
                 (username === 'Владимир' && password === 'vladimir456') ||
