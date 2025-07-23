@@ -2,372 +2,45 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Облачный журнал работ VIPавто</title>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <meta http-equiv="refresh" content="0; url=login.html">
+    <title>VIPavto - Автосервис</title>
     <style>
-        :root { --primary-color: #007bff; --primary-dark: #0056b3; --success-color: #28a745; --warning-color: #ffc107; --light-gray: #f4f7f6; --dark-text: #1a2533; --light-text: #333; --danger-color: #dc3545; }
-        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; background-color: var(--light-gray); color: var(--light-text); margin: 0; padding: 20px; }
-        .container { max-width: 1100px; margin: 0 auto; background-color: #fff; padding: 25px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.08); }
-        .hidden { display: none !important; }
-        .view-switcher { text-align: right; margin-bottom: 20px; }
-        .view-switcher button { background-color: #e9ecef; border: 1px solid #ccc; padding: 8px 16px; border-radius: 6px; cursor: pointer; font-weight: 600; transition: background-color 0.2s; }
-        h1, h2 { color: var(--dark-text); border-bottom: 2px solid #e0e0e0; padding-bottom: 10px; margin-top: 0; }
-        #form-header-wrapper { display: flex; justify-content: space-between; align-items: center; }
-        .form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 15px; margin-bottom: 30px; }
-        .form-group { display: flex; flex-direction: column; }
-        label { margin-bottom: 8px; font-weight: 600; font-size: 14px; }
-        input, select { padding: 12px; border: 1px solid #ccc; border-radius: 6px; font-size: 16px; width: 100%; box-sizing: border-box; }
-        .form-buttons { display: flex; flex-wrap: wrap; gap: 10px; grid-column: 1 / -1; }
-        .form-buttons button { flex-grow: 1; padding: 15px; font-size: 18px; font-weight: 600; color: #fff; border: none; border-radius: 6px; cursor: pointer; transition: all 0.2s; min-width: 150px; }
-        #submit-button { background: linear-gradient(45deg, var(--primary-color), var(--primary-dark)); }
-        #cancel-edit-button { background-color: #6c757d; display: none; }
-        #clear-form-long-press-btn { position: relative; background: #e9ecef; border: none; border-radius: 50%; width: 32px; height: 32px; cursor: pointer; display: flex; justify-content: center; align-items: center; overflow: hidden; }
-        #clear-form-long-press-btn svg { width: 20px; height: 20px; fill: #6c757d; z-index: 2; }
-        #clear-form-long-press-btn .progress-fill { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: var(--danger-color); transform: scaleX(0); transform-origin: left; z-index: 1; }
-        #clear-form-long-press-btn.clearing .progress-fill { transform: scaleX(1); transition: transform 1.5s linear; }
-        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); display: flex; justify-content: center; align-items: center; z-index: 1000; opacity: 0; visibility: hidden; transition: opacity 0.3s; }
-        .modal-overlay.active { opacity: 1; visibility: visible; }
-        .modal-window { background: #fff; border-radius: 10px; box-shadow: 0 5px 20px rgba(0,0,0,0.2); max-width: 600px; width: 90%; transform: scale(0.9); transition: transform 0.3s; display: flex; flex-direction: column; max-height: 90vh; }
-        .modal-overlay.active .modal-window { transform: scale(1); }
-        .modal-header { padding: 15px 20px; border-bottom: 1px solid #eee; }
-        .modal-header h3 { margin: 0; }
-        .modal-header input { width: 100%; padding: 10px; margin-top: 10px; border: 1px solid #ccc; border-radius: 6px; }
-        .modal-body { overflow-y: auto; padding: 20px; }
-        .modal-footer { padding: 15px 20px; border-top: 1px solid #eee; display: flex; justify-content: flex-end; gap: 10px; }
-        .modal-footer button { padding: 10px 20px; border-radius: 6px; border: none; font-size: 16px; font-weight: 600; cursor: pointer; }
-        #modal-confirm-btn { background-color: var(--success-color); color: white; }
-        #modal-cancel-btn { background-color: #ccc; }
-        .service-category h4 { margin-top: 0; margin-bottom: 10px; border-bottom: 1px solid #eee; padding-bottom: 5px; }
-        .service-item { display: flex; align-items: center; margin-bottom: 10px; cursor: pointer; }
-        .service-item input[type="checkbox"] { margin-right: 10px; width: 20px; height: 20px; }
-        #service-display-field { background-color: #e9ecef; border: 1px solid #ccc; padding: 12px; border-radius: 6px; min-height: 48px; color: #6c757d; cursor: pointer; }
-        #service-display-field.has-content { color: var(--dark-text); white-space: pre-wrap; }
-        .summary-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px; margin-top: 30px; }
-        .summary-card { background-color: #f8f9fa; padding: 20px; border-radius: 8px; border-left: 5px solid var(--primary-color); }
-        .summary-card h3 { margin-top: 0; font-size: 16px; }
-        .summary-card p { font-size: 28px; font-weight: 700; margin: 10px 0 0 0; }
-        .summary-card.service { border-color: var(--success-color); } .summary-card.service p { color: var(--success-color); }
-        .accordion { border-color: var(--warning-color); padding: 0; }
-        .accordion .accordion-header { padding: 20px; cursor: pointer; display: flex; justify-content: space-between; align-items: center; }
-        .accordion .header-content { flex-grow: 1; } .accordion .header-content p { color: #c69500; }
-        .accordion .accordion-icon { font-size: 24px; font-weight: bold; transition: transform 0.3s ease; }
-        .accordion.active .accordion-icon { transform: rotate(180deg); }
-        .accordion .accordion-content { max-height: 0; overflow: hidden; transition: max-height 0.4s ease-out; border-top: 1px solid #e0e0e0; padding: 0 20px; }
-        .accordion.active .accordion-content { max-height: 1000px; padding: 20px; }
-        .master-detail-item { padding: 15px 0; border-bottom: 1px solid #eee; } .master-detail-item:last-child { border-bottom: none; }
-        .master-main-info { display: flex; justify-content: space-between; font-size: 16px; margin-bottom: 10px; }
-        .master-main-info .master-name { font-weight: bold; }
-        .master-bonus-controls { display: grid; grid-template-columns: 1fr auto auto; gap: 15px; align-items: center; margin-top: 10px; }
-        .bonus-slider { width: 100%; }
-        .master-total-payout { margin-top: 15px; text-align: right; font-size: 18px; font-weight: bold; color: var(--success-color); }
-        .master-total-payout span { font-weight: normal; }
-        #date-selector-wrapper { margin-bottom: 20px; text-align: center; } #date-selector-wrapper label { margin-right: 10px; font-size: 18px; font-weight: 600; } #date-selector { padding: 8px; font-size: 16px; }
-        .master-log-accordion { background-color: #fff; border: 1px solid #e0e0e0; border-radius: 8px; margin-bottom: 15px; }
-        .master-log-header { padding: 15px 20px; cursor: pointer; display: flex; align-items: center; background-color: #f8f9fa; }
-        .master-log-header h4 { margin: 0; font-size: 18px; }
-        .master-log-summary { margin-left: auto; padding: 0 20px; text-align: right; }
-        .master-log-summary span { display: block; font-size: 14px; }
-        .master-log-summary strong { color: var(--dark-text); }
-        .master-log-content { max-height: 0; overflow: hidden; transition: max-height 0.4s ease-out; }
-        .master-log-accordion.active .master-log-content { max-height: 1500px; }
-        .master-log-accordion.active .accordion-icon { transform: rotate(180deg); }
-        .master-log-content table { margin-top: 0; width: 100%; border-collapse: collapse; }
-        .master-log-content th, .master-log-content td { padding: 12px; text-align: left; border-bottom: 1px solid #ddd; }
-        .actions-cell { text-align: right !important; } .action-btn { background: none; border: none; cursor: pointer; padding: 5px; } .action-btn svg { width: 20px; height: 20px; } .action-btn.edit-btn svg { fill: var(--primary-color); } .action-btn.delete-btn svg { fill: var(--danger-color); }
-        .analytics-controls { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; margin-bottom: 30px; padding-bottom: 20px; border-bottom: 1px solid #eee; }
-        .kpi-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; margin-bottom: 30px; }
-        .kpi-card { background-color: #f8f9fa; padding: 20px; border-radius: 8px; text-align: center; }
-        .kpi-card h4 { margin: 0 0 10px 0; color: #6c757d; font-size: 14px; text-transform: uppercase; }
-        .kpi-card p { margin: 0; font-size: 26px; font-weight: 700; }
-        .charts-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 30px; }
-        .chart-container { background-color: #fff; padding: 20px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.07); }
-        @media screen and (max-width: 992px) { .charts-grid { grid-template-columns: 1fr; } }
-        @media screen and (max-width: 768px) { body { padding: 10px; } .container { padding: 15px; } .master-log-header { flex-direction: column; align-items: flex-start; } .master-log-summary { margin-left: 0; margin-top: 10px; text-align: left; padding: 0; } .master-log-content thead { display: none; } .master-log-content tr { display: block; margin-bottom: 15px; border: 1px solid #ddd; } .master-log-content td { display: block; text-align: right; border-bottom: 1px dotted #ccc; position: relative; padding-left: 50%; } .master-log-content td:last-child { border-bottom: 0; } .master-log-content td::before { content: attr(data-label); position: absolute; left: 10px; width: calc(50% - 20px); text-align: left; font-weight: bold; } .actions-cell { text-align: center !important; padding-left: 15px !important; } .actions-cell::before { display: none; } }
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            background-color: #f5f5f5;
+        }
+        .redirect-message {
+            text-align: center;
+            padding: 20px;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .spinner {
+            border: 4px solid rgba(0, 0, 0, 0.1);
+            border-radius: 50%;
+            border-top: 4px solid #3498db;
+            width: 30px;
+            height: 30px;
+            animation: spin 1s linear infinite;
+            margin: 20px auto;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
     </style>
 </head>
 <body>
-
-<div class="container">
-    <!-- Кнопки переключения вида и основной контент... -->
-    <div class="view-switcher">
-        <button id="switch-to-analytics-btn">📊 Аналитика</button>
-        <button id="switch-to-log-btn" class="hidden">📋 К журналу</button>
+    <div class="redirect-message">
+        <h2>VIPavto 🚗</h2>
+        <p>Перенаправляем на страницу входа...</p>
+        <div class="spinner"></div>
     </div>
-
-    <div id="log-view">
-        <h1>Журнал работ автосервиса</h1>
-        <div id="date-selector-wrapper"><label for="date-selector">Показать отчет за:</label><input type="date" id="date-selector"></div>
-        <div id="form-header-wrapper"><h2 id="form-header">Добавить новую запись</h2><button id="clear-form-long-press-btn" title="Удерживайте, чтобы очистить форму"><svg viewBox="0 0 24 24"><path d="M19,6.41L17.59,5L12,10.59L6.41,5L5,6.41L10.59,12L5,17.59L6.41,19L12,13.41L17.59,19L19,17.59L13.41,12L19,6.41Z" /></svg><span class="progress-fill"></span></button></div>
-        <form id="add-entry-form">
-             <div class="form-grid">
-                <div class="form-group"><label for="master">Мастер</label><select id="master" required><option value="Владимир А.">Владимир А.</option><option value="Владимир">Владимир</option><option value="Андрей">Андрей</option><option value="Данила">Данила</option><option value="Максим">Максим</option><option value="Артём">Артём</option></select></div>
-                <div class="form-group"><label for="car">Марка и модель</label><input type="text" id="car" list="car-datalist" placeholder="Напр. Kia Rio" required><datalist id="car-datalist"></datalist></div>
-                <div class="form-group" style="grid-column: 1 / -1;">
-                    <label>Описание работ</label>
-                    <div id="service-display-field" role="button" tabindex="0">Нажмите, чтобы выбрать услуги...</div>
-                </div>
-                <div class="form-group"><label for="work-cost">Сумма за работу (руб.)</label><input type="number" id="work-cost" min="0" value="0" required></div>
-                <div class="form-group"><label for="parts-markup">Накрутка за запчасти (руб.)</label><input type="number" id="parts-markup" min="0" value="0" required></div>
-            </div>
-            <div class="form-buttons">
-                <button type="submit" id="submit-button">Добавить в журнал</button>
-                <button type="button" id="cancel-edit-button">Отмена</button>
-            </div>
-        </form>
-        <h2 id="summary-title">Итоги за сегодня</h2>
-        <div class="summary-grid">
-            <div class="summary-card"><h3 >Общая выручка</h3><p id="total-revenue">0.00 руб.</p></div>
-            <div class="summary-card service"><h3>Доля сервиса (50%)</h3><p id="service-share">0.00 руб.</p></div>
-            <div class="summary-card accordion" id="masters-accordion"><div class="accordion-header"><div class="header-content"><h3>Зарплатная ведомость</h3><p id="masters-share-total">0.00 руб.</p></div><span class="accordion-icon">▼</span></div><div class="accordion-content" id="masters-details"></div></div>
-        </div>
-        <h2 id="log-title">Сегодняшние работы</h2>
-        <div id="daily-log-accordions"></div>
-    </div>
-
-    <div id="analytics-view" class="hidden">
-        <!-- Содержимое аналитики -->
-        <h1>Аналитика и Отчеты</h1>
-        <div class="analytics-controls">
-            <label for="period-select">Период:</label>
-            <select id="period-select">
-                <option value="this_week">Эта неделя</option>
-                <option value="last_week">Прошлая неделя</option>
-                <option value="this_month" selected>Этот месяц</option>
-                <option value="last_month">Прошлый месяц</option>
-                <option value="custom">Свой диапазон</option>
-            </select>
-            <div id="custom-period-inputs" class="hidden">
-                <label for="start-date">с</label>
-                <input type="date" id="start-date">
-                <label for="end-date">по</label>
-                <input type="date" id="end-date">
-                <button id="apply-custom-period">Применить</button>
-            </div>
-            <button id="export-csv-btn">Скачать CSV</button>
-        </div>
-        <div class="kpi-grid">
-            <div class="kpi-card"><h4>Общая выручка</h4><p id="kpi-revenue">0</p></div>
-            <div class="kpi-card"><h4>Прибыль сервиса</h4><p id="kpi-profit">0</p></div>
-            <div class="kpi-card"><h4>Выплаты мастерам</h4><p id="kpi-payout">0</p></div>
-            <div class="kpi-card"><h4>Кол-во работ</h4><p id="kpi-jobs">0</p></div>
-        </div>
-        <div class="charts-grid">
-            <div class="chart-container"><h3>Выручка по дням</h3><canvas id="revenue-by-day-chart"></canvas></div>
-            <div class="chart-container"><h3>Вклад мастеров</h3><canvas id="masters-contribution-chart"></canvas></div>
-        </div>
-    </div>
-</div>
-
-<div class="modal-overlay" id="services-modal">
-    <div class="modal-window">
-        <div class="modal-header">
-            <h3>Выберите услуги</h3>
-            <input type="search" id="service-search-input" placeholder="Поиск по услугам...">
-        </div>
-        <div class="modal-body" id="service-list-container"></div>
-        <div class="modal-footer">
-            <button id="modal-cancel-btn">Отмена</button>
-            <button id="modal-confirm-btn">Добавить выбранные</button>
-        </div>
-    </div>
-</div>
-
-<script>
-document.addEventListener('DOMContentLoaded', () => {
-    // --- СПРАВОЧНИК УСЛУГ ---
-    const servicesCatalog = {
-        "Автоэлектрика и Диагностика": ["Компьютерная диагностика ЭБУ", "Поиск и устранение обрыва проводки", "Ремонт электропроводки", "Ремонт стартера", "Ремонт генератора", "Замена блока предохранителей", "Замена датчика (ABS, коленвала и т.д.)", "Ремонт системы зажигания", "Ремонт стеклоподъемника", "Ремонт центрального замка", "Отключение иммобилайзера", "Прописка ключей", "Ремонт электронных блоков", "Установка кнопки Start/Stop", "Предпродажная проверка электрики"],
-        "Автосвет": ["Регулировка света фар", "Замена ламп (галоген, ксенон, LED)", "Установка ксенона / LED линз", "Установка противотуманных фар (ПТФ)", "Установка дневных ходовых огней (ДХО)", "Ремонт фар / устранение запотевания", "Полировка фар", "Установка подсветки салона/дверей", "Установка подсветки днища", "Замена задних фонарей"],
-        "Охранные системы": ["Установка сигнализации (базовая)", "Установка сигнализации с автозапуском", "Установка сигнализации с GSM/GPS", "Демонтаж старой сигнализации", "Установка иммобилайзера", "Установка GPS-трекера / маяка", "Установка механических блокираторов (КПП, руль)", "Настройка/программирование брелока", "Установка секретной кнопки", "Установка датчика объема/удара"],
-        "Аудио- и Видеосистемы": ["Установка магнитолы 1DIN / 2DIN", "Замена штатной акустики", "Установка усилителя звука", "Установка сабвуфера", "Прокладка акустических проводов", "Установка и настройка процессора", "Шумоизоляция дверей под музыку", "Установка видеорегистратора (1 камера)", "Установка видеорегистратора (2 камеры, скрытая проводка)", "Установка камеры заднего вида", "Установка камеры переднего вида", "Установка системы кругового обзора (360°)", "Установка потолочного монитора", "Установка мониторов в подголовники", "Настройка аудиосистемы"],
-        "Комфорт и Доп. оборудование": ["Установка парктроников (задний бампер)", "Установка парктроников (передний бампер)", "Заправка и диагностика кондиционера", "Антибактериальная обработка кондиционера", "Установка обогрева сидений", "Установка обогрева руля", "Установка обогрева зеркал/стекол", "Установка электропривода багажника", "Установка автодоводчиков дверей", "Подключение фаркопа"],
-        "Тонировка": ["Тонировка задней полусферы", "Тонировка передних стекол", "Тонировка лобового стекла", "Атермальная тонировка", "Растонирование стекол"]
-    };
-
-    // --- ЭЛЕМЕНТЫ ---
-    const switchToAnalyticsBtn = document.getElementById('switch-to-analytics-btn');
-    const switchToLogBtn = document.getElementById('switch-to-log-btn');
-    const logView = document.getElementById('log-view');
-    const analyticsView = document.getElementById('analytics-view');
-    const periodSelect = document.getElementById('period-select');
-    const customPeriodInputs = document.getElementById('custom-period-inputs');
-    const startDateInput = document.getElementById('start-date');
-    const endDateInput = document.getElementById('end-date');
-    const applyCustomPeriodBtn = document.getElementById('apply-custom-period');
-    const exportCsvBtn = document.getElementById('export-csv-btn');
-    const kpiRevenue = document.getElementById('kpi-revenue');
-    const kpiProfit = document.getElementById('kpi-profit');
-    const kpiPayout = document.getElementById('kpi-payout');
-    const kpiJobs = document.getElementById('kpi-jobs');
-    const revenueChartCtx = document.getElementById('revenue-by-day-chart').getContext('2d');
-    const mastersChartCtx = document.getElementById('masters-contribution-chart').getContext('2d');
-    let revenueChart, mastersChart;
-    const form = document.getElementById('add-entry-form');
-    const clearFormBtn = document.getElementById('clear-form-long-press-btn');
-    const formHeader = document.getElementById('form-header');
-    const submitButton = document.getElementById('submit-button');
-    const cancelEditButton = document.getElementById('cancel-edit-button');
-    const carInput = document.getElementById('car');
-    const carDatalist = document.getElementById('car-datalist');
-    const serviceDisplayField = document.getElementById('service-display-field');
-    const servicesModal = document.getElementById('services-modal');
-    const modalConfirmBtn = document.getElementById('modal-confirm-btn');
-    const modalCancelBtn = document.getElementById('modal-cancel-btn');
-    const serviceSearchInput = document.getElementById('service-search-input');
-    const serviceListContainer = document.getElementById('service-list-container');
-    const dateSelector = document.getElementById('date-selector');
-    const dailyLogAccordions = document.getElementById('daily-log-accordions');
-    const totalRevenueEl = document.getElementById('total-revenue');
-    const serviceShareEl = document.getElementById('service-share');
-    const mastersAccordion = document.getElementById('masters-accordion');
-    const mastersShareTotalEl = document.getElementById('masters-share-total');
-    const mastersDetailsEl = document.getElementById('masters-details');
-    const summaryTitle = document.getElementById('summary-title');
-    const logTitle = document.getElementById('log-title');
-    let allEntries = [];
-    let allBonuses = {};
-    let editMode = false;
-    let entryToEditId = null;
-    let tempSelectedServices = [];
-    const STORAGE_KEY_ENTRIES = 'autoServiceLog_entries_v4';
-    const STORAGE_KEY_BONUSES = 'autoServiceLog_bonuses_v4';
-    let clearTimer = null;
-
-    const today = new Date().toISOString().slice(0, 10);
-    dateSelector.value = today;
-    loadFromStorage();
-    populateCarDatalist();
-    displayDataForSelectedDate();
-    
-    // --- ОБРАБОТЧИКИ ---
-    serviceDisplayField.addEventListener('click', openServicesModal);
-    modalCancelBtn.addEventListener('click', closeServicesModal);
-    modalConfirmBtn.addEventListener('click', confirmServiceSelection);
-    serviceSearchInput.addEventListener('input', () => renderServiceList(serviceSearchInput.value));
-    switchToAnalyticsBtn.addEventListener('click', () => { logView.classList.add('hidden'); analyticsView.classList.remove('hidden'); switchToAnalyticsBtn.classList.add('hidden'); switchToLogBtn.classList.remove('hidden'); generateAnalytics(); });
-    switchToLogBtn.addEventListener('click', () => { analyticsView.classList.add('hidden'); logView.classList.remove('hidden'); switchToLogBtn.classList.add('hidden'); switchToAnalyticsBtn.classList.remove('hidden'); });
-    periodSelect.addEventListener('change', () => { customPeriodInputs.classList.toggle('hidden', periodSelect.value !== 'custom'); if (periodSelect.value !== 'custom') generateAnalytics(); });
-    applyCustomPeriodBtn.addEventListener('click', generateAnalytics);
-    exportCsvBtn.addEventListener('click', exportToCsv);
-    form.addEventListener('submit', handleFormSubmit);
-    dateSelector.addEventListener('change', displayDataForSelectedDate);
-    cancelEditButton.addEventListener('click', cancelEditMode);
-    mastersAccordion.querySelector('.accordion-header').addEventListener('click', () => mastersAccordion.classList.toggle('active'));
-    const startClearing = (e) => { e.preventDefault(); if (editMode) return; clearFormBtn.classList.add('clearing'); clearTimer = setTimeout(() => { resetForm(); resetClearButton(); }, 1500); };
-    const stopClearing = () => { clearTimeout(clearTimer); resetClearButton(); };
-    const resetClearButton = () => { clearFormBtn.classList.remove('clearing'); };
-    clearFormBtn.addEventListener('mousedown', startClearing); clearFormBtn.addEventListener('mouseup', stopClearing); clearFormBtn.addEventListener('mouseleave', stopClearing);
-    clearFormBtn.addEventListener('touchstart', startClearing); clearFormBtn.addEventListener('touchend', stopClearing);
-
-    // --- ЛОГИКА МОДАЛЬНОГО ОКНА УСЛУГ ---
-    function openServicesModal() {
-        const currentServices = serviceDisplayField.dataset.services ? JSON.parse(serviceDisplayField.dataset.services) : [];
-        tempSelectedServices = [...currentServices];
-        renderServiceList();
-        updateModalConfirmButton();
-        servicesModal.classList.add('active');
-        serviceSearchInput.focus();
-    }
-    function closeServicesModal() { servicesModal.classList.remove('active'); }
-    function renderServiceList(searchTerm = '') {
-        serviceListContainer.innerHTML = '';
-        const lowerCaseSearchTerm = searchTerm.toLowerCase();
-        for (const category in servicesCatalog) {
-            const filteredServices = servicesCatalog[category].filter(service => service.toLowerCase().includes(lowerCaseSearchTerm));
-            if (filteredServices.length > 0) {
-                const categoryEl = document.createElement('div');
-                categoryEl.className = 'service-category';
-                let servicesHTML = `<h4>${category}</h4>`;
-                filteredServices.forEach(service => {
-                    const isChecked = tempSelectedServices.includes(service) ? 'checked' : '';
-                    servicesHTML += `<label class="service-item"><input type="checkbox" value="${service}" ${isChecked}><span>${service}</span></label>`;
-                });
-                categoryEl.innerHTML = servicesHTML;
-                serviceListContainer.appendChild(categoryEl);
-            }
-        }
-        serviceListContainer.querySelectorAll('input[type="checkbox"]').forEach(checkbox => {
-            checkbox.addEventListener('change', (e) => {
-                if (e.target.checked) { tempSelectedServices.push(e.target.value); } 
-                else { tempSelectedServices = tempSelectedServices.filter(s => s !== e.target.value); }
-                updateModalConfirmButton();
-            });
-        });
-    }
-    function updateModalConfirmButton() {
-        const count = tempSelectedServices.length;
-        modalConfirmBtn.textContent = `Добавить выбранные (${count})`;
-        modalConfirmBtn.disabled = count === 0;
-    }
-    function confirmServiceSelection() {
-        if (tempSelectedServices.length > 0) {
-            serviceDisplayField.textContent = tempSelectedServices.join(', ');
-            serviceDisplayField.dataset.services = JSON.stringify(tempSelectedServices);
-            serviceDisplayField.classList.add('has-content');
-        } else {
-            resetServiceField();
-        }
-        closeServicesModal();
-    }
-
-    // --- ОСНОВНЫЕ ФУНКЦИИ ---
-    function handleFormSubmit(event) {
-        event.preventDefault();
-        const selectedServices = serviceDisplayField.dataset.services ? JSON.parse(serviceDisplayField.dataset.services) : [];
-        if (selectedServices.length === 0) { alert('Пожалуйста, выберите хотя бы одну услугу.'); return; }
-        const entryData = { date: dateSelector.value, master: document.getElementById('master').value, car: carInput.value, description: selectedServices.join(', '), workCost: parseFloat(document.getElementById('work-cost').value) || 0, partsMarkup: parseFloat(document.getElementById('parts-markup').value) || 0 };
-        if (editMode) {
-            const index = allEntries.findIndex(e => e.id === entryToEditId);
-            if (index !== -1) allEntries[index] = { ...allEntries[index], ...entryData };
-        } else {
-            allEntries.push({ id: Date.now(), ...entryData });
-        }
-        saveToStorage(); populateCarDatalist(); displayDataForSelectedDate(); resetForm(); document.getElementById('master').focus();
-    }
-    function startEditMode(id) {
-        editMode = true; entryToEditId = id;
-        const entry = allEntries.find(e => e.id === id);
-        if (!entry) return;
-        document.getElementById('master').value = entry.master;
-        carInput.value = entry.car;
-        document.getElementById('work-cost').value = entry.workCost;
-        document.getElementById('parts-markup').value = entry.partsMarkup;
-        const services = entry.description.split(', ');
-        serviceDisplayField.textContent = entry.description;
-        serviceDisplayField.dataset.services = JSON.stringify(services);
-        serviceDisplayField.classList.add('has-content');
-        formHeader.textContent = "Редактирование записи";
-        submitButton.textContent = "Сохранить изменения";
-        cancelEditButton.style.display = 'block';
-        window.scrollTo(0, 0);
-    }
-    function cancelEditMode() {
-        editMode = false; entryToEditId = null;
-        resetForm();
-        formHeader.textContent = "Добавить новую запись";
-        submitButton.textContent = "Добавить в журнал";
-        cancelEditButton.style.display = 'none';
-    }
-    function deleteEntry(id) { if (confirm('Вы уверены, что хотите удалить эту запись?')) { allEntries = allEntries.filter(e => e.id !== id); saveToStorage(); displayDataForSelectedDate(); populateCarDatalist(); } }
-    function resetForm() { form.reset(); resetServiceField(); }
-    function resetServiceField() { serviceDisplayField.textContent = 'Нажмите, чтобы выбрать услуги...'; serviceDisplayField.dataset.services = '[]'; serviceDisplayField.classList.remove('has-content'); }
-    function populateCarDatalist() { const uniqueCars = [...new Set(allEntries.map(e => e.car))].sort(); carDatalist.innerHTML = uniqueCars.map(car => `<option value="${car}"></option>`).join(''); }
-    // --- Дисплей и расчеты --- (без изменений)
-    function displayDataForSelectedDate() { const selectedDate = dateSelector.value; const entriesForDay = allEntries.filter(entry => entry.date === selectedDate); const isToday = new Date(selectedDate).toDateString() === new Date().toDateString(); const dateFormatted = new Date(selectedDate).toLocaleDateString('ru-RU', { day: 'numeric', month: 'long', year: 'numeric' }); summaryTitle.textContent = isToday ? 'Итоги за сегодня' : `Итоги за ${dateFormatted}`; logTitle.textContent = isToday ? 'Сегодняшние работы' : `Работы за ${dateFormatted}`; dailyLogAccordions.innerHTML = ''; if (entriesForDay.length === 0) { dailyLogAccordions.innerHTML = `<p style="text-align:center; color: #888; padding: 20px;">Записей за этот день нет.</p>`; updateTotalsAndBonuses({}, 0); return; } const groupedByMaster = entriesForDay.reduce((acc, entry) => { (acc[entry.master] = acc[entry.master] || []).push(entry); return acc; }, {}); let mastersEarnings = {}; let totalRevenue = 0; Object.keys(groupedByMaster).sort().forEach(master => { const masterEntries = groupedByMaster[master]; const masterRevenue = masterEntries.reduce((sum, e) => sum + e.workCost + e.partsMarkup, 0); totalRevenue += masterRevenue; mastersEarnings[master] = masterRevenue * 0.5; createMasterLogAccordion(master, masterEntries, masterRevenue); }); updateTotalsAndBonuses(mastersEarnings, totalRevenue); }
-    function createMasterLogAccordion(master, entries, revenue) { const accordionEl = document.createElement('div'); accordionEl.className = 'master-log-accordion'; let tableRows = ''; entries.forEach(entry => { const totalEntrySum = entry.workCost + entry.partsMarkup; tableRows += `<tr data-id="${entry.id}"><td data-label="Автомобиль">${entry.car}</td><td data-label="Описание">${entry.description}</td><td data-label="Работа">${entry.workCost.toFixed(2)}</td><td data-label="Накрутка">${entry.partsMarkup.toFixed(2)}</td><td data-label="Итого"><strong>${totalEntrySum.toFixed(2)}</strong></td><td class="actions-cell"><button class="action-btn edit-btn" title="Редактировать"><svg viewBox="0 0 24 24"><path d="M17.25,2.82L21.18,6.75L19.25,8.68L15.32,4.75M4,14V18H8L18.5,7.5L14.5,3.5L4,14M4,20H20V22H4V20Z"></path></svg></button><button class="action-btn delete-btn" title="Удалить"><svg viewBox="0 0 24 24"><path d="M9,3V4H4V6H5V19C5,20.1 5.9,21 7,21H17C18.1,21 19,20.1 19,19V6H20V4H15V3H9M7,6H17V19H7V6M9,8V17H11V8H9M13,8V17H15V8H13Z"></path></svg></button></td></tr>`; }); accordionEl.innerHTML = `<div class="master-log-header"><h4>${master}</h4><div class="master-log-summary"><span>Работ: <strong>${entries.length}</strong></span><span>Выручка: <strong>${revenue.toFixed(2)} ₽</strong></span></div><span class="accordion-icon">▼</span></div><div class="master-log-content"><table><thead><tr><th>Авто</th><th>Описание</th><th>Работа</th><th>Накрутка</th><th>Итого</th><th>Действия</th></tr></thead><tbody>${tableRows}</tbody></table></div>`; dailyLogAccordions.appendChild(accordionEl); accordionEl.querySelector('.master-log-header').addEventListener('click', () => accordionEl.classList.toggle('active')); accordionEl.querySelectorAll('.edit-btn').forEach(btn => btn.addEventListener('click', (e) => { e.stopPropagation(); startEditMode(parseInt(btn.closest('tr').dataset.id)); })); accordionEl.querySelectorAll('.delete-btn').forEach(btn => btn.addEventListener('click', (e) => { e.stopPropagation(); deleteEntry(parseInt(btn.closest('tr').dataset.id)); })); }
-    function updateTotalsAndBonuses(mastersEarnings, totalRevenue) { totalRevenueEl.textContent = `${totalRevenue.toFixed(2)} ₽`; serviceShareEl.textContent = `${(totalRevenue * 0.5).toFixed(2)} ₽`; mastersDetailsEl.innerHTML = ''; let totalPayout = 0; const sortedMasters = Object.keys(mastersEarnings).sort(); if (sortedMasters.length === 0) { mastersDetailsEl.innerHTML = `<div class="master-detail-item">Нет данных для расчета</div>`; } sortedMasters.forEach(master => { const selectedDate = dateSelector.value; const bonusKey = `${selectedDate}_${master}`; const savedBonus = allBonuses[bonusKey] || { score: 0, amount: 0 }; const earning = mastersEarnings[master]; const bonusAmount = parseFloat(savedBonus.amount) || 0; const masterTotal = earning + bonusAmount; totalPayout += masterTotal; const detailItem = document.createElement('div'); detailItem.className = 'master-detail-item'; detailItem.innerHTML = `<div class="master-main-info"><span class="master-name">${master}</span><strong>${earning.toFixed(2)} ₽</strong></div><div class="master-bonus-controls"><input type="range" min="0" max="5" value="${savedBonus.score}" step="1" class="bonus-slider"><span class="bonus-slider-value">${savedBonus.score}</span><input type="number" min="0" placeholder="Бонус" value="${savedBonus.amount}" class="bonus-amount-input"></div><div class="master-total-payout" id="payout-${bonusKey}"><span>К выплате:</span> ${masterTotal.toFixed(2)} ₽</div>`; mastersDetailsEl.appendChild(detailItem); const slider = detailItem.querySelector('.bonus-slider'); const sliderValue = detailItem.querySelector('.bonus-slider-value'); const amountInput = detailItem.querySelector('.bonus-amount-input'); slider.addEventListener('input', () => { sliderValue.textContent = slider.value; allBonuses[bonusKey] = { ...allBonuses[bonusKey], score: slider.value }; saveToStorage(); }); amountInput.addEventListener('input', () => { const newBonusAmount = parseFloat(amountInput.value) || 0; allBonuses[bonusKey] = { ...allBonuses[bonusKey], amount: newBonusAmount }; saveToStorage(); const newTotalPayout = earning + newBonusAmount; document.getElementById(`payout-${bonusKey}`).innerHTML = `<span>К выплате:</span> ${newTotalPayout.toFixed(2)} ₽`; updateTotalPayout(); }); }); updateTotalPayout(); }
-    function updateTotalPayout() { const selectedDate = dateSelector.value; const entriesForDay = allEntries.filter(entry => entry.date === selectedDate); let mastersEarnings = {}; entriesForDay.forEach(e => { const earning = (e.workCost + e.partsMarkup) * 0.5; mastersEarnings[e.master] = (mastersEarnings[e.master] || 0) + earning; }); let totalPayout = 0; Object.keys(mastersEarnings).forEach(master => { const bonusKey = `${selectedDate}_${master}`; const bonusAmount = parseFloat(allBonuses[bonusKey]?.amount || 0); totalPayout += mastersEarnings[master] + bonusAmount; }); mastersShareTotalEl.textContent = `${totalPayout.toFixed(2)} ₽`; }
-    function saveToStorage() { localStorage.setItem(STORAGE_KEY_ENTRIES, JSON.stringify(allEntries)); localStorage.setItem(STORAGE_KEY_BONUSES, JSON.stringify(allBonuses)); }
-    function loadFromStorage() { const savedEntries = localStorage.getItem(STORAGE_KEY_ENTRIES); if (savedEntries) allEntries = JSON.parse(savedEntries); const savedBonuses = localStorage.getItem(STORAGE_KEY_BONUSES); if (savedBonuses) allBonuses = JSON.parse(savedBonuses); }
-    // --- Аналитика ---
-    function generateAnalytics() { const [startDate, endDate] = getPeriodDates(periodSelect.value); if (!startDate || !endDate) return; const periodEntries = allEntries.filter(entry => { const entryDate = new Date(entry.date); return entryDate >= startDate && entryDate <= endDate; }); const totalRevenue = periodEntries.reduce((sum, e) => sum + e.workCost + e.partsMarkup, 0); const totalProfit = totalRevenue * 0.5; const totalPayout = periodEntries.reduce((sum, e) => { const base = (e.workCost + e.partsMarkup) * 0.5; const bonus = parseFloat(allBonuses[`${e.date}_${e.master}`]?.amount || 0); return sum + base + bonus; }, 0); kpiRevenue.textContent = `${totalRevenue.toFixed(0)} ₽`; kpiProfit.textContent = `${totalProfit.toFixed(0)} ₽`; kpiPayout.textContent = `${totalPayout.toFixed(0)} ₽`; kpiJobs.textContent = periodEntries.length; const revenueByDay = {}; for (let d = new Date(startDate); d <= endDate; d.setDate(d.getDate() + 1)) { revenueByDay[new Date(d).toISOString().slice(0, 10)] = 0; } periodEntries.forEach(e => { revenueByDay[e.date] = (revenueByDay[e.date] || 0) + e.workCost + e.partsMarkup; }); const mastersContribution = periodEntries.reduce((acc, e) => { const revenue = e.workCost + e.partsMarkup; acc[e.master] = (acc[e.master] || 0) + revenue; return acc; }, {}); drawRevenueByDayChart(revenueByDay); drawMastersContributionChart(mastersContribution); }
-    function drawRevenueByDayChart(data) { if (revenueChart) revenueChart.destroy(); revenueChart = new Chart(revenueChartCtx, { type: 'bar', data: { labels: Object.keys(data).map(d => new Date(d).toLocaleDateString('ru-RU', {day: 'numeric', month: 'short'})), datasets: [{ label: 'Выручка', data: Object.values(data), backgroundColor: 'rgba(0, 123, 255, 0.6)' }] }, options: { scales: { y: { beginAtZero: true } } } }); }
-    function drawMastersContributionChart(data) { if (mastersChart) mastersChart.destroy(); const sortedMasters = Object.entries(data).sort((a,b) => b[1] - a[1]); mastersChart = new Chart(mastersChartCtx, { type: 'doughnut', data: { labels: sortedMasters.map(item => item[0]), datasets: [{ label: 'Вклад', data: sortedMasters.map(item => item[1]), backgroundColor: ['#007bff', '#28a745', '#ffc107', '#dc3545', '#17a2b8', '#6c757d'], }] } }); }
-    function getPeriodDates(periodValue) { const today = new Date(); today.setHours(0,0,0,0); let startDate, endDate = new Date(today); switch(periodValue) { case 'this_week': startDate = new Date(today); startDate.setDate(today.getDate() - (today.getDay() === 0 ? 6 : today.getDay() - 1)); break; case 'last_week': endDate = new Date(today); endDate.setDate(today.getDate() - (today.getDay() === 0 ? 7 : today.getDay())); startDate = new Date(endDate); startDate.setDate(endDate.getDate() - 6); break; case 'this_month': startDate = new Date(today.getFullYear(), today.getMonth(), 1); break; case 'last_month': endDate = new Date(today.getFullYear(), today.getMonth(), 0); startDate = new Date(endDate.getFullYear(), endDate.getMonth(), 1); break; case 'custom': startDate = new Date(startDateInput.value); endDate = new Date(endDateInput.value); if(isNaN(startDate) || isNaN(endDate)) return [null, null]; break; default: return [null, null]; } return [startDate, endDate]; }
-    function exportToCsv() { const [startDate, endDate] = getPeriodDates(periodSelect.value); if (!startDate || !endDate) return; const periodEntries = allEntries.filter(entry => { const entryDate = new Date(entry.date); return entryDate >= startDate && entryDate <= endDate; }); if (periodEntries.length === 0) { alert('Нет данных для экспорта за выбранный период.'); return; } let csvContent = "data:text/csv;charset=utf-8,"; const headers = ["ID", "Дата", "Мастер", "Автомобиль", "Описание", "Сумма за работу", "Накрутка", "Итого"]; csvContent += headers.join(",") + "\r\n"; periodEntries.forEach(e => { const row = [e.id, e.date, e.master, `"${e.car.replace(/"/g, '""')}"`, `"${e.description.replace(/"/g, '""')}"`, e.workCost, e.partsMarkup, e.workCost + e.partsMarkup]; csvContent += row.join(",") + "\r\n"; }); const encodedUri = encodeURI(csvContent); const link = document.createElement("a"); link.setAttribute("href", encodedUri); link.setAttribute("download", `report_${new Date().toISOString().slice(0,10)}.csv`); document.body.appendChild(link); link.click(); document.body.removeChild(link); }
-});
-</script>
-
 </body>
 </html>
