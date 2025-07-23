@@ -3,24 +3,198 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>VIPavto — Вход</title>
-    <link rel="stylesheet" href="assets/css/style.css">
+    <title>VIPavto — Вход в систему</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary: #2c3e50;
+            --secondary: #3498db;
+            --success: #27ae60;
+            --danger: #e74c3c;
+            --light: #ecf0f1;
+            --dark: #2c3e50;
+        }
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+        .login-container {
+            width: 100%;
+            max-width: 400px;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+            animation: fadeIn 0.5s ease;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .login-header {
+            background: var(--primary);
+            color: white;
+            padding: 25px;
+            text-align: center;
+        }
+        .login-header h1 {
+            font-size: 24px;
+            margin-bottom: 5px;
+        }
+        .login-header i {
+            font-size: 40px;
+            margin-bottom: 15px;
+            color: var(--secondary);
+        }
+        .login-form {
+            padding: 25px;
+        }
+        .form-group {
+            margin-bottom: 20px;
+        }
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: var(--dark);
+        }
+        .form-control {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: all 0.3s;
+        }
+        .form-control:focus {
+            border-color: var(--secondary);
+            box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.2);
+            outline: none;
+        }
+        .btn {
+            width: 100%;
+            padding: 12px;
+            background: var(--secondary);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        .btn:hover {
+            background: #2980b9;
+            transform: translateY(-2px);
+        }
+        .btn:active {
+            transform: translateY(0);
+        }
+        .password-container {
+            position: relative;
+        }
+        .toggle-password {
+            position: absolute;
+            right: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            cursor: pointer;
+            color: #7f8c8d;
+        }
+        .error-message {
+            color: var(--danger);
+            text-align: center;
+            margin-top: 15px;
+            font-size: 14px;
+            display: none;
+        }
+        @media (max-width: 480px) {
+            .login-container {
+                border-radius: 10px;
+            }
+            .login-header {
+                padding: 20px;
+            }
+            .login-form {
+                padding: 20px;
+            }
+        }
+    </style>
 </head>
 <body>
     <div class="login-container">
-        <h1><i class="fas fa-lock"></i> Вход в систему</h1>
-        <form id="login-form">
+        <div class="login-header">
+            <i class="fas fa-car-alt"></i>
+            <h1>VIPavto</h1>
+            <p>Авторизация в системе</p>
+        </div>
+        <form id="login-form" class="login-form">
             <div class="form-group">
-                <label for="username">Логин:</label>
-                <input type="text" id="username" placeholder="Введите логин" required>
+                <label for="username">Логин</label>
+                <input type="text" id="username" class="form-control" placeholder="Введите ваш логин" required>
             </div>
-            <div class="form-group">
-                <label for="password">Пароль:</label>
-                <input type="password" id="password" placeholder="Введите пароль" required>
+            <div class="form-group password-container">
+                <label for="password">Пароль</label>
+                <input type="password" id="password" class="form-control" placeholder="Введите пароль" required>
+                <i class="fas fa-eye toggle-password" id="toggle-password"></i>
             </div>
-            <button type="submit" class="btn">Войти</button>
+            <div class="error-message" id="error-message">
+                Неверный логин или пароль
+            </div>
+            <button type="submit" class="btn">
+                <i class="fas fa-sign-in-alt"></i> Войти
+            </button>
         </form>
     </div>
-    <script src="assets/js/auth.js"></script>
+
+    <script>
+        // Показать/скрыть пароль
+        document.getElementById('toggle-password').addEventListener('click', function() {
+            const passwordInput = document.getElementById('password');
+            const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
+            passwordInput.setAttribute('type', type);
+            this.classList.toggle('fa-eye-slash');
+        });
+
+        // Обработка формы входа
+        document.getElementById('login-form').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+            const errorElement = document.getElementById('error-message');
+
+            // Проверка учетных данных (временная реализация)
+            if ((username === 'admin' && password === 'admin009') || 
+                (username === 'Владимир А.' && password === 'vlad123') ||
+                (username === 'Владимир' && password === 'vladimir456') ||
+                (username === 'Андрей' && password === 'andrey789') ||
+                (username === 'Данила' && password === 'danila000') ||
+                (username === 'Максим' && password === 'maxim111') ||
+                (username === 'Артём' && password === 'artem222')) {
+                
+                // Сохраняем данные авторизации
+                localStorage.setItem('auth', JSON.stringify({ username }));
+                
+                // Перенаправляем в журнал
+                window.location.href = 'journal.html';
+            } else {
+                // Показываем ошибку
+                errorElement.style.display = 'block';
+                setTimeout(() => {
+                    errorElement.style.display = 'none';
+                }, 3000);
+            }
+        });
+    </script>
 </body>
 </html>
