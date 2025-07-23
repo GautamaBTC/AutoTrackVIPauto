@@ -25,7 +25,7 @@
         html, body {
             height: 100%;
             overflow: hidden;
-            font-size: 20px;
+            font-size: 17px; /* Уменьшил с 20px до 17px (+5%) */
         }
         
         body {
@@ -39,319 +39,46 @@
         
         .login-container {
             width: 100%;
-            max-width: 500px;
+            max-width: 450px; /* Уменьшил с 500px */
             background: white;
-            border-radius: 15px;
-            box-shadow: 0 10px 30px rgba(58, 74, 63, 0.15);
+            border-radius: 12px;
+            box-shadow: 0 8px 24px rgba(58, 74, 63, 0.15);
             overflow: hidden;
-            border: 2px solid var(--dusty-green);
+            border: 1px solid var(--dusty-green);
         }
         
         .login-header {
             background: var(--olive);
             color: white;
-            padding: 35px 30px;
+            padding: 30px 25px; /* Уменьшил padding */
             text-align: center;
-            border-bottom: 2px solid var(--dusty-brown);
+            border-bottom: 1px solid var(--dusty-brown);
             position: relative;
         }
         
         .login-header h1 {
-            font-size: 32px;
-            margin-bottom: 10px;
+            font-size: 28px; /* Уменьшил с 32px */
+            margin-bottom: 8px;
             font-weight: 500;
         }
         
         .login-header i {
-            font-size: 50px;
-            margin-bottom: 20px;
+            font-size: 42px; /* Уменьшил с 50px */
+            margin-bottom: 15px;
             color: var(--light-beige);
         }
         
         .current-time {
             position: absolute;
-            top: 20px;
-            right: 20px;
-            font-size: 24px;
+            top: 15px;
+            right: 15px;
+            font-size: 18px; /* Уменьшил с 24px */
             color: white;
             font-weight: 500;
             background: rgba(0,0,0,0.15);
-            padding: 8px 15px;
-            border-radius: 25px;
-            min-width: 200px;
+            padding: 6px 12px;
+            border-radius: 20px;
+            min-width: 180px;
             text-align: center;
             line-height: 1.3;
         }
-        
-        .login-form {
-            padding: 35px;
-            background-color: var(--light-beige);
-        }
-        
-        .form-group {
-            margin-bottom: 30px;
-        }
-        
-        .form-group label {
-            display: block;
-            margin-bottom: 15px;
-            color: var(--dark-green);
-            font-size: 20px;
-            font-weight: 500;
-        }
-        
-        .form-control {
-            width: 100%;
-            padding: 18px 25px;
-            border: 2px solid var(--dusty-green);
-            border-radius: 10px;
-            font-size: 20px;
-            background-color: white;
-            color: var(--dark-green);
-            height: 65px;
-        }
-        
-        .form-control:focus {
-            border-color: var(--dusty-brown);
-            outline: none;
-            box-shadow: 0 0 0 4px rgba(166, 138, 100, 0.2);
-        }
-        
-        .btn-login {
-            width: 100%;
-            padding: 20px;
-            background: var(--dark-olive);
-            color: white;
-            border: none;
-            border-radius: 10px;
-            font-size: 22px;
-            font-weight: 500;
-            cursor: pointer;
-            transition: all 0.3s;
-            margin-top: 20px;
-            height: 70px;
-        }
-        
-        .btn-login:hover {
-            background: var(--dark-green);
-            transform: translateY(-2px);
-        }
-        
-        .password-container {
-            position: relative;
-        }
-        
-        .toggle-password {
-            position: absolute;
-            right: 15px;
-            top: 50%;
-            transform: translateY(-50%);
-            cursor: pointer;
-            color: var(--olive);
-            font-size: 28px;
-            width: 50px;
-            height: 50px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            border-radius: 50%;
-            transition: all 0.3s;
-        }
-        
-        .toggle-password:hover {
-            color: var(--dark-green);
-            background: rgba(138, 155, 143, 0.1);
-        }
-        
-        .error-message {
-            color: #c0392b;
-            text-align: center;
-            margin-top: 25px;
-            font-size: 20px;
-            display: none;
-            font-weight: 500;
-            padding: 10px;
-            background: rgba(192, 57, 43, 0.1);
-            border-radius: 8px;
-        }
-        
-        .footer-info {
-            text-align: center;
-            margin-top: 30px;
-            font-size: 16px;
-            color: var(--dark-green);
-            border-top: 1px dashed var(--dusty-green);
-            padding-top: 20px;
-            line-height: 1.6;
-        }
-
-        @media (max-width: 600px) {
-            html {
-                font-size: 18px;
-            }
-            
-            .login-container {
-                max-width: 95%;
-            }
-            
-            .login-header {
-                padding: 30px 20px;
-            }
-            
-            .current-time {
-                font-size: 18px;
-                min-width: 160px;
-                top: 15px;
-                right: 15px;
-                padding: 6px 10px;
-            }
-            
-            .login-form {
-                padding: 30px;
-            }
-            
-            .form-control {
-                padding: 15px 20px;
-                height: 60px;
-                font-size: 18px;
-            }
-            
-            .btn-login {
-                padding: 18px;
-                font-size: 20px;
-                height: 65px;
-            }
-            
-            .toggle-password {
-                font-size: 24px;
-                width: 45px;
-                height: 45px;
-            }
-        }
-    </style>
-</head>
-<body>
-    <div class="login-container">
-        <div class="login-header">
-            <div class="current-time" id="current-time"></div>
-            <i class="fas fa-car-alt"></i>
-            <h1>VIPавто</h1>
-            <p>Авторизация в облачном журнале</p>
-        </div>
-        <form id="login-form" class="login-form">
-            <div class="form-group">
-                <label for="username">Логин</label>
-                <input type="text" id="username" class="form-control" placeholder="Введите ваш логин" required>
-            </div>
-            <div class="form-group password-container">
-                <label for="password">Пароль</label>
-                <input type="password" id="password" class="form-control" placeholder="Введите пароль" required>
-                <i class="fas fa-eye toggle-password" id="toggle-password"></i>
-            </div>
-            <div class="error-message" id="error-message">
-                Неверный логин или пароль
-            </div>
-            <button type="submit" class="btn-login">
-                <i class="fas fa-sign-in-alt"></i> Войти
-            </button>
-            <div class="footer-info">
-                Тестовый доступ: admin / admin009<br>
-                Версия 2.1.4 (2024) | Cloud Journal System<br>
-                © VIPавто Технологии
-            </div>
-        </form>
-    </div>
-
-    <script>
-        // Обновление времени в реальном времени
-        function updateTime() {
-            const now = new Date();
-            const days = ['Воскресенье', 'Понедельник', 'Вторник', 'Среда', 'Четверг', 'Пятница', 'Суббота'];
-            const dayName = days[now.getDay()];
-            const date = now.getDate();
-            const month = now.toLocaleString('ru-RU', { month: 'long' });
-            const timeString = now.toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' });
-            const year = now.getFullYear();
-            
-            document.getElementById('current-time').innerHTML = `
-                <div style="font-weight:600;margin-bottom:5px;font-size:1.1em;">${dayName}</div>
-                                <div style="margin-bottom:5px;">${date} ${month} ${year}</div>
-                <div style="font-size:1.3em;font-weight:600;">${timeString}</div>
-            `;
-        }
-
-        // Обновляем время сразу и каждую минуту
-        updateTime();
-        setInterval(updateTime, 60000);
-
-        // Показать/скрыть пароль
-        const togglePassword = document.getElementById('toggle-password');
-        const passwordInput = document.getElementById('password');
-        
-        togglePassword.addEventListener('click', function() {
-            const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
-            passwordInput.setAttribute('type', type);
-            this.classList.toggle('fa-eye-slash');
-            this.classList.toggle('fa-eye');
-            
-            // Анимация для лучшей обратной связи
-            this.style.transform = 'translateY(-50%) scale(1.1)';
-            setTimeout(() => {
-                this.style.transform = 'translateY(-50%) scale(1)';
-            }, 200);
-        });
-
-        // Обработка формы входа
-        document.getElementById('login-form').addEventListener('submit', function(e) {
-            e.preventDefault();
-            const username = document.getElementById('username').value.trim();
-            const password = document.getElementById('password').value.trim();
-            const errorElement = document.getElementById('error-message');
-            
-            // Проверка учетных данных
-            const validCredentials = {
-                'admin': 'admin009',
-                'Владимир А.': 'vlad123',
-                'Владимир': 'vladimir456',
-                'Андрей': 'andrey789',
-                'Данила': 'danila000',
-                'Максим': 'maxim111',
-                'Артём': 'artem222'
-            };
-            
-            if (validCredentials[username] && validCredentials[username] === password) {
-                // Успешная авторизация
-                localStorage.setItem('auth', JSON.stringify({ 
-                    username,
-                    timestamp: new Date().getTime()
-                }));
-                
-                // Анимация перехода
-                document.querySelector('.login-container').style.transform = 'scale(0.95)';
-                document.querySelector('.login-container').style.opacity = '0.8';
-                
-                setTimeout(() => {
-                    window.location.href = 'journal.html';
-                }, 300);
-            } else {
-                // Ошибка авторизации
-                errorElement.style.display = 'block';
-                passwordInput.value = '';
-                passwordInput.focus();
-                
-                // Анимация ошибки
-                passwordInput.style.borderColor = '#c0392b';
-                setTimeout(() => {
-                    passwordInput.style.borderColor = 'var(--dusty-green)';
-                }, 1000);
-            }
-        });
-
-        // Фокус на поле логина при загрузке
-        document.getElementById('username').focus();
-
-        // Блокировка скролла
-        document.body.style.overflow = 'hidden';
-    </script>
-</body>
-</html>
