@@ -194,8 +194,13 @@ html[data-theme="dark"] {
 
 /* 10. Errors (adjusted for flex) */
 .error-message {
-  font-size: 0.85rem; color: var(--accent);
-  margin-top: 0.3rem; flex-basis: 100%;
+  display: block;
+  margin-top: 4px;
+  font-size: 0.85rem;
+  color: var(--error-color);
+  /* убираем абсолют и bottom: */
+  position: static;
+  left: auto; bottom: auto;
 }
 
 /* 11. Options */
