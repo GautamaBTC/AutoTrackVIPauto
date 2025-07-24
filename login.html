@@ -1,84 +1,87 @@
 <!DOCTYPE html>
-<html lang="ru">
+<html lang="ru" data-theme="dark">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>VIPавто — Авторизация</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <style>
-        :root {
-            --dusty-green: #8a9b8f;
-            --olive: #6b7d63;
-            --pastel-green: #c5d1c3;
-            --dark-olive: #4a5b42;
-            --dusty-brown: #a68a64;
-            --dark-green: #3a4a3f;
-            --light-beige: #f0e6d2;
-        }
-        
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-        }
-        
-        html, body {
-            height: 100%;
-            overflow: hidden;
-            font-size: 17px; /* Уменьшил с 20px до 17px (+5%) */
-        }
-        
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: var(--pastel-green);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            padding: 20px;
-        }
-        
-        .login-container {
-            width: 100%;
-            max-width: 450px; /* Уменьшил с 500px */
-            background: white;
-            border-radius: 12px;
-            box-shadow: 0 8px 24px rgba(58, 74, 63, 0.15);
-            overflow: hidden;
-            border: 1px solid var(--dusty-green);
-        }
-        
-        .login-header {
-            background: var(--olive);
-            color: white;
-            padding: 30px 25px; /* Уменьшил padding */
-            text-align: center;
-            border-bottom: 1px solid var(--dusty-brown);
-            position: relative;
-        }
-        
-        .login-header h1 {
-            font-size: 28px; /* Уменьшил с 32px */
-            margin-bottom: 8px;
-            font-weight: 500;
-        }
-        
-        .login-header i {
-            font-size: 42px; /* Уменьшил с 50px */
-            margin-bottom: 15px;
-            color: var(--light-beige);
-        }
-        
-        .current-time {
-            position: absolute;
-            top: 15px;
-            right: 15px;
-            font-size: 18px; /* Уменьшил с 24px */
-            color: white;
-            font-weight: 500;
-            background: rgba(0,0,0,0.15);
-            padding: 6px 12px;
-            border-radius: 20px;
-            min-width: 180px;
-            text-align: center;
-            line-height: 1.3;
-        }
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Вход — VIPавто облачный бортовой журнал</title>
+
+  <!-- Шрифты и FA -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
+        rel="stylesheet"/>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+        rel="stylesheet"/>
+
+  <!-- Стили -->
+  <link rel="stylesheet" href="assets/css/login.css" />
+</head>
+<body>
+
+  <!-- HEADER -->
+  <header class="login-header">
+    <div class="login-header__left">
+      <a href="index.html" class="home-btn" title="На главную">
+        <i class="fas fa-home"></i>
+      </a>
+      <span id="current-date">…</span>
+    </div>
+    <div id="current-time" class="login-header__center">–:–:–</div>
+    <div class="login-header__right">
+      <label class="theme-switch">
+        <input type="checkbox" id="theme-toggle">
+        <span class="slider"></span>
+      </label>
+    </div>
+  </header>
+
+  <!-- MAIN -->
+  <main class="login-main">
+    <div class="login-container">
+
+      <!-- Маленькая фоновая машинка -->
+      <div class="login-bg">
+        <img src="assets/img/login.png" alt="VIPавто">
+      </div>
+
+      <!-- Форма входа -->
+      <form id="login-form" class="login-box" novalidate>
+        <h1 class="login-title">VIPавто</h1>
+        <h2 class="login-subtitle">Облачный бортовой
+        журнал</h2>
+
+        <div class="form-group">
+          <i class="fas fa-user input-fa"></i>
+          <input type="text" id="username" placeholder="Логин" required>
+          <span class="error-message" data-field="username"></span>
+        </div>
+
+        <div class="form-group">
+          <i class="fas fa-lock input-fa"></i>
+          <input type="password" id="password" placeholder="Пароль" required>
+          <i class="fas fa-eye toggle-password" id="toggle-password"></i>
+          <span class="error-message" data-field="password"></span>
+        </div>
+
+        <div class="form-options">
+          <label class="checkbox-wrap">
+            <input type="checkbox" id="remember-me">
+            Запомнить меня
+          </label>
+          <a href="#" class="forgot-link">Забыли пароль?</a>
+        </div>
+
+        <button type="submit" class="btn-login">
+          <i class="fas fa-sign-in-alt btn-fa"></i> Войти
+        </button>
+      </form>
+
+      <!-- Статусная строка (центр, внизу) -->
+      <div class="page-footer">
+        <small>Версия 2.5.0-test © VIPавто, 2025</small>
+      </div>
+    </div>
+  </main>
+
+  <!-- Скрипт -->
+  <script src="assets/js/login.js"></script>
+</body>
+</html>
