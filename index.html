@@ -44,13 +44,22 @@
   </div>
 
   <div id="services-modal" class="modal-overlay hidden">
-    <!-- ...содержимое модалки без изменений... -->
+    <div class="modal-window">
+      <div class="modal-header">
+        <h3>Выберите услуги</h3>
+        <input type="search" id="service-search" placeholder="Поиск услуг…" />
+      </div>
+      <div class="modal-body" id="service-list-container"></div>
+      <div class="modal-footer">
+        <button id="service-cancel">Отмена</button>
+        <button id="service-confirm">Добавить</button>
+      </div>
+    </div>
   </div>
 
   <script type="module" src="assets/js/app.js"></script>
   <script type="module" src="assets/js/charts.js"></script>
-  <!-- ВАЖНО: УБЕДИТЕСЬ, ЧТО ЭТИ ФАЙЛЫ ЕСТЬ И ПОДКЛЮЧЕНЫ -->
-  <script type="module" src="assets/js/theme.js"></script>
+  <script type="module" href="assets/js/theme.js"></script>
   <script type="module" src="assets/js/storage.js"></script>
   <script type="module" src="assets/js/utils.js"></script>
   <script type="module" src="assets/js/servicesCatalog.js"></script>
