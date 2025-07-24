@@ -1,46 +1,110 @@
 <!DOCTYPE html>
-<html lang="ru">
+<html lang="ru" data-theme="light">
 <head>
-    <meta charset="UTF-8">
-    <meta http-equiv="refresh" content="0; url=login.html">
-    <title>VIPavto - Автосервис</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            margin: 0;
-            background-color: #f5f5f5;
-        }
-        .redirect-message {
-            text-align: center;
-            padding: 20px;
-            background: white;
-            border-radius: 8px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-        }
-        .spinner {
-            border: 4px solid rgba(0, 0, 0, 0.1);
-            border-radius: 50%;
-            border-top: 4px solid #3498db;
-            width: 30px;
-            height: 30px;
-            animation: spin 1s linear infinite;
-            margin: 20px auto;
-        }
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-    </style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>VIPавто облачный бортовой журнал</title>
+
+  <!-- Сброс стилей -->
+  <link rel="stylesheet" href="assets/css/reset.css" />
+  <!-- Общие стили -->
+  <link rel="stylesheet" href="assets/css/main.css" />
+  <!-- Шрифты и FA -->
+  <link
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
+    rel="stylesheet"
+  />
+  <link
+    href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+    rel="stylesheet"
+  />
 </head>
 <body>
-    <div class="redirect-message">
-        <h2>VIPavto 🚗</h2>
-        <p>Перенаправляем на страницу входа...</p>
-        <div class="spinner"></div>
+  <div class="container">
+    <!-- HEADER -->
+    <header class="app-header">
+      <h1 class="app-logo">VIPавто</h1>
+      <p class="app-tagline">облачный бортовой журнал</p>
+    </header>
+
+    <!-- NAV -->
+    <nav class="view-switcher">
+      <button id="switch-to-log" class="active">
+        <i class="fas fa-list-alt"></i> Журнал
+      </button>
+      <button id="switch-to-analytics">
+        <i class="fas fa-chart-line"></i> Аналитика
+      </button>
+    </nav>
+
+    <!-- MAIN -->
+    <main class="app-main">
+      <!-- ЖУРНАЛ -->
+      <section id="log-view" class="active">
+        <!-- сюда вставляется форма и записи через app.js -->
+      </section>
+
+      <!-- АНАЛИТИКА -->
+      <section id="analytics-view" class="hidden">
+        <!-- панель управления -->
+        <div class="analytics-controls">
+          <label for="period-select">Период:</label>
+          <select id="period-select">
+            <option value="this_month" selected>Этот месяц</option>
+            <option value="last_month">Прошлый месяц</option>
+            <option value="this_week">Эта неделя</option>
+            <option value="last_week">Прошлая неделя</option>
+            <option value="custom">Свой диапазон</option>
+          </select>
+
+          <button id="export-csv" class="btn-csv">
+            <i class="fas fa-file-csv"></i> Скачать CSV
+          </button>
+
+          <div id="custom-range" class="hidden">
+            <input type="date" id="start-date" /> — 
+            <input type="date" id="end-date" />
+            <button id="apply-range">Применить</button>
+          </div>
+        </div>
+
+        <!-- KPI-карточки -->
+        <div class="kpi-grid">
+          <div class="kpi-card"><h4>Общая выручка</h4><p id="kpi-revenue">0 ₽</p></div>
+          <div class="kpi-card"><h4>Прибыль сервиса</h4><p id="kpi-profit">0 ₽</p></div>
+          <div class="kpi-card"><h4>Выплаты мастерам</h4><p id="kpi-payout">0 ₽</p></div>
+          <div class="kpi-card"><h4>Кол-во работ</h4><p id="kpi-jobs">0</p></div>
+        </div>
+
+        <!-- Графики -->
+        <div class="charts-grid">
+          <div class="chart-container"><canvas id="revenue-chart"></canvas></div>
+          <div class="chart-container"><canvas id="masters-chart"></canvas></div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <!-- Модалка выбора услуг -->
+  <div id="services-modal" class="modal-overlay hidden">
+    <div class="modal-window">
+      <div class="modal-header">
+        <h3>Выберите услуги</h3>
+        <input type="search" id="service-search" placeholder="Поиск услуг…" />
+      </div>
+      <div class="modal-body" id="service-list-container"></div>
+      <div class="modal-footer">
+        <button id="service-cancel">Отмена</button>
+        <button id="service-confirm">Добавить выбранные</button>
+      </div>
     </div>
+  </div>
+
+  <!-- Скрипты (ES-модули) -->
+  <script type="module" src="assets/js/storage.js"></script>
+  <script type="module" src="assets/js/utils.js"></script>
+  <script type="module" src="assets/js/servicesCatalog.js"></script>
+  <script type="module" src="assets/js/app.js"></script>
+  <script type="module" src="assets/js/charts.js"></script>
 </body>
 </html>
