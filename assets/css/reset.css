@@ -1,0 +1,42 @@
+/*─────────────────────────────────────────────────────────────
+  reset.css — лёгкий сброс базовых стилей
+────────────────────────────────────────────────────────────────*/
+
+/* Обнуляем отступы и padding всех элементов, задаём box-sizing */
+*,
+*::before,
+*::after {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+/* Убираем стандартные стили ссылок и кнопок */
+a,
+a:visited {
+  text-decoration: none;
+  color: inherit;
+}
+button {
+  background: none;
+  border: none;
+  cursor: pointer;
+}
+
+/* Убираем скролл по горизонтали */
+html, body {
+  overflow-x: hidden;
+}
+
+/* Обрабатываем заголовки и списки */
+h1, h2, h3, h4, h5, h6 {
+  font-weight: normal;
+}
+ul, ol {
+  list-style: none;
+}
+
+/* Убираем стандартные фокусы, заменим позже на кастомные */
+:focus {
+  outline: none;
+}
