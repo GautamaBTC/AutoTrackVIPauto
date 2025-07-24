@@ -22,10 +22,23 @@
 <body>
   <div class="container">
     <!-- HEADER -->
-    <header class="app-header">
-      <h1 class="app-logo">VIPавто</h1>
-      <p class="app-tagline">облачный бортовой журнал</p>
-    </header>
+<header class="page-header">
+  <div class="page-header__left">
+    <h1 class="app-logo">VIPавто</h1>
+    <p class="app-tagline">облачный бортовой журнал</p>
+  </div>
+  <div id="current-time" class="page-header__center">–:–:–</div>
+  <div class="page-header__right">
+    <span id="current-date">…</span>
+    <label class="theme-switch">
+      <input type="checkbox" id="theme-toggle" />
+      <span class="slider">
+        <i class="fas fa-moon"></i>
+        <i class="fas fa-sun"></i>
+      </span>
+    </label>
+  </div>
+</header>
 
     <!-- NAV -->
     <nav class="view-switcher">
