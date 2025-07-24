@@ -5,11 +5,11 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>VIPавто облачный бортовой журнал</title>
 
-  <!-- Сброс стилей -->
+  <!-- Стили -->
   <link rel="stylesheet" href="assets/css/reset.css" />
-  <!-- Общие стили -->
-  <link rel="stylesheet" href="assets/css/main.css" />
-  <!-- Шрифты и FA -->
+  <link rel="stylesheet" href="assets/css/main.css" /> <!-- Будет обновлен -->
+  
+  <!-- Шрифты и иконки -->
   <link
     href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
     rel="stylesheet"
@@ -20,26 +20,28 @@
   />
 </head>
 <body>
-  <div class="container">
-    <!-- HEADER -->
-<header class="page-header">
-  <div class="page-header__left">
-    <h1 class="app-logo">VIPавто</h1>
-    <p class="app-tagline">облачный бортовой журнал</p>
-  </div>
-  <div id="current-time" class="page-header__center">–:–:–</div>
-  <div class="page-header__right">
-    <span id="current-date">…</span>
-    <label class="theme-switch">
-      <input type="checkbox" id="theme-toggle" />
-      <span class="slider">
-        <i class="fas fa-moon"></i>
-        <i class="fas fa-sun"></i>
-      </span>
-    </label>
-  </div>
-</header>
+  <!-- НОВЫЙ ОБЩИЙ ХЭДЕР (в стиле страницы входа) -->
+  <header class="page-header">
+    <div class="page-header__left">
+       <h1 class="app-logo">VIPавто</h1>
+       <p class="app-tagline">облачный бортовой журнал</p>
+    </div>
+    <div class="page-header__center">
+      <span id="current-date">…</span>
+      <span id="current-time">–:–:–</span>
+    </div>
+    <div class="page-header__right">
+      <label class="theme-switch">
+        <input type="checkbox" id="theme-toggle" />
+        <span class="slider">
+          <i class="fas fa-moon"></i>
+          <i class="fas fa-sun"></i>
+        </span>
+      </label>
+    </div>
+  </header>
 
+  <div class="container">
     <!-- NAV -->
     <nav class="view-switcher">
       <button id="switch-to-log" class="active">
@@ -52,53 +54,15 @@
 
     <!-- MAIN -->
     <main class="app-main">
-      <!-- ЖУРНАЛ -->
-      <section id="log-view" class="active">
-        <!-- сюда вставляется форма и записи через app.js -->
-      </section>
+      <!-- ЖУРНАЛ (содержимое будет генерироваться скриптом) -->
+      <section id="log-view"></section>
 
-      <!-- АНАЛИТИКА -->
-      <section id="analytics-view" class="hidden">
-        <!-- панель управления -->
-        <div class="analytics-controls">
-          <label for="period-select">Период:</label>
-          <select id="period-select">
-            <option value="this_month" selected>Этот месяц</option>
-            <option value="last_month">Прошлый месяц</option>
-            <option value="this_week">Эта неделя</option>
-            <option value="last_week">Прошлая неделя</option>
-            <option value="custom">Свой диапазон</option>
-          </select>
-
-          <button id="export-csv" class="btn-csv">
-            <i class="fas fa-file-csv"></i> Скачать CSV
-          </button>
-
-          <div id="custom-range" class="hidden">
-            <input type="date" id="start-date" /> — 
-            <input type="date" id="end-date" />
-            <button id="apply-range">Применить</button>
-          </div>
-        </div>
-
-        <!-- KPI-карточки -->
-        <div class="kpi-grid">
-          <div class="kpi-card"><h4>Общая выручка</h4><p id="kpi-revenue">0 ₽</p></div>
-          <div class="kpi-card"><h4>Прибыль сервиса</h4><p id="kpi-profit">0 ₽</p></div>
-          <div class="kpi-card"><h4>Выплаты мастерам</h4><p id="kpi-payout">0 ₽</p></div>
-          <div class="kpi-card"><h4>Кол-во работ</h4><p id="kpi-jobs">0</p></div>
-        </div>
-
-        <!-- Графики -->
-        <div class="charts-grid">
-          <div class="chart-container"><canvas id="revenue-chart"></canvas></div>
-          <div class="chart-container"><canvas id="masters-chart"></canvas></div>
-        </div>
-      </section>
+      <!-- АНАЛИТИКА (содержимое будет генерироваться скриптом) -->
+      <section id="analytics-view" style="display: none;"></section>
     </main>
   </div>
 
-  <!-- Модалка выбора услуг -->
+  <!-- Модальное окно (остается без изменений) -->
   <div id="services-modal" class="modal-overlay hidden">
     <div class="modal-window">
       <div class="modal-header">
@@ -113,12 +77,11 @@
     </div>
   </div>
 
-  <!-- Скрипты (ES-модули) -->
+  <!-- Скрипты -->
   <script type="module" src="assets/js/storage.js"></script>
   <script type="module" src="assets/js/utils.js"></script>
   <script type="module" src="assets/js/servicesCatalog.js"></script>
   <script type="module" src="assets/js/app.js"></script>
   <script type="module" src="assets/js/charts.js"></script>
-  <script type="module" src="assets/js/theme.js"></script>
 </body>
 </html>
