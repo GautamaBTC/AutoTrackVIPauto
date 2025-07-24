@@ -1,67 +1,56 @@
 /*───────────────────────────────────────────────────────────────
-  File: assets/css/login.css
-  VIPавто Login — финальные правки: симметрия полей, футер
+  assets/css/login.css — финальные правки для формы логина
 ────────────────────────────────────────────────────────────────*/
 
-/* 0. Reset + статичность */
+/* 1. Переменные (темы) */
+:root {
+  --bg:               #ECEDEE;
+  --form-bg:          rgba(255,255,255,0.4);
+  --input-bg:         rgba(255,255,255,0.5);
+  --border:           rgba(0,0,0,0.1);
+  --text:             #333333;
+  --text-muted:       #666666;
+  --accent:           #399D9C;
+  --accent-light:     #4DBAB3;
+  --shadow:           rgba(0,0,0,0.1);
+  --error-color:      #E74C3C;
+}
+
+html[data-theme="dark"] {
+  --bg:               #121212;
+  --form-bg:          rgba(30,30,30,0.4);
+  --input-bg:         rgba(30,30,30,0.5);
+  --border:           rgba(255,255,255,0.12);
+  --text:             #E0E0E0;
+  --text-muted:       #888888;
+  --accent:           #FFD166;
+  --accent-light:     #FF9F1C;
+  --shadow:           rgba(0,0,0,0.7);
+  --error-color:      #E74C3C;
+}
+
+/* 2. Базовые сбросы */
 *,
 *::before,
 *::after {
   box-sizing: border-box;
-  margin: 0; padding: 0;
 }
 html, body {
+  margin: 0; padding: 0;
   height: 100%;
-  overflow: hidden;
   font-family: 'Inter', sans-serif;
   background: var(--bg);
   color: var(--text);
+  overflow: hidden;
 }
+.hidden { display: none !important; }
 
-/* Убираем синюю подсветку на мобильных при тапе */
-html, a, button, input, label {
-  -webkit-tap-highlight-color: transparent;
-}
-
-/* Убираем outline при фокусе */
-a:focus,
-button:focus,
-input:focus,
-label:focus {
-  outline: none;
-}
-
-/* 1. Темы */
-:root {
-  --bg:              #ECEDEE;
-  --form-bg:         rgba(255,255,255,0.4);
-  --input-bg:        rgba(255,255,255,0.5);
-  --border:          rgba(0,0,0,0.1);
-  --text:            #333333;
-  --text-muted:      #666666;
-  --accent:          #399D9C;
-  --accent-light:    #4DBAB3;
-  --shadow:          rgba(0,0,0,0.1);
-}
-html[data-theme="dark"] {
-  --bg:              #121212;
-  --form-bg:         rgba(30,30,30,0.4);
-  --input-bg:        rgba(30,30,30,0.5);
-  --border:          rgba(255,255,255,0.12);
-  --text:            #E0E0E0;
-  --text-muted:      #888888;
-  --accent:          #FFD166;
-  --accent-light:    #FF9F1C;
-  --shadow:          rgba(0,0,0,0.7);
-}
-
-/* 2. Header */
+/* 3. HEADER */
 .login-header {
   position: sticky; top: 0; left: 0; right: 0;
-  display: flex; align-items: center;
+  display: flex; align-items: center; justify-content: space-between;
   padding: 0.6rem 1rem;
-  background: var(--form-bg);
-  backdrop-filter: blur(6px);
+  background: var(--form-bg); backdrop-filter: blur(6px);
   box-shadow: 0 2px 6px var(--shadow);
   z-index: 10;
 }
@@ -71,107 +60,51 @@ html[data-theme="dark"] {
   flex: 1; text-align: center;
   font-size: 0.85rem; color: var(--text-muted);
 }
-.login-header__left { text-align: left; }
-.login-header__right{ text-align: right; }
-.home-btn {
-  color: var(--text);
-  margin-right: 0.5rem;
-  font-size: 1.1rem;
-}
-#current-time {
-  font-family: 'Orbitron', monospace;
-  font-size: 1.3rem; color: var(--text);
-}
+.login-header__left  { text-align: left; }
+.login-header__right { text-align: right; }
 
-/* 3. Toggle Day/Night */
-.theme-switch {
-  position: relative; display: inline-block;
-  width: 50px; height: 24px;
-  background: var(--border);
-  border-radius: 12px;
-  cursor: pointer;
-}
-.theme-switch input {
-  position: absolute; opacity: 0; width: 0; height: 0;
-}
-.theme-switch .slider {
-  position: absolute; top: 2px; left: 2px;
-  width: 20px; height: 20px;
-  background: var(--accent);
-  border-radius: 50%;
-  transition: transform .3s, background .3s;
-}
-.theme-switch input:checked + .slider {
-  transform: translateX(26px);
-  background: var(--accent-light);
-}
-
-/* 4. Main */
+/* 4. MAIN (центровка) */
 .login-main {
   display: grid; place-items: center;
-  width: 100%; height: calc(100% - 48px);
+  height: calc(100% - 48px);
   background: linear-gradient(135deg, var(--bg), var(--form-bg));
 }
 
-/* 5. Container */
-.login-container {
-  position: relative;
-  width: 100%; max-width: 380px;
-  display: flex; flex-direction: column; align-items: center;
-}
-
-/* 6. Background car */
-.login-bg {
-  position: absolute;
-  top: -120px; left: 50%; transform: translateX(-50%);
-  width: 120px; opacity: 0.1;
-  pointer-events: none;
-}
-.login-bg img {
-  display: block; width: 100%; height: auto;
-}
-
-/* 7. Form (glass) */
+/* 5. Box */
 .login-box {
-  position: relative;
-  background: var(--form-bg);
-  backdrop-filter: blur(8px);
-  padding: 3rem 1.8rem 2rem;
-  border-radius: 14px;
+  background: var(--form-bg); backdrop-filter: blur(8px);
+  padding: 3rem 2rem 2rem;
+  border-radius: 12px;
   border: 1px solid var(--border);
-  box-shadow: 0 12px 32px var(--shadow);
+  box-shadow: 0 8px 24px var(--shadow);
+  width: 100%; max-width: 360px;
   overflow: hidden;
-  width: 100%;
 }
 
-/* 8. Titles */
+/* 6. Title */
 .login-title {
-  text-align: center; color: var(--text);
-  font-size: 2.4rem; font-weight: 700; margin-bottom: 0.3rem;
+  text-align: center; font-size: 2.4rem; font-weight: 700;
+  color: var(--text); margin-bottom: 0.3rem;
 }
 .login-subtitle {
-  text-align: center; color: var(--text-muted);
-  font-size: 1.2rem; margin-bottom: 1.8rem;
+  text-align: center; font-size: 1.2rem;
+  color: var(--text-muted); margin-bottom: 1.8rem;
 }
 
-/* 9. Inputs + icons (flex aligned) */
+/* 7. Form-group и поля */
 .form-group {
   display: flex; align-items: center;
   margin-bottom: 1.4rem;
 }
-.input-fa {
-  flex-shrink: 0;
-  color: var(--text-muted);
-  font-size: 1.2rem;
-  margin-right: 0.75rem;
-}
+.input-fa,
 .toggle-password {
   flex-shrink: 0;
-  color: var(--text-muted);
   font-size: 1.2rem;
-  margin-left: 0.75rem;
+  color: var(--text-muted);
   cursor: pointer;
 }
+.input-fa { margin-right: 0.75rem; }
+.toggle-password { margin-left: 0.75rem; }
 .form-group input {
   flex: 1;
   height: 44px;
@@ -192,21 +125,20 @@ html[data-theme="dark"] {
   box-shadow: 0 0 8px var(--accent);
 }
 
-/* 10. Errors (adjusted for flex) */
+/* 8. Сообщение об ошибке под полем */
 .error-message {
   display: block;
-  margin-top: 4px;
+  margin: 4px 0 8px 2.75rem; /* отступ слева под иконкой */
   font-size: 0.85rem;
   color: var(--error-color);
-  /* убираем абсолют и bottom: */
   position: static;
-  left: auto; bottom: auto;
+  width: calc(100% - 2.75rem);
 }
 
-/* 11. Options */
+/* 9. Options */
 .form-options {
   display: flex; justify-content: space-between; align-items: center;
-  margin-bottom: 1.6rem; font-size: 0.9rem;
+  margin-bottom: 1.8rem; font-size: 0.9rem;
 }
 .checkbox-wrap {
   display: inline-flex; align-items: center; gap: 6px;
@@ -222,13 +154,13 @@ html[data-theme="dark"] {
   color: var(--accent);
 }
 
-/* 12. Button */
+/* 10. Button */
 .btn-login {
   display: flex; align-items: center; justify-content: center;
   gap: 0.6rem; width: 100%; padding: 0.85rem;
   background: linear-gradient(135deg, var(--accent), var(--accent-light));
   border: none; border-radius: 8px;
-  color: #fff; font-size: 1.05rem; font-weight: 600;
+  color: var(--btn-text); font-size: 1.05rem; font-weight: 600;
   cursor: pointer; transition: transform .2s, box-shadow .2s;
 }
 .btn-login:hover {
@@ -239,21 +171,19 @@ html[data-theme="dark"] {
   font-size: 1.2rem;
 }
 
-/* 13. Footer */
+/* 11. Footer */
 .page-footer {
-  margin-top: 1.5rem;
-  text-align: center;
-  font-size: 0.85rem;
-  color: var(--text-muted);
+  text-align: center; margin-top: 1.5rem;
+  font-size: 0.85rem; color: var(--text-muted);
 }
 
-/* 14. Mobile */
+/* 12. Адаптив */
 @media (max-width: 400px) {
+  .login-box {
+    padding: 2.5rem 1.5rem 1.5rem;
+  }
   .login-bg {
     width: 100px; top: -100px;
-  }
-  .login-box {
-    padding: 2.8rem 1.4rem 1.4rem;
   }
   .login-title {
     font-size: 2rem; margin-bottom: 0.2rem;
