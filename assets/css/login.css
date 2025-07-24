@@ -1,13 +1,12 @@
-/*───────────────────────────────────────────────────────────────
-  assets/css/login.css
-  VIPавто — финальный стиль формы логина (исправлен toggle + фон)
-────────────────────────────────────────────────────────────────*/
+/*────────────────────────────────────────────────────────
+  assets/css/login.css — финальный готовый стиль формы
+─────────────────────────────────────────────────────────*/
 
-/* 1. Переменные тем */
+/* 1. Цветовые переменные (Day/Night) */
 :root {
   --bg:               #ECEDEE;
   --form-bg:          rgba(255,255,255,0.4);
-  --input-bg:         rgba(255,255,255,0.6);
+  --input-bg:         rgba(255,255,255,0.5);
   --border:           rgba(0,0,0,0.1);
   --text:             #333333;
   --text-muted:       #666666;
@@ -58,207 +57,180 @@ button {
 
 /* 3. HEADER */
 .login-header {
-  position: sticky;
-  top: 0; left: 0; right: 0;
-  display: flex; align-items: center; justify-content: space-between;
-  padding: 0.6rem 1rem;
-  background: var(--form-bg);
-  backdrop-filter: blur(6px);
-  box-shadow: 0 2px 6px var(--shadow);
-  z-index: 10;
+  position: sticky; top:0; left:0; right:0;
+  display:flex; align-items:center; justify-content:space-between;
+  padding:0.6rem 1rem;
+  background:var(--form-bg); backdrop-filter:blur(6px);
+  box-shadow:0 2px 6px var(--shadow);
+  z-index:10;
 }
 .login-header__left,
 .login-header__center,
 .login-header__right {
-  flex: 1; text-align: center;
-  font-size: 0.85rem;
-  color: var(--text-muted);
+  flex:1; text-align:center;
+  font-size:0.85rem; color:var(--text-muted);
 }
-.login-header__left { text-align: left; }
-.login-header__right { text-align: right; }
-.home-btn {
-  color: var(--text);
-  font-size: 1.1rem;
-  margin-right: 0.5rem;
-}
+.login-header__left { text-align:left; }
+.login-header__right{ text-align:right; }
+.home-btn { font-size:1.1rem; color:var(--text); margin-right:0.5rem; }
 #current-time {
-  font-family: 'Orbitron', monospace;
-  font-size: 1.3rem;
-  color: var(--text);
+  font-family:'Orbitron',monospace;
+  font-size:1.3rem; color:var(--text);
 }
 
 /* 4. Toggle Day/Night */
 .theme-switch {
   position: relative;
-  display: inline-block;
-  width: 50px; height: 24px;
-  background: var(--border);
-  border-radius: 12px;
-  cursor: pointer;
+  width: 50px; height:24px;
+  background:var(--border);
+  border-radius:12px;
+  cursor:pointer;
 }
 .theme-switch input {
-  position: absolute;
-  top: 0; left: 0;
-  width: 100%; height: 100%;
-  opacity: 0; margin: 0;
-  z-index: 2;
+  position:absolute; inset:0;
+  opacity:0; margin:0; width:100%; height:100%;
 }
 .theme-switch .slider {
-  position: absolute;
-  top: 0; left: 0; right: 0; bottom: 0;
-  background: var(--border);
-  border-radius: 12px;
-  transition: background 0.3s;
+  position:absolute; inset:0;
+  background:var(--border);
+  border-radius:12px;
+  transition:background .3s;
 }
 .theme-switch .slider::before {
-  content: "";
-  position: absolute;
-  top: 2px; left: 2px;
-  width: 20px; height: 20px;
-  background: var(--accent);
-  border-radius: 50%;
-  transition: transform 0.3s, background 0.3s;
+  content:"";
+  position:absolute;
+  top:2px; left:2px;
+  width:20px; height:20px;
+  background:var(--accent);
+  border-radius:50%;
+  transition:transform .3s, background .3s;
 }
 .theme-switch input:checked + .slider {
-  background: var(--accent-light);
+  background:var(--accent-light);
 }
 .theme-switch input:checked + .slider::before {
-  transform: translateX(26px);
-  background: var(--accent-light);
+  transform:translateX(26px);
+  background:var(--accent-light);
 }
 
-/* 5. BACKGROUND IMAGE */
+/* 5. Фоновая машинка (правильный путь, убедитесь, что папка jpg) */
 .login-bg {
-  position: absolute;
-  top: -120px; left: 50%;
-  transform: translateX(-50%);
-  width: 120px;
-  opacity: 0.1;
-  pointer-events: none;
+  position:absolute;
+  top:-120px; left:50%; transform:translateX(-50%);
+  width:120px; opacity:0.1;
+  pointer-events:none;
 }
 .login-bg img {
-  display: block;
-  width: 100%;
-  height: auto;
+  display:block; width:100%; height:auto;
 }
 
-/* 6. MAIN & FORM */
+/* 6. MAIN и форма */
 .login-main {
-  display: grid; place-items: center;
-  height: calc(100% - 48px);
-  background: linear-gradient(135deg, var(--bg), var(--form-bg));
+  display:grid; place-items:center;
+  height:calc(100% - 48px);
+  background:linear-gradient(135deg, var(--bg), var(--form-bg));
 }
 .login-box {
-  position: relative;
-  background: var(--form-bg);
-  backdrop-filter: blur(8px);
-  width: 100%; max-width: 360px;
-  padding: 3rem 2rem 2rem;
-  border: 1px solid var(--border);
-  border-radius: 12px;
-  box-shadow: 0 8px 24px var(--shadow);
-  overflow: hidden;
+  position:relative;
+  width:100%; max-width:360px;
+  background:var(--form-bg); backdrop-filter:blur(8px);
+  padding:3rem 2rem 2rem;
+  border:1px solid var(--border);
+  border-radius:12px;
+  box-shadow:0 8px 24px var(--shadow);
+  overflow:hidden;
 }
 
-/* 7. TITLE & SUBTITLE */
+/* 7. Заголовки */
 .login-title {
-  text-align: center;
-  font-size: 2.4rem; font-weight: 700;
-  margin-bottom: 0.3rem;
-  color: var(--text);
+  text-align:center; font-size:2.4rem; font-weight:700;
+  margin-bottom:0.3rem; color:var(--text);
 }
 .login-subtitle {
-  text-align: center;
-  font-size: 1.2rem;
-  margin-bottom: 1.8rem;
-  color: var(--text-muted);
+  text-align:center; font-size:1.2rem;
+  margin-bottom:1.8rem; color:var(--text-muted);
 }
 
-/* 8. Fieldsets: Inputs & Icons */
+/* 8. Поля ввода и иконки */
 .form-group {
-  display: flex; align-items: center;
-  margin-bottom: 1.4rem;
+  display:flex; align-items:center;
+  margin-bottom:1.4rem;
 }
 .input-fa,
 .toggle-password {
-  flex-shrink: 0;
-  font-size: 1.2rem;
-  color: var(--text-muted);
+  flex-shrink:0; font-size:1.2rem;
+  color:var(--text-muted);
 }
-.input-fa { margin-right: 0.75rem; }
-.toggle-password { margin-left: 0.75rem; cursor: pointer; }
+.input-fa { margin-right:0.75rem; }
+.toggle-password { margin-left:0.75rem; cursor:pointer; }
 .form-group input {
-  flex: 1;
-  height: 44px;
-  padding: 0 0.75rem;
-  font-size: 1rem;
-  background: var(--input-bg);
-  border: 1px solid var(--border);
-  border-radius: 8px;
-  color: var(--text);
-  transition: border-color 0.2s, box-shadow 0.2s;
+  flex:1; height:44px;
+  padding:0 0.75rem;
+  font-size:1rem; background:var(--input-bg);
+  border:1px solid var(--border);
+  border-radius:8px;
+  color:var(--text);
+  transition:border-color .2s, box-shadow .2s;
 }
 .form-group input::placeholder {
-  color: var(--text-muted);
+  color:var(--text-muted);
 }
 .form-group input:focus {
-  border-color: var(--accent);
-  box-shadow: 0 0 8px var(--accent);
+  border-color:var(--accent);
+  box-shadow:0 0 8px var(--accent);
+  outline:none;
 }
 
-/* 9. Error Message */
+/* 9. Сообщение об ошибке */
 .error-message {
-  display: block;
-  margin: 4px 0 8px 2.75rem; /* под иконкой */
-  font-size: 0.85rem;
-  color: var(--error-color);
+  display:block;
+  margin:4px 0 8px 2.75rem; /* под иконкой */
+  font-size:0.85rem; color:var(--error-color);
 }
 
-/* 10. Options & Button */
+/* 10. Опции и кнопка */
 .form-options {
-  display: flex; justify-content: space-between; align-items: center;
-  margin-bottom: 1.8rem; font-size: 0.9rem;
+  display:flex; justify-content:space-between; align-items:center;
+  margin-bottom:1.8rem; font-size:0.9rem;
 }
 .checkbox-wrap {
-  display: inline-flex; align-items: center; gap: 6px;
-  color: var(--text); font-weight: 500;
+  display:inline-flex; align-items:center; gap:6px;
+  color:var(--text); font-weight:500;
 }
 .checkbox-wrap input {
-  width: 16px; height: 16px; accent-color: var(--accent);
+  width:16px; height:16px; accent-color:var(--accent);
 }
 .forgot-link {
-  color: var(--text-muted);
-  transition: color 0.2s;
+  color:var(--text-muted); transition:color .2s;
 }
 .forgot-link:hover {
-  color: var(--accent);
+  color:var(--accent);
 }
 .btn-login {
-  display: flex; align-items: center; justify-content: center; gap: 0.6rem;
-  width: 100%; padding: 0.85rem; font-size: 1.05rem; font-weight: 600;
-  color: var(--btn-text);
-  background: linear-gradient(135deg, var(--accent), var(--accent-light));
-  border: none; border-radius: 8px;
-  cursor: pointer; transition: transform 0.2s, box-shadow 0.2s;
+  display:flex; align-items:center; justify-content:center; gap:0.6rem;
+  width:100%; padding:0.85rem; font-size:1.05rem; font-weight:600;
+  color:var(--btn-text);
+  background:linear-gradient(135deg, var(--accent), var(--accent-light));
+  border:none; border-radius:8px;
+  cursor:pointer; transition:transform .2s, box-shadow .2s;
 }
 .btn-login:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 6px 16px var(--shadow);
+  transform:translateY(-2px);
+  box-shadow:0 6px 16px var(--shadow);
 }
-.btn-fa { font-size: 1.2rem; }
+.btn-fa { font-size:1.2rem; }
 
 /* 11. Footer */
 .page-footer {
-  text-align: center; margin-top: 1.5rem; font-size: 0.85rem; color: var(--text-muted);
+  text-align:center; margin-top:1.5rem; font-size:0.85rem; color:var(--text-muted);
 }
 
 /* 12. Adaptive */
-@media (max-width: 400px) {
-  .login-box { padding: 2.5rem 1.5rem 1.5rem; }
-  .login-title { font-size: 2rem; margin-bottom: 0.2rem; }
-  .login-subtitle { font-size: 1rem; margin-bottom: 1.5rem; }
-  .form-group input { height: 40px; }
-  .btn-login { padding: 0.75rem; }
-  .theme-switch { width: 44px; height: 22px; }
-  .theme-switch .slider::before { top: 2px; left: 2px; }
+@media (max-width:400px) {
+  .login-box { padding:2.5rem 1.5rem 1.5rem; }
+  .login-title { font-size:2rem; margin-bottom:0.2rem; }
+  .login-subtitle { font-size:1rem; margin-bottom:1.5rem; }
+  .form-group input { height:40px; }
+  .btn-login { padding:0.75rem; }
+  .login-bg { width:100px; top:-100px; }
 }
