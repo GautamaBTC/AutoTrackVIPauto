@@ -1,13 +1,13 @@
 /*───────────────────────────────────────────────────────────────
-  File: assets/css/login.css
-  VIPавто Login — исправленный стиль переключателя, ошибок и полей
+  assets/css/login.css
+  VIPавто — финальный стиль формы логина (исправлен toggle + фон)
 ────────────────────────────────────────────────────────────────*/
 
-/* 1. Цветовые переменные (Day / Night) */
+/* 1. Переменные тем */
 :root {
   --bg:               #ECEDEE;
   --form-bg:          rgba(255,255,255,0.4);
-  --input-bg:         rgba(255,255,255,0.5);
+  --input-bg:         rgba(255,255,255,0.6);
   --border:           rgba(0,0,0,0.1);
   --text:             #333333;
   --text-muted:       #666666;
@@ -40,16 +40,26 @@ html[data-theme="dark"] {
 }
 html, body {
   height: 100%;
+  overflow: hidden;
   font-family: 'Inter', sans-serif;
   background: var(--bg);
   color: var(--text);
-  overflow: hidden;
 }
 .hidden { display: none !important; }
+a, button, input, label {
+  outline: none;
+  -webkit-tap-highlight-color: transparent;
+}
+button {
+  background: none;
+  border: none;
+  cursor: pointer;
+}
 
 /* 3. HEADER */
 .login-header {
-  position: sticky; top: 0; left: 0; right: 0;
+  position: sticky;
+  top: 0; left: 0; right: 0;
   display: flex; align-items: center; justify-content: space-between;
   padding: 0.6rem 1rem;
   background: var(--form-bg);
@@ -61,32 +71,47 @@ html, body {
 .login-header__center,
 .login-header__right {
   flex: 1; text-align: center;
-  font-size: 0.85rem; color: var(--text-muted);
+  font-size: 0.85rem;
+  color: var(--text-muted);
 }
 .login-header__left { text-align: left; }
-.login-header__right{ text-align: right; }
-.home-btn { font-size: 1.1rem; color: var(--text); margin-right: 0.5rem; }
+.login-header__right { text-align: right; }
+.home-btn {
+  color: var(--text);
+  font-size: 1.1rem;
+  margin-right: 0.5rem;
+}
 #current-time {
   font-family: 'Orbitron', monospace;
   font-size: 1.3rem;
   color: var(--text);
 }
 
-/* 4. Toggle switch (simplified) */
+/* 4. Toggle Day/Night */
 .theme-switch {
   position: relative;
   display: inline-block;
-  width: 48px; height: 24px;
+  width: 50px; height: 24px;
   background: var(--border);
   border-radius: 12px;
   cursor: pointer;
 }
 .theme-switch input {
-  position: absolute; inset: 0;
+  position: absolute;
+  top: 0; left: 0;
   width: 100%; height: 100%;
-  opacity: 0; margin: 0; z-index: 2;
+  opacity: 0; margin: 0;
+  z-index: 2;
 }
 .theme-switch .slider {
+  position: absolute;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: var(--border);
+  border-radius: 12px;
+  transition: background 0.3s;
+}
+.theme-switch .slider::before {
+  content: "";
   position: absolute;
   top: 2px; left: 2px;
   width: 20px; height: 20px;
@@ -95,45 +120,61 @@ html, body {
   transition: transform 0.3s, background 0.3s;
 }
 .theme-switch input:checked + .slider {
-  transform: translateX(24px);
+  background: var(--accent-light);
+}
+.theme-switch input:checked + .slider::before {
+  transform: translateX(26px);
   background: var(--accent-light);
 }
 
-/* 5. MAIN */
+/* 5. BACKGROUND IMAGE */
+.login-bg {
+  position: absolute;
+  top: -120px; left: 50%;
+  transform: translateX(-50%);
+  width: 120px;
+  opacity: 0.1;
+  pointer-events: none;
+}
+.login-bg img {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+/* 6. MAIN & FORM */
 .login-main {
   display: grid; place-items: center;
   height: calc(100% - 48px);
   background: linear-gradient(135deg, var(--bg), var(--form-bg));
 }
-
-/* 6. BOX */
 .login-box {
   position: relative;
-  width: 100%; max-width: 360px;
-  padding: 3rem 2rem 2rem;
   background: var(--form-bg);
   backdrop-filter: blur(8px);
+  width: 100%; max-width: 360px;
+  padding: 3rem 2rem 2rem;
   border: 1px solid var(--border);
   border-radius: 12px;
   box-shadow: 0 8px 24px var(--shadow);
   overflow: hidden;
 }
 
-/* 7. TITLE */
+/* 7. TITLE & SUBTITLE */
 .login-title {
   text-align: center;
   font-size: 2.4rem; font-weight: 700;
-  color: var(--text);
   margin-bottom: 0.3rem;
+  color: var(--text);
 }
 .login-subtitle {
   text-align: center;
   font-size: 1.2rem;
-  color: var(--text-muted);
   margin-bottom: 1.8rem;
+  color: var(--text-muted);
 }
 
-/* 8. INPUTS & ICONS */
+/* 8. Fieldsets: Inputs & Icons */
 .form-group {
   display: flex; align-items: center;
   margin-bottom: 1.4rem;
@@ -163,10 +204,9 @@ html, body {
 .form-group input:focus {
   border-color: var(--accent);
   box-shadow: 0 0 8px var(--accent);
-  outline: none;
 }
 
-/* 9. ERROR MESSAGE */
+/* 9. Error Message */
 .error-message {
   display: block;
   margin: 4px 0 8px 2.75rem; /* под иконкой */
@@ -174,7 +214,7 @@ html, body {
   color: var(--error-color);
 }
 
-/* 10. OPTIONS & BUTTON */
+/* 10. Options & Button */
 .form-options {
   display: flex; justify-content: space-between; align-items: center;
   margin-bottom: 1.8rem; font-size: 0.9rem;
@@ -194,9 +234,8 @@ html, body {
   color: var(--accent);
 }
 .btn-login {
-  display: flex; align-items: center; justify-content: center;
-  gap: 0.6rem; width: 100%; padding: 0.85rem;
-  font-size: 1.05rem; font-weight: 600;
+  display: flex; align-items: center; justify-content: center; gap: 0.6rem;
+  width: 100%; padding: 0.85rem; font-size: 1.05rem; font-weight: 600;
   color: var(--btn-text);
   background: linear-gradient(135deg, var(--accent), var(--accent-light));
   border: none; border-radius: 8px;
@@ -208,17 +247,18 @@ html, body {
 }
 .btn-fa { font-size: 1.2rem; }
 
-/* 11. FOOTER */
+/* 11. Footer */
 .page-footer {
-  text-align: center; margin-top: 1.5rem;
-  font-size: 0.85rem; color: var(--text-muted);
+  text-align: center; margin-top: 1.5rem; font-size: 0.85rem; color: var(--text-muted);
 }
 
-/* 12. ADAPTIVE */
+/* 12. Adaptive */
 @media (max-width: 400px) {
   .login-box { padding: 2.5rem 1.5rem 1.5rem; }
   .login-title { font-size: 2rem; margin-bottom: 0.2rem; }
   .login-subtitle { font-size: 1rem; margin-bottom: 1.5rem; }
   .form-group input { height: 40px; }
   .btn-login { padding: 0.75rem; }
+  .theme-switch { width: 44px; height: 22px; }
+  .theme-switch .slider::before { top: 2px; left: 2px; }
 }
