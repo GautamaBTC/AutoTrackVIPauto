@@ -1,9 +1,9 @@
 /*───────────────────────────────────────────────────────────────
   File: assets/css/main.css
-  VIPавто 2.0 — Полностью обновленный стиль дашборда (by AI)
+  Новый стиль для дашборда (в духе страницы входа)
 ────────────────────────────────────────────────────────────────*/
 
-/* 1) Цветовые темы (синхронизированы с login.css) */
+/* 1. Цвета (синхронизированы с login.css) */
 :root {
   --bg:               #ECEDEE;
   --panel-bg:         rgba(255,255,255,0.4);
@@ -14,7 +14,6 @@
   --accent:           #399D9C;
   --accent-light:     #4DBAB3;
   --shadow:           rgba(0,0,0,0.1);
-  --error-color:      #E74C3C;
   --btn-text:         #fff;
 }
 html[data-theme="dark"] {
@@ -27,11 +26,10 @@ html[data-theme="dark"] {
   --accent:           #FFD166;
   --accent-light:     #FF9F1C;
   --shadow:           rgba(0,0,0,0.7);
-  --error-color:      #E74C3C;
   --btn-text:         #fff;
 }
 
-/* 2) Базовые стили */
+/* 2. Базовые стили */
 body {
   font-family: 'Inter', sans-serif;
   background: var(--bg);
@@ -39,439 +37,144 @@ body {
   transition: background 0.3s, color 0.3s;
 }
 .hidden { display: none !important; }
-.active { display: block; } /* Более общее правило для секций */
-#analytics-view { display: none; } /* Скрываем по умолчанию */
-#analytics-view.active { display: block; } /* Показываем при активации */
 
-/* 3) Контейнер и НОВЫЙ ХЭДЕР */
-.container {
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 20px;
-}
+/* 3. ОБЩИЙ ХЭДЕР */
 .page-header {
-  position: sticky;
-  top: 10px; /* небольшой отступ сверху */
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 0.6rem 1.5rem;
-  background: var(--panel-bg);
-  backdrop-filter: blur(8px);
-  border: 1px solid var(--border);
-  border-radius: 12px;
-  margin-bottom: 2rem;
-  box-shadow: 0 8px 24px var(--shadow);
-  z-index: 100;
+  position: sticky; top: 10px;
+  max-width: 1200px; margin: 0 auto 2rem;
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 0.6rem 1rem;
+  background: var(--panel-bg); backdrop-filter: blur(8px);
+  border-radius: 12px; box-shadow: 0 4px 12px var(--shadow);
+  z-index: 10;
 }
 .page-header__left,
 .page-header__center,
 .page-header__right {
-  flex: 1;
-  display: flex;
-  align-items: center;
+  flex: 1; display: flex; align-items: center; gap: 1rem;
+  font-size: 1rem; color: var(--text-muted);
 }
-.page-header__left {
-  justify-content: flex-start;
-  gap: 1rem;
-}
-.page-header__center {
-  justify-content: center;
-}
-.page-header__right {
-  justify-content: flex-end;
-  gap: 1rem;
-}
-.app-logo { font-size: 1.8rem; font-weight: 700; margin: 0; color: var(--text); }
+.page-header__left { justify-content: flex-start; }
+.page-header__center { justify-content: center; }
+.page-header__right { justify-content: flex-end; }
+#current-time { font-size: 1.3rem; color: var(--text); }
+.app-logo { font-size: 1.5rem; font-weight: 700; color: var(--text); margin: 0; }
 .app-tagline { font-size: 0.9rem; color: var(--text-muted); margin: 0; }
-#current-time { font-size: 1.5rem; font-weight: 500; color: var(--text); }
-#current-date { font-size: 1rem; color: var(--text-muted); }
 
-hr {
-  border: none;
-  border-top: 1px solid var(--border);
-  margin: 2rem 0;
-}
-
-/* 4) НОВЫЙ ПЕРЕКЛЮЧАТЕЛЬ ТЕМЫ */
+/* 4. ОБЩИЙ ПЕРЕКЛЮЧАТЕЛЬ ТЕМЫ */
 .theme-switch {
-  position: relative;
-  display: inline-block;
-  width: 60px;
-  height: 32px;
-  cursor: pointer;
+  position: relative; display: inline-block;
+  width: 60px; height: 32px; cursor: pointer;
 }
-.theme-switch input {
-  opacity: 0;
-  width: 0;
-  height: 0;
-}
+.theme-switch input { opacity: 0; width: 0; height: 0; }
 .slider {
-  position: absolute;
-  inset: 0;
-  background-color: var(--input-bg);
-  border-radius: 32px;
-  border: 1px solid var(--border);
+  position: absolute; inset: 0; background-color: var(--input-bg);
+  border-radius: 32px; border: 1px solid var(--border);
   transition: background-color .4s;
 }
 .slider:before {
-  content: "";
-  position: absolute;
-  height: 24px;
-  width: 24px;
-  left: 3px;
-  bottom: 3px;
-  background-color: var(--accent);
-  border-radius: 50%;
-  transition: .4s;
+  content: ""; position: absolute; height: 24px; width: 24px;
+  left: 3px; bottom: 3px; background-color: var(--accent);
+  border-radius: 50%; transition: .4s;
 }
 .slider .fa-moon, .slider .fa-sun {
-  position: absolute;
-  top: 50%;
-  transform: translateY(-50%);
-  color: var(--text-muted);
-  font-size: 14px;
-  transition: opacity .4s;
+  position: absolute; top: 50%; transform: translateY(-50%);
+  color: var(--text-muted); font-size: 14px; transition: opacity .4s;
 }
 .slider .fa-moon { right: 8px; opacity: 1; }
 .slider .fa-sun { left: 8px; opacity: 0; }
-input:checked + .slider:before {
-  transform: translateX(28px);
-}
+input:checked + .slider:before { transform: translateX(28px); }
 input:checked + .slider .fa-moon { opacity: 0; }
 input:checked + .slider .fa-sun { opacity: 1; }
-html[data-theme="dark"] input:checked + .slider:before {
-   background-color: var(--accent-light);
-}
+html[data-theme="dark"] input:checked + .slider:before { background-color: var(--accent-light); }
 
-/* 5) Переключатель Журнал/Аналитика */
+/* 5. Основной контейнер */
+.container { max-width: 1200px; margin: 0 auto; padding: 0 20px 20px; }
+hr { border: none; border-top: 1px solid var(--border); margin: 2rem 0; }
+
+/* 6. Навигация Журнал/Аналитика */
 .view-switcher {
-  display: flex;
-  justify-content: center;
-  gap: 10px;
+  display: flex; justify-content: center; gap: 10px;
   margin-bottom: 2rem;
 }
 .view-switcher button {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  padding: 10px 20px;
-  font-size: 1rem;
-  font-weight: 500;
-  color: var(--text);
-  background: transparent;
-  border: 1px solid var(--border);
-  border-radius: 8px;
-  cursor: pointer;
-  transition: all 0.2s ease;
-}
-.view-switcher button:hover:not(.active) {
-  background: var(--panel-bg);
-  border-color: var(--accent);
-  color: var(--accent);
+  display: inline-flex; align-items: center; gap: 8px;
+  padding: 10px 20px; font-size: 1rem; font-weight: 500;
+  color: var(--text); background: var(--input-bg);
+  border: 1px solid var(--border); border-radius: 8px;
+  cursor: pointer; transition: all 0.2s ease;
 }
 .view-switcher button.active {
-  background: var(--accent);
   color: var(--btn-text);
-  border-color: var(--accent);
+  background: linear-gradient(135deg, var(--accent), var(--accent-light));
+  border-color: transparent;
   box-shadow: 0 4px 12px rgba(0,0,0,0.2);
 }
 
-/* 6) Форма добавления/редактирования и Поиск */
-.entry-form, .log-search {
-  background: var(--panel-bg);
-  backdrop-filter: blur(8px);
-  padding: 1.5rem;
-  border: 1px solid var(--border);
-  border-radius: 12px;
-  margin-bottom: 2rem;
+/* 7. Общие стили для блоков (форма, карточки, поиск) */
+.entry-form, .log-search, .analytics-controls, .kpi-card, .chart-container, .accordion {
+  background: var(--form-bg); backdrop-filter: blur(8px);
+  padding: 1.5rem; border: 1px solid var(--border);
+  border-radius: 12px; margin-bottom: 2rem;
   box-shadow: 0 8px 24px var(--shadow);
 }
-.entry-form h2, #log-view h2 {
-  text-align: center;
-  font-size: 1.5rem;
-  font-weight: 600;
-  margin-top: 0;
-  margin-bottom: 1.5rem;
-  border-bottom: 1px solid var(--border);
-  padding-bottom: 1rem;
+
+/* 8. Форма и поля ввода */
+.entry-form h2, #log-view h2, #analytics-view h2 {
+  text-align: center; font-size: 1.5rem; font-weight: 600;
+  margin-top: 0; margin-bottom: 1.5rem;
 }
-.form-row {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-  gap: 1rem;
-  margin-bottom: 1rem;
-}
-.form-row label {
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
-  font-weight: 500;
-}
-.entry-form input, .entry-form select, .log-search input, .analytics-controls select, .analytics-controls input[type="date"] {
-  width: 100%;
-  padding: 10px 12px;
-  font-size: 1rem;
-  background: var(--input-bg);
-  border: 1px solid var(--border);
-  border-radius: 8px;
-  color: var(--text);
-  box-sizing: border-box;
+.form-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-bottom: 1rem; }
+.form-row label { display: flex; flex-direction: column; gap: 0.5rem; font-weight: 500; }
+input, select, .service-field {
+  width: 100%; padding: 12px; font-size: 1rem;
+  background: var(--input-bg); border: 1px solid var(--border);
+  border-radius: 8px; color: var(--text); box-sizing: border-box;
   transition: border-color .2s, box-shadow .2s;
 }
-.entry-form input:focus, .entry-form select:focus, .log-search input:focus, .analytics-controls select:focus, .analytics-controls input:focus {
-  outline: none;
-  border-color: var(--accent);
+input:focus, select:focus {
+  outline: none; border-color: var(--accent);
   box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 30%, transparent);
 }
-.service-field {
-  padding: 10px 12px;
-  background: var(--input-bg);
-  border: 1px solid var(--border);
-  border-radius: 8px;
-  cursor: pointer;
-  min-height: 42px;
-  color: var(--text-muted);
-  box-sizing: border-box;
-}
-.form-actions {
-  display: flex;
-  gap: 1rem;
-  margin-top: 1.5rem;
-}
+.service-field { cursor: pointer; min-height: 48px; color: var(--text-muted); }
+.form-actions { display: flex; gap: 1rem; margin-top: 1.5rem; }
 .form-actions button, .analytics-controls button {
-  flex-grow: 1;
-  padding: 0.85rem;
-  font-size: 1.05rem;
-  font-weight: 600;
-  border-radius: 8px;
-  cursor: pointer;
-  border: none;
-  transition: transform .2s, box-shadow .2s, background .2s;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
+  flex-grow: 1; padding: 1rem; font-size: 1.1rem; font-weight: 600;
+  border-radius: 8px; cursor: pointer; border: none;
+  transition: transform .2s, box-shadow .2s;
+  display: inline-flex; align-items: center; justify-content: center; gap: 8px;
 }
-#btn-submit, #apply-range {
+#btn-submit, #apply-range, #service-confirm {
   color: var(--btn-text);
   background: linear-gradient(135deg, var(--accent), var(--accent-light));
 }
-#btn-submit:hover, #apply-range:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 6px 16px var(--shadow);
-}
-#btn-cancel {
-  background: var(--input-bg);
-  color: var(--text-muted);
-  border: 1px solid var(--border);
-}
-#btn-cancel:hover {
-  border-color: var(--text-muted);
-}
-.analytics-controls button {
-  flex-grow: 0;
-  padding: 10px 14px;
-}
+#btn-cancel, #service-cancel { background: var(--input-bg); color: var(--text-muted); }
 
-/* 7) Список записей (Аккордеон) */
-#summary-block {
-  text-align: right;
-  font-size: 1.1rem;
-  margin: -1rem 0 2rem 0;
-  padding: 0 1rem;
-  color: var(--text-muted);
-}
+/* 9. Аккордеон */
+#summary-block { text-align: right; font-size: 1.1rem; margin: -1rem 0 2rem 0; padding: 0 1rem; color: var(--text-muted); }
 #summary-block p { margin: 0.2rem 0; }
 #summary-block strong { color: var(--accent); font-weight: 600; }
+.accordion-header { padding: 1rem 0; cursor: pointer; display: flex; justify-content: space-between; align-items: center; }
+.accordion-header h3 { font-size: 1.2rem; font-weight: 600; margin: 0; }
+.accordion-body { max-height: 0; overflow-y: hidden; transition: max-height 0.4s ease-in-out, padding 0.4s ease-in-out; }
+.accordion.open .accordion-body { max-height: 1000px; padding: 1rem 0; }
+.accordion table { width: 100%; border-collapse: collapse; }
+.accordion th, .accordion td { padding: 0.75rem; text-align: left; border-bottom: 1px solid var(--border); }
+.accordion tr:last-child td { border-bottom: none; }
+.accordion td:last-child { text-align: right; }
+.accordion .btn-edit, .accordion .btn-delete { color: var(--text-muted); }
 
-.accordion {
-  background: color-mix(in srgb, var(--panel-bg) 50%, transparent);
-  backdrop-filter: blur(8px);
-  border: 1px solid var(--border);
-  border-radius: 12px;
-  margin-bottom: 1rem;
-  overflow: hidden;
-  transition: all 0.3s ease;
-}
-.accordion.open {
-  box-shadow: 0 8px 24px var(--shadow);
-  background: var(--panel-bg);
-}
-.accordion-header {
-  padding: 1rem 1.5rem;
-  cursor: pointer;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-.accordion-header h3 {
-  font-size: 1.2rem;
-  font-weight: 600;
-  margin: 0;
-}
-.accordion-body {
-  max-height: 0;
-  overflow: hidden;
-  transition: max-height 0.4s ease-in-out;
-}
-.accordion.open .accordion-body {
-  max-height: 1000px; /* Достаточно большое значение */
-}
-.accordion table {
-  width: 100%;
-  border-collapse: collapse;
-}
-.accordion th, .accordion td {
-  padding: 0.75rem 1.5rem;
-  text-align: left;
-  border-top: 1px solid var(--border);
-}
-.accordion td:last-child {
-  text-align: right;
-}
-.accordion .btn-edit, .accordion .btn-delete {
-  background: transparent;
-  border: none;
-  color: var(--text-muted);
-  font-size: 1.1rem;
-  cursor: pointer;
-  padding: 5px;
-}
-.accordion .btn-edit:hover { color: var(--accent); }
-.accordion .btn-delete:hover { color: var(--error-color); }
+/* 10. Аналитика */
+.kpi-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1.5rem; }
+.kpi-card h4 { margin: 0 0 0.5rem; font-size: 1rem; color: var(--text-muted); font-weight: 500; }
+.kpi-card p { margin: 0; font-size: 2.2rem; font-weight: 700; color: var(--accent); }
+.charts-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; }
 
-/* 8) Аналитика: KPI и Графики */
-.analytics-controls, .kpi-grid, .charts-grid {
-  margin-bottom: 2rem;
-}
-.kpi-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-  gap: 1.5rem;
-}
-.kpi-card, .chart-container, .analytics-controls {
-  background: var(--panel-bg);
-  backdrop-filter: blur(8px);
-  padding: 1.5rem;
-  border: 1px solid var(--border);
-  border-radius: 12px;
-  box-shadow: 0 8px 24px var(--shadow);
-}
-.analytics-controls {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 1rem;
-}
-.kpi-card h4 {
-  margin: 0 0 0.5rem;
-  font-size: 1rem;
-  color: var(--text-muted);
-  font-weight: 500;
-}
-.kpi-card p {
-  margin: 0;
-  font-size: 2.2rem;
-  font-weight: 700;
-  color: var(--accent);
-}
-.charts-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 1.5rem;
-}
-
-/* 9) Модальное окно */
-.modal-overlay {
-  position: fixed;
-  inset: 0;
-  background: rgba(0,0,0,0.5);
-  backdrop-filter: blur(4px);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 1000;
-}
-.modal-window {
-  background: var(--panel-bg);
-  width: 90%;
-  max-width: 480px;
-  border-radius: 12px;
-  border: 1px solid var(--border);
-  box-shadow: 0 8px 32px var(--shadow);
-  overflow: hidden;
-  display: flex;
-  flex-direction: column;
-}
-.modal-header, .modal-footer {
-  padding: 1rem 1.5rem;
-  flex-shrink: 0;
-}
-.modal-header {
-  border-bottom: 1px solid var(--border);
-}
-.modal-header h3 {
-  margin: 0 0 0.75rem;
-}
-.modal-body {
-  padding: 1rem 1.5rem;
-  overflow-y: auto;
-  max-height: 60vh;
-}
-.modal-footer {
-  border-top: 1px solid var(--border);
-  display: flex;
-  justify-content: flex-end;
-  gap: 1rem;
-}
-.modal-footer button {
-  padding: 0.75rem 1.25rem;
-  font-size: 1rem;
-}
-#service-confirm {
-  color: var(--btn-text);
-  background: var(--accent);
-}
-#service-cancel {
-  background: var(--input-bg);
-  color: var(--text-muted);
-  border: 1px solid var(--border);
-}
-
-/* 10) Адаптивность */
-@media (max-width: 992px) {
-  .charts-grid {
-    grid-template-columns: 1fr;
-  }
-}
-@media (max-width: 768px) {
-  .container {
-    padding: 10px;
-  }
-  .page-header {
-    flex-direction: column;
-    padding: 0.75rem;
-    gap: 0.75rem;
-    position: static;
-  }
-  .page-header__left {
-    width: 100%;
-    order: 1;
-  }
-  .page-header__center {
-    width: 100%;
-    order: 3;
-    font-size: 1.2rem;
-  }
-  .page-header__right {
-    width: 100%;
-    order: 2;
-  }
-  .app-logo { font-size: 1.5rem; }
-  .view-switcher button { padding: 8px 12px; font-size: 0.9rem; }
-  .entry-form, .kpi-card, .chart-container, .analytics-controls { padding: 1rem; }
-  .accordion-header { padding: 0.75rem 1rem; }
-  .accordion th, .accordion td { padding: 0.75rem 1rem; }
-  .accordion table { font-size: 0.9rem; }
-}
+/* 11. Модальное окно */
+.modal-overlay { /* ... */ }
+.modal-window { background: var(--bg); border: 1px solid var(--border); max-width: 500px; }
+.modal-header, .modal-footer { padding: 1.5rem; }
+.modal-body { padding: 0 1.5rem; }
+.service-category h4 { margin: 1rem 0 0.5rem; }
+.service-item { display: flex; align-items: center; gap: 8px; padding: 8px 0; }
+.service-item input { width: 18px; height: 18px; accent-color: var(--accent); }
