@@ -1,11 +1,9 @@
 /*───────────────────────────────────────────────────────────────
   File: assets/css/login.css
-  Готовый финальный стиль формы входа VIPавто
+  VIPавто Login — исправленный стиль переключателя, ошибок и полей
 ────────────────────────────────────────────────────────────────*/
 
-/*----------------------------------------
-  1. Цветовые переменные (Day & Night)
------------------------------------------*/
+/* 1. Цветовые переменные (Day / Night) */
 :root {
   --bg:               #ECEDEE;
   --form-bg:          rgba(255,255,255,0.4);
@@ -33,9 +31,7 @@ html[data-theme="dark"] {
   --btn-text:         #fff;
 }
 
-/*----------------------------------------
-  2. Сброс и базовые стили
------------------------------------------*/
+/* 2. Сброс */
 *,
 *::before,
 *::after {
@@ -44,30 +40,20 @@ html[data-theme="dark"] {
 }
 html, body {
   height: 100%;
-  overflow: hidden;
   font-family: 'Inter', sans-serif;
   background: var(--bg);
   color: var(--text);
+  overflow: hidden;
 }
 .hidden { display: none !important; }
-a, button, input, label {
-  outline: none;
-  -webkit-tap-highlight-color: transparent;
-}
-button { background: none; border: none; cursor: pointer; }
 
-/*----------------------------------------
-  3. Header (date/time/toggle)
------------------------------------------*/
+/* 3. HEADER */
 .login-header {
-  position: sticky;
-  top: 0; left: 0; right: 0;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
+  position: sticky; top: 0; left: 0; right: 0;
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 0.6rem 1rem;
   background: var(--form-bg);
   backdrop-filter: blur(6px);
-  padding: 0.6rem 1rem;
   box-shadow: 0 2px 6px var(--shadow);
   z-index: 10;
 }
@@ -79,28 +65,25 @@ button { background: none; border: none; cursor: pointer; }
 }
 .login-header__left { text-align: left; }
 .login-header__right{ text-align: right; }
-
-/* Home icon */
 .home-btn { font-size: 1.1rem; color: var(--text); margin-right: 0.5rem; }
-
-/* Time */
 #current-time {
   font-family: 'Orbitron', monospace;
-  font-size: 1.3rem; color: var(--text);
+  font-size: 1.3rem;
+  color: var(--text);
 }
 
-/*----------------------------------------
-  4. Toggle switch (moon/sun)
------------------------------------------*/
+/* 4. Toggle switch (simplified) */
 .theme-switch {
   position: relative;
-  width: 50px; height: 24px;
+  display: inline-block;
+  width: 48px; height: 24px;
   background: var(--border);
   border-radius: 12px;
   cursor: pointer;
 }
 .theme-switch input {
   position: absolute; inset: 0;
+  width: 100%; height: 100%;
   opacity: 0; margin: 0; z-index: 2;
 }
 .theme-switch .slider {
@@ -111,47 +94,32 @@ button { background: none; border: none; cursor: pointer; }
   border-radius: 50%;
   transition: transform 0.3s, background 0.3s;
 }
-.theme-switch .slider::before {
-  content: "\f186"; /* FontAwesome moon */
-  font-family: "Font Awesome 5 Free";
-  font-weight: 900;
-  font-size: 0.8rem;
-  color: #fff;
-  display: block;
-  text-align: center;
-  line-height: 20px;
-}
 .theme-switch input:checked + .slider {
-  transform: translateX(26px);
+  transform: translateX(24px);
   background: var(--accent-light);
 }
-.theme-switch input:checked + .slider::before {
-  content: "\f185"; /* FontAwesome sun */
-}
 
-/*----------------------------------------
-  5. Main & Container
------------------------------------------*/
+/* 5. MAIN */
 .login-main {
-  display: grid;
-  place-items: center;
+  display: grid; place-items: center;
   height: calc(100% - 48px);
   background: linear-gradient(135deg, var(--bg), var(--form-bg));
 }
+
+/* 6. BOX */
 .login-box {
+  position: relative;
   width: 100%; max-width: 360px;
+  padding: 3rem 2rem 2rem;
   background: var(--form-bg);
   backdrop-filter: blur(8px);
   border: 1px solid var(--border);
   border-radius: 12px;
   box-shadow: 0 8px 24px var(--shadow);
-  padding: 3rem 2rem 2rem;
   overflow: hidden;
 }
 
-/*----------------------------------------
-  6. Title & Subtitle
------------------------------------------*/
+/* 7. TITLE */
 .login-title {
   text-align: center;
   font-size: 2.4rem; font-weight: 700;
@@ -165,12 +133,9 @@ button { background: none; border: none; cursor: pointer; }
   margin-bottom: 1.8rem;
 }
 
-/*----------------------------------------
-  7. Inputs & Icons
------------------------------------------*/
+/* 8. INPUTS & ICONS */
 .form-group {
-  display: flex;
-  align-items: center;
+  display: flex; align-items: center;
   margin-bottom: 1.4rem;
 }
 .input-fa,
@@ -201,38 +166,25 @@ button { background: none; border: none; cursor: pointer; }
   outline: none;
 }
 
-/*----------------------------------------
-  8. Error Message
------------------------------------------*/
+/* 9. ERROR MESSAGE */
 .error-message {
   display: block;
   margin: 4px 0 8px 2.75rem; /* под иконкой */
   font-size: 0.85rem;
   color: var(--error-color);
-  position: static;
-  width: auto;
 }
 
-/*----------------------------------------
-  9. Form Options & Button
------------------------------------------*/
+/* 10. OPTIONS & BUTTON */
 .form-options {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 1.8rem;
-  font-size: 0.9rem;
+  display: flex; justify-content: space-between; align-items: center;
+  margin-bottom: 1.8rem; font-size: 0.9rem;
 }
 .checkbox-wrap {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  color: var(--text);
-  font-weight: 500;
+  display: inline-flex; align-items: center; gap: 6px;
+  color: var(--text); font-weight: 500;
 }
 .checkbox-wrap input {
-  width: 16px; height: 16px;
-  accent-color: var(--accent);
+  width: 16px; height: 16px; accent-color: var(--accent);
 }
 .forgot-link {
   color: var(--text-muted);
@@ -241,67 +193,32 @@ button { background: none; border: none; cursor: pointer; }
 .forgot-link:hover {
   color: var(--accent);
 }
-
 .btn-login {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.6rem;
-  width: 100%;
-  padding: 0.85rem;
-  font-size: 1.05rem;
-  font-weight: 600;
+  display: flex; align-items: center; justify-content: center;
+  gap: 0.6rem; width: 100%; padding: 0.85rem;
+  font-size: 1.05rem; font-weight: 600;
   color: var(--btn-text);
   background: linear-gradient(135deg, var(--accent), var(--accent-light));
-  border: none;
-  border-radius: 8px;
-  cursor: pointer;
-  transition: transform 0.2s, box-shadow 0.2s;
+  border: none; border-radius: 8px;
+  cursor: pointer; transition: transform 0.2s, box-shadow 0.2s;
 }
 .btn-login:hover {
   transform: translateY(-2px);
   box-shadow: 0 6px 16px var(--shadow);
 }
-.btn-fa {
-  font-size: 1.2rem;
-}
+.btn-fa { font-size: 1.2rem; }
 
-/*----------------------------------------
-  10. Footer
------------------------------------------*/
+/* 11. FOOTER */
 .page-footer {
-  text-align: center;
-  margin-top: 1.5rem;
-  font-size: 0.85rem;
-  color: var(--text-muted);
+  text-align: center; margin-top: 1.5rem;
+  font-size: 0.85rem; color: var(--text-muted);
 }
 
-/*----------------------------------------
-  11. Адаптивность
------------------------------------------*/
+/* 12. ADAPTIVE */
 @media (max-width: 400px) {
-  .login-box {
-    padding: 2.5rem 1.5rem 1.5rem;
-  }
-  .login-title {
-    font-size: 2rem;
-    margin-bottom: 0.2rem;
-  }
-  .login-subtitle {
-    font-size: 1rem;
-    margin-bottom: 1.5rem;
-  }
-  .form-group input {
-    height: 40px;
-  }
-  .btn-login {
-    padding: 0.75rem;
-  }
-  .theme-switch {
-    width: 44px; height: 22px;
-  }
-  .theme-switch .slider {
-    top: 1px; left: 1px;
-    width: 20px; height: 20px;
-  }
+  .login-box { padding: 2.5rem 1.5rem 1.5rem; }
+  .login-title { font-size: 2rem; margin-bottom: 0.2rem; }
+  .login-subtitle { font-size: 1rem; margin-bottom: 1.5rem; }
+  .form-group input { height: 40px; }
+  .btn-login { padding: 0.75rem; }
 }
