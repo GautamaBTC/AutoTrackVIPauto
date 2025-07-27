@@ -1,16 +1,22 @@
 <!DOCTYPE html>
-<html lang="ru" data-theme="dark"> <!-- Ставим темную тему по умолчанию -->
+<html lang="ru" data-theme="dark">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Вход — VIPавто облачный бортовой журнал</title>
   <link rel="stylesheet" href="assets/css/reset.css" />
   <link rel="stylesheet" href="assets/css/login.css" />
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
-  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet" />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
+    rel="stylesheet"
+  />
+  <link
+    href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+    rel="stylesheet"
+  />
 </head>
 <body>
-  <!-- ФИНАЛЬНАЯ ВЕРСИЯ ХЭДЕРА -->
+  <!-- ХЭДЕР (структура без изменений) -->
   <header class="page-header">
     <div class="page-header__left">
        <!-- Пустое место для симметрии -->
@@ -22,7 +28,11 @@
     <div class="page-header__right">
       <label class="theme-switch">
         <input type="checkbox" id="theme-toggle" />
-        <span class="slider"></span>
+        <!-- ИЗМЕНЕНИЕ: Добавлены иконки внутрь для анимации -->
+        <span class="slider">
+          <i class="fas fa-moon"></i>
+          <i class="fas fa-sun"></i>
+        </span>
       </label>
     </div>
   </header>
@@ -42,19 +52,23 @@
         <span class="error-message" aria-live="polite"></span>
       </div>
 
-      <div class="form-group">
-        <i class="fas fa-lock input-fa"></i>
-        <input type="password" id="password" placeholder="Пароль" required />
+      <!-- ИЗМЕНЕНИЕ: Новая структура для поля пароля и "глаза" -->
+      <div class="form-group password-group">
+        <div class="password-wrapper">
+            <i class="fas fa-lock input-fa"></i>
+            <input type="password" id="password" placeholder="Пароль" required />
+        </div>
         <i class="fas fa-eye toggle-password" id="toggle-password"></i>
-        <span class="error-message" aria-live="polite"></span>
       </div>
+      <span class="error-message password-error-message" aria-live="polite"></span>
 
+
+      <!-- ИЗМЕНЕНИЕ: Удалена ссылка "Забыли пароль?" -->
       <div class="form-options">
         <label class="checkbox-wrap">
           <input type="checkbox" id="remember-me" />
           Запомнить меня
         </label>
-        <a href="#" class="forgot-link">Забыли пароль?</a>
       </div>
 
       <button type="submit" class="btn-login">
