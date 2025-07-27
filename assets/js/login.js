@@ -1,17 +1,14 @@
 /*────────────────────────────────────────────
-  assets/js/login.js | ФИНАЛЬНЫЙ РЕФАКТОРИНГ
+  assets/js/login.js | ФИНАЛЬНЫЙ ИСПРАВЛЕННЫЙ КОД
 ─────────────────────────────────────────────*/
 
 // --- Имитация хранилища, чтобы не было ошибок ---
-// В будущем мы заменим это на импорт из storage.js
 function authUser(login, password) {
-  const validUsers = {
-    admin: 'admin',
-    test: '123'
-  };
+  const validUsers = { admin: 'admin', test: '123' };
   return validUsers[login] === password;
 }
 // --- Конец имитации ---
+
 
 document.addEventListener('DOMContentLoaded', () => {
 
@@ -35,8 +32,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
   function applyTheme(theme) {
     htmlEl.setAttribute('data-theme', theme);
-    // Темная тема = чекбокс ВЫКЛЮЧЕН
-    // Светлая тема = чекбокс ВКЛЮЧЕН
     themeToggle.checked = (theme === 'light');
     localStorage.setItem('vipautologin_theme', theme);
   }
@@ -45,8 +40,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const newTheme = themeToggle.checked ? 'light' : 'dark';
     applyTheme(newTheme);
   });
-
-  // При загрузке применяем сохраненную тему или темную по умолчанию
+  
   const savedTheme = localStorage.getItem('vipautologin_theme') || 'dark';
   applyTheme(savedTheme);
 
@@ -57,13 +51,21 @@ document.addEventListener('DOMContentLoaded', () => {
   const passInput = document.getElementById('password');
   const togglePassBtn = document.getElementById('toggle-password');
 
-  // РАБОЧИЙ "ГЛАЗИК"
-  togglePassBtn.addEventListener('click', () => {
-    const isPassword = passInput.type === 'password';
-    passInput.type = isPassword ? 'text' : 'password';
-    togglePassBtn.classList.toggle('fa-eye', !isPassword);
-    togglePassBtn.classList.toggle('fa-eye-slash', isPassword);
-  });
+  // ИСПРАВЛЕННЫЙ И РАБОЧИЙ "ГЛАЗИК"
+  if (togglePassBtn) {
+    togglePassBtn.addEventListener('click', () => {
+      // Проверяем текущий тип поля
+      const isPassword = passInput.type === 'password';
+      
+      // Меняем тип поля
+      passInput.type = isPassword ? 'text' : 'password';
+      
+      // Меняем иконку
+      togglePassBtn.classList.toggle('fa-eye', !isPassword);
+      togglePassBtn.classList.toggle('fa-eye-slash', isPassword);
+    });
+  }
+
 
   // Обработка отправки формы
   form.addEventListener('submit', (e) => {
@@ -71,15 +73,15 @@ document.addEventListener('DOMContentLoaded', () => {
     const login = userInput.value.trim();
     const password = passInput.value.trim();
 
-    // Просто выводим в консоль, что данные введены
     console.log(`Попытка входа с логином: ${login}`);
 
-    // В будущем здесь будет переход на index.html
     if (authUser(login, password)) {
       console.log('Успешный вход!');
+      alert('Успешный вход! (Переход будет реализован позже)');
       // window.location.href = 'index.html'; // Это мы включим позже
     } else {
       console.log('Неверный логин или пароль.');
+      alert('Неверный логин или пароль!');
       // Здесь можно будет добавить сообщение об ошибке
     }
   });
