@@ -1,143 +1,182 @@
 /*────────────────────────────────────────────
-  assets/css/login.css | ФИНАЛЬНАЯ ВЕРСИЯ 2.0
+  assets/css/login.css | ФИНАЛЬНЫЙ РЕФАКТОРИНГ
 ─────────────────────────────────────────────*/
 
-/* 1. Цвета (без изменений) */
-:root {
-  --bg: #ECEDEE; --panel-bg: rgba(255,255,255,0.4); --input-bg: rgba(255,255,255,0.6); --border: rgba(0,0,0,0.1); --text: #333333; --text-muted: #666666; --accent: #399D9C; --accent-light: #4DBAB3; --shadow: rgba(0,0,0,0.1); --btn-text: #fff;
+/* 1. Цветовые темы (как на скриншотах) */
+:root { /* Светлая тема */
+  --bg: #F0F2F5;
+  --panel-bg: #FFFFFF;
+  --input-bg: #F0F2F5;
+  --border: #DCDFE6;
+  --text: #303133;
+  --text-muted: #909399;
+  --accent: #399D9C;
+  --shadow: rgba(0, 0, 0, 0.05);
+  --btn-text: #FFFFFF;
 }
-html[data-theme="dark"] {
-  --bg: #1F1F1F; --panel-bg: rgba(45,45,45,0.4); --input-bg: rgba(55,55,55,0.5); --border: rgba(255,255,255,0.12); --text: #E0E0E0; --text-muted: #888888; --accent: #FFD166; --accent-light: #FF9F1C; --shadow: rgba(0,0,0,0.7); --btn-text: #000;
+html[data-theme="dark"] { /* Темная тема */
+  --bg: #141414;
+  --panel-bg: #1D1D1D;
+  --input-bg: #262626;
+  --border: #424242;
+  --text: #E5EAF3;
+  --text-muted: #A3A6AD;
+  --accent: #FFD166;
+  --shadow: rgba(0, 0, 0, 0.3);
+  --btn-text: #1D1D1D;
 }
 
 /* 2. База */
-html, body { height: 100%; font-family: 'Inter',sans-serif; background: var(--bg); color: var(--text); }
-
-/* 3. ХЭДЕР (исправление даты и времени) */
-.page-header {
-  position: absolute; top: 10px; left: 10px; right: 10px;
-  max-width: 1200px; margin: 0 auto; display: flex;
-  align-items: center; justify-content: space-between;
-  padding: 0.8rem 1.5rem;
+body {
+  font-family: 'Inter', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  transition: background 0.3s, color 0.3s;
 }
-.page-header__left, .page-header__center, .page-header__right { flex: 1; display: flex; align-items: center; }
-.page-header__center { flex-direction: column; align-items: center; gap: 2px; }
-.page-header__right { justify-content: flex-end; }
-/* ИСПРАВЛЕНИЕ: Дата больше не переносится */
-#current-date { font-size: 0.8rem; color: var(--text-muted); white-space: nowrap; }
-#current-time { font-size: 1.4rem; font-weight: 500; color: var(--text); line-height: 1.1; }
+.hidden { display: none !important; }
 
-/* 4. ПЕРЕКЛЮЧАТЕЛЬ ТЕМЫ (новая анимация иконок) */
+/* 3. ХЭДЕР (как на скриншотах) */
+.page-header {
+  position: absolute; top: 20px; left: 20px; right: 20px;
+  display: flex; align-items: center; justify-content: space-between;
+}
+.page-header__left, .page-header__center, .page-header__right {
+  flex: 1;
+  display: flex;
+}
+.page-header__center {
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+.page-header__right { justify-content: flex-end; }
+#current-date { font-size: 0.9rem; color: var(--text-muted); white-space: nowrap; }
+#current-time { font-size: 1.5rem; font-weight: 500; color: var(--text); line-height: 1.1; }
+
+/* 4. АНИМИРОВАННЫЙ ПЕРЕКЛЮЧАТЕЛЬ ТЕМЫ */
 .theme-switch {
-  position: relative; display: inline-block;
-  width: 60px; height: 32px; cursor: pointer;
+  position: relative;
+  display: inline-block;
+  width: 54px; height: 28px;
 }
 .theme-switch input { opacity: 0; width: 0; height: 0; }
 .slider {
-  position: absolute; inset: 0; background-color: var(--input-bg);
-  border-radius: 32px; border: 1px solid var(--border);
-  transition: background-color .4s;
+  position: absolute; inset: 0; cursor: pointer;
+  background-color: var(--input-bg);
+  border-radius: 28px; transition: .4s;
 }
-.slider:before {
-  content: ""; position: absolute; height: 24px; width: 24px;
-  left: 3px; bottom: 3px; background-color: var(--accent);
-  border-radius: 50%; transition: .4s;
+.slider-thumb {
+  position: absolute;
+  height: 22px; width: 22px;
+  left: 3px; bottom: 3px;
+  background-color: var(--accent);
+  border-radius: 50%;
+  transition: .4s cubic-bezier(0.68, -0.55, 0.27, 1.55);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
 }
-.slider .fa-moon, .slider .fa-sun {
-  position: absolute; top: 50%; transform: translateY(-50%);
-  color: var(--text-muted); font-size: 14px; transition: opacity .4s ease, transform .4s ease;
+.slider-thumb i {
+    position: absolute;
+    color: var(--btn-text);
+    font-size: 12px;
+    transition: opacity 0.2s ease, transform 0.4s cubic-bezier(0.68, -0.55, 0.27, 1.55);
 }
-/* Позиции иконок */
-.slider .fa-moon { right: 8px; }
-.slider .fa-sun { left: 8px; }
-
-/* Анимация иконок и ползунка */
-html[data-theme="light"] .slider .fa-sun { opacity: 1; transform: translateY(-50%) rotate(0deg); }
-html[data-theme="light"] .slider .fa-moon { opacity: 0; transform: translateY(-50%) rotate(90deg); }
-html[data-theme="light"] input:checked + .slider:before { transform: translateX(28px); }
-
-html[data-theme="dark"] .slider .fa-sun { opacity: 0; transform: translateY(-50%) rotate(-90deg); }
-html[data-theme="dark"] .slider .fa-moon { opacity: 1; transform: translateY(-50%) rotate(0deg); }
-html[data-theme="dark"] input:not(:checked) + .slider:before { transform: translateX(28px); }
+/* Светлая тема (чекбокс включен) */
+html[data-theme="light"] .slider-thumb { transform: translateX(26px); }
+html[data-theme="light"] .fa-sun { opacity: 1; transform: rotate(0deg); }
+html[data-theme="light"] .fa-moon { opacity: 0; transform: rotate(360deg); }
+/* Темная тема (чекбокс выключен) */
+html[data-theme="dark"] .slider-thumb { transform: translateX(0px); }
+html[data-theme="dark"] .fa-sun { opacity: 0; transform: rotate(-360deg); }
+html[data-theme="dark"] .fa-moon { opacity: 1; transform: rotate(0deg); }
 
 /* 5. Форма входа */
 .login-main { display: grid; place-items: center; height: 100%; }
-.login-bg { /* ... без изменений ... */ }
 .login-box {
-  width: 100%; max-width: 380px; padding: 3rem 2.5rem 2.5rem;
-  background: var(--panel-bg); backdrop-filter: blur(8px);
-  border: 1px solid var(--border); border-radius: 12px;
-  box-shadow: 0 8px 24px var(--shadow);
+  width: 100%; max-width: 360px;
+  padding: 2.5rem;
+  background-color: var(--panel-bg);
+  border-radius: 16px;
+  box-shadow: 0 10px 30px var(--shadow);
 }
-.login-title, .login-subtitle { /* ... без изменений ... */ }
+.login-title { text-align: center; font-size: 2.2rem; font-weight: 700; margin-bottom: 0.3rem; }
+.login-subtitle { text-align: center; font-size: 1rem; color: var(--text-muted); margin-bottom: 2.5rem; }
 
-/* 6. Поля ввода (исправления) */
-.form-group { position: relative; }
-.form-group:not(.password-group) { margin-bottom: 1.4rem; }
-
-/* ИСПРАВЛЕНИЕ: Позиционирование иконок */
-.input-fa {
-    position: absolute;
-    top: 0;
-    bottom: 0;
-    margin: auto 0;
-    height: 1em; /* Стабилизирует вертикальное положение */
-    left: 1rem;
-    font-size: 1.2rem;
-    color: var(--text-muted);
+/* 6. Поля ввода (исправлено) */
+.form-group { margin-bottom: 1.5rem; }
+.form-group label {
+  display: block;
+  font-size: 0.9rem;
+  font-weight: 500;
+  margin-bottom: 8px;
+  color: var(--text-muted);
+}
+.input-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+.input-icon {
+  position: absolute;
+  left: 16px;
+  color: var(--text-muted);
+  font-size: 1rem;
 }
 .form-group input {
-  width: 100%; height: 50px; padding: 0 1rem 0 3.2rem; font-size: 1rem;
-  background: var(--input-bg); border: 1px solid var(--border);
-  border-radius: 8px; color: var(--text);
-  transition: border-color .2s, box-shadow .2s;
+  width: 100%;
+  height: 48px;
+  padding: 0 16px 0 48px;
+  font-size: 1rem;
+  background-color: var(--input-bg);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  color: var(--text);
+  transition: all 0.2s;
 }
-
-/* ИСПРАВЛЕНИЕ: Новая группа для пароля */
-.password-group {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    margin-bottom: 0.5rem; /* Уменьшаем отступ, так как ошибка теперь ниже */
-}
-.password-wrapper {
-    flex-grow: 1;
-    position: relative;
+.form-group input:focus {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 25%, transparent);
 }
 .toggle-password {
-    flex-shrink: 0;
-    font-size: 1.3rem;
-    color: var(--text-muted);
-    cursor: pointer;
-    padding: 10px;
-    border-radius: 50%;
-    transition: background-color 0.2s, color 0.2s;
+  position: absolute;
+  right: 0;
+  padding: 15px;
+  cursor: pointer;
+  color: var(--text-muted);
 }
-.toggle-password:hover {
-    background-color: var(--input-bg);
-    color: var(--text);
-}
+#password { padding-right: 48px; }
 
-.error-message {
-  display: block; margin-top: 6px; padding-left: 1rem;
-  font-size: 0.9rem; color: #E74C3C;
-  min-height: 1.2em;
+/* 7. Опции, кнопка, футер */
+.form-options { margin-top: -0.5rem; margin-bottom: 2rem; }
+.checkbox-wrap {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.9rem;
+  color: var(--text);
+  cursor: pointer;
 }
-.password-error-message { margin-bottom: 1.4rem; }
-
-/* 7. Опции и кнопка (исправления) */
-.form-options {
-  display: flex; justify-content: flex-start; /* Изменено */
-  align-items: center; margin-bottom: 1.8rem; font-size: 0.9rem;
+.checkbox-wrap input {
+  width: 16px; height: 16px;
+  accent-color: var(--accent);
 }
-/* ... остальное без изменений ... */
-.checkbox-wrap { display: inline-flex; align-items: center; gap: 8px; color: var(--text); font-weight: 500; cursor: pointer; }
-.checkbox-wrap input { width: 16px; height: 16px; accent-color: var(--accent); }
 .btn-login {
-  display: flex; align-items: center; justify-content: center; gap: 0.6rem;
-  width: 100%; padding: 1rem; font-size: 1.1rem; font-weight: 600;
-  color: var(--btn-text); background: var(--accent);
+  display: flex; align-items: center; justify-content: center; gap: 0.8rem;
+  width: 100%; padding: 14px;
+  font-size: 1rem; font-weight: 600;
+  color: var(--btn-text);
+  background: var(--accent);
   border: none; border-radius: 8px;
-  cursor: pointer; transition: transform .2s, box-shadow .2s;
+  cursor: pointer;
+  transition: transform .2s, box-shadow .2s;
 }
-.page-footer { position: absolute; bottom: 1rem; left: 0; right: 0; text-align: center; font-size: 0.85rem; color: var(--text-muted); }
+.btn-login:hover { transform: translateY(-2px); }
+.btn-fa { font-size: 1.1rem; }
+.page-footer {
+  position: absolute; bottom: 1.5rem;
+  left: 0; right: 0; text-align: center;
+  font-size: 0.8rem; color: var(--text-muted);
+}
