@@ -21,6 +21,7 @@ button {
   background: none;
   border: none;
   cursor: pointer;
+  padding: 0;
 }
 
 /* Убираем скролл по горизонтали */
@@ -31,12 +32,19 @@ html, body {
 /* Обрабатываем заголовки и списки */
 h1, h2, h3, h4, h5, h6 {
   font-weight: normal;
+  font-size: 1em;
 }
 ul, ol {
   list-style: none;
 }
 
-/* Убираем стандартные фокусы, заменим позже на кастомные */
-:focus {
+
+/* 
+  ФИНАЛЬНОЕ ИСПРАВЛЕНИЕ:
+  Убираем синюю подсветку при нажатии на мобильных устройствах
+  и стандартную рамку фокуса, так как у нас есть своя.
+*/
+a, button, input, select, textarea, [role="button"], [tabindex] {
+  -webkit-tap-highlight-color: transparent;
   outline: none;
 }
