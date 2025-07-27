@@ -1,220 +1,97 @@
 /*────────────────────────────────────────────
-  assets/css/login.css — финальный фикс toggle
+  assets/css/login.css | ФИНАЛЬНАЯ ВЕРСИЯ
 ─────────────────────────────────────────────*/
 
-/* 1. Цвета (Day/Night) */
-:root {
-  --bg:               #ECEDEE;
-  --form-bg:          rgba(255,255,255,0.4);
-  --input-bg:         rgba(255,255,255,0.6);
-  --border:           rgba(0,0,0,0.1);
-  --text:             #333333;
-  --text-muted:       #666666;
-  --accent:           #399D9C;
-  --accent-light:     #4DBAB3;
-  --shadow:           rgba(0,0,0,0.1);
-  --error-color:      #E74C3C;
-  --btn-text:         #fff;
+/* 1. Цвета (эталон) */
+:root { /* Светлая тема */
+  --bg: #ECEDEE; --panel-bg: rgba(255,255,255,0.4); --input-bg: rgba(255,255,255,0.6); --border: rgba(0,0,0,0.1); --text: #333333; --text-muted: #666666; --accent: #399D9C; --accent-light: #4DBAB3; --shadow: rgba(0,0,0,0.1); --btn-text: #fff;
 }
-html[data-theme="dark"] {
-  --bg:               #121212;
-  --form-bg:          rgba(30,30,30,0.4);
-  --input-bg:         rgba(30,30,30,0.5);
-  --border:           rgba(255,255,255,0.12);
-  --text:             #E0E0E0;
-  --text-muted:       #888888;
-  --accent:           #FFD166;
-  --accent-light:     #FF9F1C;
-  --shadow:           rgba(0,0,0,0.7);
-  --error-color:      #E74C3C;
-  --btn-text:         #fff;
+html[data-theme="dark"] { /* Темная тема */
+  --bg: #1F1F1F; --panel-bg: rgba(45,45,45,0.4); --input-bg: rgba(55,55,55,0.5); --border: rgba(255,255,255,0.12); --text: #E0E0E0; --text-muted: #888888; --accent: #FFD166; --accent-light: #FF9F1C; --shadow: rgba(0,0,0,0.7); --btn-text: #000;
 }
 
-/* 2. Reset */
-*,
-*::before,
-*::after {
-  box-sizing: border-box;
-  margin: 0; padding: 0;
-}
-html, body {
-  height: 100%;
-  overflow: hidden;
-  font-family: 'Inter',sans-serif;
-  background: var(--bg);
-  color: var(--text);
-}
-.hidden { display: none !important; }
+/* 2. База */
+html, body { height: 100%; font-family: 'Inter',sans-serif; background: var(--bg); color: var(--text); }
 
-/* 3. Header */
-.login-header {
-  position: sticky;
-  top:0; left:0; right:0;
-  display:flex; align-items:center; justify-content:space-between;
-  padding:0.6rem 1rem;
-  background:var(--form-bg); backdrop-filter:blur(6px);
-  box-shadow:0 2px 6px var(--shadow);
-  z-index:10;
+/* 3. ОБЩИЙ ХЭДЕР (как на скриншоте) */
+.page-header {
+  position: absolute; top: 10px; left: 10px; right: 10px;
+  max-width: 1200px; margin: 0 auto; display: flex;
+  align-items: center; justify-content: space-between;
+  padding: 0.8rem 1.5rem;
 }
-.login-header__left,
-.login-header__center,
-.login-header__right {
-  flex:1; text-align:center;
-  font-size:0.85rem; color:var(--text-muted);
-}
-.login-header__left { text-align:left; }
-.login-header__right{ text-align:right; }
-.home-btn { font-size:1.1rem; color:var(--text); margin-right:0.5rem; }
-#current-time {
-  font-family:'Orbitron',monospace; font-size:1.3rem;
-  color:var(--text);
-}
+.page-header__left, .page-header__center, .page-header__right { flex: 1; display: flex; align-items: center; }
+.page-header__left { flex-direction: column; align-items: flex-start; gap: 2px; }
+.page-header__center { flex-direction: column; align-items: center; gap: 2px; }
+.page-header__right { justify-content: flex-end; }
+#current-date { font-size: 0.8rem; color: var(--text-muted); }
+#current-time { font-size: 1.4rem; font-weight: 500; color: var(--text); line-height: 1.1; }
 
-/* 4. Toggle Day/Night */
-.theme-switch {
-  position: relative;
-  display: inline-block;
-  width: 52px;
-  height: 28px;
-  background: var(--border);
-  border-radius: 28px;
-  cursor: pointer;
+/* 4. ОБЩИЙ ПЕРЕКЛЮЧАТЕЛЬ ТЕМЫ (минималистичный) */
+.theme-switch { position: relative; display: inline-block; width: 50px; height: 26px; }
+.theme-switch input { opacity: 0; width: 0; height: 0; }
+.slider {
+  position: absolute; inset: 0; cursor: pointer;
+  background-color: var(--input-bg); border: 1px solid var(--border);
+  border-radius: 26px; transition: .4s;
 }
-.theme-switch input {
-  position: absolute;
-  inset: 0;
-  opacity: 0;
-  width: 100%; height: 100%;
-  margin: 0; cursor: pointer;
+.slider:before {
+  content: ""; position: absolute; height: 18px; width: 18px;
+  left: 3px; bottom: 3px; background-color: var(--accent);
+  border-radius: 50%; transition: .4s;
 }
-.theme-switch .slider {
-  position: absolute;
-  top: 0; left: 0; right: 0; bottom: 0;
-  background: var(--border);
-  border-radius: 28px;
-  transition: background 0.4s;
-}
-.theme-switch .slider::before {
-  content: "";
-  position: absolute;
-  top: 2px; left: 2px;
-  width: 24px; height: 24px;
-  background: var(--accent);
-  border-radius: 50%;
-  transition: transform 0.4s, background 0.4s;
-}
-.theme-switch input:checked + .slider {
-  background: var(--accent-light);
-}
-.theme-switch input:checked + .slider::before {
+input:checked + .slider { background-color: var(--input-bg); }
+html[data-theme="light"] input:checked + .slider:before {
   transform: translateX(24px);
-  background: var(--accent-light);
+}
+html[data-theme="dark"] input:not(:checked) + .slider:before {
+  transform: translateX(24px);
 }
 
-/* 5. Background Image */
-.login-bg {
-  position: absolute;
-  top: -120px; left: 50%;
-  transform: translateX(-50%);
-  width: 120px; opacity: 0.1;
-  pointer-events: none;
-}
-.login-bg img {
-  width: 100%; height: auto; display: block;
-}
-
-/* 6. Main & Box */
-.login-main {
-  display:grid; place-items:center;
-  height:calc(100% - 48px);
-  background:linear-gradient(135deg,var(--bg),var(--form-bg));
-}
+/* 5. Форма входа */
+.login-main { display: grid; place-items: center; height: 100%; }
+.login-bg { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 120px; opacity: 0.05; pointer-events: none; }
+.login-bg img { width: 100%; height: auto; display: block; }
 .login-box {
-  position:relative;
-  width:100%; max-width:360px;
-  background:var(--form-bg); backdrop-filter:blur(8px);
-  padding:3rem 2rem 2rem;
-  border:1px solid var(--border);
-  border-radius:12px;
-  box-shadow:0 8px 24px var(--shadow);
-  overflow:hidden;
+  width: 100%; max-width: 380px; padding: 3rem 2.5rem 2.5rem;
+  background: var(--panel-bg); backdrop-filter: blur(8px);
+  border: 1px solid var(--border); border-radius: 12px;
+  box-shadow: 0 8px 24px var(--shadow);
 }
-
-/* 7. Title */
-.login-title { text-align:center; font-size:2.4rem; font-weight:700; margin-bottom:0.3rem; color:var(--text); }
-.login-subtitle { text-align:center; font-size:1.2rem; margin-bottom:1.8rem; color:var(--text-muted); }
-
-/* 8. Inputs & Icons */
-.form-group {
-  display:flex; align-items:center;
-  margin-bottom:1.4rem;
-}
-.input-fa,
-.toggle-password {
-  flex-shrink:0; font-size:1.2rem; color:var(--text-muted);
-}
-.input-fa { margin-right:0.75rem; }
-.toggle-password { margin-left:0.75rem; cursor:pointer; }
+.login-title { text-align: center; font-size: 2.4rem; font-weight: 700; margin-bottom: 0.3rem; color: var(--text); }
+.login-subtitle { text-align: center; font-size: 1.2rem; margin-bottom: 1.8rem; color: var(--text-muted); }
+.form-group { position: relative; margin-bottom: 1.4rem; }
+.input-fa { position: absolute; top: 50%; transform: translateY(-50%); left: 1rem; font-size: 1.2rem; color: var(--text-muted); }
+.toggle-password { position: absolute; top: 50%; transform: translateY(-50%); right: 1rem; cursor: pointer; color: var(--text-muted); }
 .form-group input {
-  flex:1; height:44px;
-  padding:0 0.75rem;
-  font-size:1rem; background:var(--input-bg);
-  border:1px solid var(--border); border-radius:8px;
-  color:var(--text);
-  transition:border-color .2s, box-shadow .2s;
+  width: 100%; height: 50px; padding: 0 3rem 0 3.2rem; font-size: 1rem;
+  background: var(--input-bg); border: 1px solid var(--border);
+  border-radius: 8px; color: var(--text);
+  transition: border-color .2s, box-shadow .2s;
 }
-.form-group input::placeholder { color:var(--text-muted); }
+.form-group input::placeholder { color: var(--text-muted); }
 .form-group input:focus {
-  border-color:var(--accent);
-  box-shadow:0 0 8px var(--accent);
-  outline:none;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 30%, transparent);
+  outline: none;
 }
-
-/* 9. Error Message */
 .error-message {
-  display:block;
-  margin:4px 0 8px 2.75rem;
-  font-size:0.85rem;
-  color:var(--error-color);
+  display: block; margin-top: 6px; padding-left: 1rem;
+  font-size: 0.9rem; color: #E74C3C;
+  min-height: 1.2em; word-break: break-word;
 }
-
-/* 10. Options & Button */
-.form-options {
-  display:flex; justify-content:space-between; align-items:center;
-  margin-bottom:1.8rem; font-size:0.9rem;
-}
-.checkbox-wrap {
-  display:inline-flex; align-items:center; gap:6px;
-  color:var(--text); font-weight:500;
-}
-.checkbox-wrap input { width:16px; height:16px; accent-color:var(--accent); }
-.forgot-link { color:var(--text-muted); transition:color .2s; }
-.forgot-link:hover { color:var(--accent); }
+.form-options { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.8rem; font-size: 0.9rem; }
+.checkbox-wrap { display: inline-flex; align-items: center; gap: 8px; color: var(--text); font-weight: 500; cursor: pointer; }
+.checkbox-wrap input { width: 16px; height: 16px; accent-color: var(--accent); }
+.forgot-link { color: var(--text-muted); text-decoration: none; transition: color .2s; }
+.forgot-link:hover { color: var(--accent); }
 .btn-login {
-  display:flex; align-items:center; justify-content:center; gap:0.6rem;
-  width:100%; padding:0.85rem; font-size:1.05rem; font-weight:600;
-  color:var(--btn-text);
-  background:linear-gradient(135deg,var(--accent),var(--accent-light));
-  border:none; border-radius:8px;
-  cursor:pointer; transition:transform .2s, box-shadow .2s;
+  display: flex; align-items: center; justify-content: center; gap: 0.6rem;
+  width: 100%; padding: 1rem; font-size: 1.1rem; font-weight: 600;
+  color: var(--btn-text); background: var(--accent);
+  border: none; border-radius: 8px;
+  cursor: pointer; transition: transform .2s, box-shadow .2s;
 }
-.btn-login:hover {
-  transform:translateY(-2px); box-shadow:0 6px 16px var(--shadow);
-}
-.btn-fa { font-size:1.2rem; }
-
-/* 11. Footer */
-.page-footer {
-  text-align:center; margin-top:1.5rem;
-  font-size:0.85rem; color:var(--text-muted);
-}
-
-/* 12. Adaptive */
-@media (max-width:400px) {
-  .login-box { padding:2.5rem 1.5rem 1.5rem; }
-  .login-title { font-size:2rem; margin-bottom:0.2rem; }
-  .login-subtitle { font-size:1rem; margin-bottom:1.5rem; }
-  .form-group input { height:40px; }
-  .btn-login { padding:0.75rem; }
-  .login-bg { width:100px; top:-100px; }
-}
+.btn-login:hover { transform: translateY(-2px); box-shadow: 0 6px 16px var(--shadow); }
+.btn-fa { font-size: 1.2rem; }
+.page-footer { position: absolute; bottom: 1rem; left: 0; right: 0; text-align: center; font-size: 0.85rem; color: var(--text-muted); }
