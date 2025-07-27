@@ -1,12 +1,12 @@
 /*────────────────────────────────────────────
-  assets/css/login.css | ФИНАЛЬНЫЙ КОД С КАСТОМНЫМ ФОКУСОМ
+  assets/css/login.css | БЕЗ СВЕЧЕНИЯ
 ─────────────────────────────────────────────*/
 
 /* 1. Цветовые темы (без изменений) */
-:root { /* Светлая тема */
+:root {
   --bg: #F0F2F5; --panel-bg: #FFFFFF; --input-bg: #F0F2F5; --border: #DCDFE6; --text: #303133; --text-muted: #909399; --accent: #399D9C; --shadow: rgba(0, 0, 0, 0.05); --btn-text: #FFFFFF;
 }
-html[data-theme="dark"] { /* Темная тема */
+html[data-theme="dark"] {
   --bg: #141414; --panel-bg: #1D1D1D; --input-bg: #262626; --border: #424242; --text: #E5EAF3; --text-muted: #A3A6AD; --accent: #FFD166; --shadow: rgba(0, 0, 0, 0.3); --btn-text: #1D1D1D;
 }
 
@@ -35,12 +35,11 @@ body {
 .slider {
   position: absolute; inset: 0; cursor: pointer; background-color: var(--input-bg);
   border-radius: 28px; transition: .4s;
-  border: 1px solid transparent; /* Резервируем место под рамку фокуса */
+  border: 1px solid var(--border);
 }
-/* ИСПРАВЛЕНИЕ: Добавляем кастомную рамку при фокусе */
+/* ИСПРАВЛЕНИЕ: Убираем свечение, оставляем только рамку */
 .theme-switch input:focus-visible + .slider {
   border-color: var(--accent);
-  box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 25%, transparent);
 }
 .slider-thumb {
   position: absolute; height: 22px; width: 22px; left: 3px; bottom: 3px;
@@ -58,7 +57,6 @@ html[data-theme="light"] .fa-moon { opacity: 0; transform: rotate(360deg); }
 html[data-theme="dark"] .slider-thumb { transform: translateX(0px); }
 html[data-theme="dark"] .fa-sun { opacity: 0; transform: rotate(-360deg); }
 html[data-theme="dark"] .fa-moon { opacity: 1; transform: rotate(0deg); }
-
 
 /* 5. Форма входа */
 .login-main { display: grid; place-items: center; flex-grow: 1; padding-bottom: 50px; }
@@ -80,10 +78,9 @@ html[data-theme="dark"] .fa-moon { opacity: 1; transform: rotate(0deg); }
   background-color: var(--input-bg); border: 1px solid var(--border);
   border-radius: 8px; color: var(--text); transition: all 0.2s;
 }
-/* Кастомный фокус уже был здесь, теперь он будет работать правильно */
+/* ИСПРАВЛЕНИЕ: Убираем свечение, оставляем только рамку */
 .form-group input:focus {
   border-color: var(--accent);
-  box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 25%, transparent);
 }
 .toggle-password { position: absolute; right: 0; padding: 15px; cursor: pointer; color: var(--text-muted); }
 #password { padding-right: 48px; }
