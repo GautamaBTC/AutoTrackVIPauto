@@ -1,35 +1,27 @@
 /*────────────────────────────────────────────
-  assets/css/login.css | ФИНАЛЬНЫЙ ИСПРАВЛЕННЫЙ КОД
+  assets/css/login.css | ФИНАЛЬНЫЙ КОД С КАСТОМНЫМ ФОКУСОМ
 ─────────────────────────────────────────────*/
 
 /* 1. Цветовые темы (без изменений) */
-:root {
+:root { /* Светлая тема */
   --bg: #F0F2F5; --panel-bg: #FFFFFF; --input-bg: #F0F2F5; --border: #DCDFE6; --text: #303133; --text-muted: #909399; --accent: #399D9C; --shadow: rgba(0, 0, 0, 0.05); --btn-text: #FFFFFF;
 }
-html[data-theme="dark"] {
+html[data-theme="dark"] { /* Темная тема */
   --bg: #141414; --panel-bg: #1D1D1D; --input-bg: #262626; --border: #424242; --text: #E5EAF3; --text-muted: #A3A6AD; --accent: #FFD166; --shadow: rgba(0, 0, 0, 0.3); --btn-text: #1D1D1D;
 }
 
-/* 2. База и ИСПРАВЛЕНИЕ НАЛОЖЕНИЯ */
+/* 2. База и структура */
 html { height: 100%; }
 body {
-  min-height: 100%;
-  font-family: 'Inter', sans-serif;
-  background: var(--bg);
-  color: var(--text);
-  transition: background 0.3s, color 0.3s;
-  display: flex;
-  flex-direction: column;
+  min-height: 100%; font-family: 'Inter', sans-serif; background: var(--bg);
+  color: var(--text); transition: background 0.3s, color 0.3s;
+  display: flex; flex-direction: column;
 }
-.hidden { display: none !important; }
 
-/* 3. Хэдер */
+/* 3. Хэдер (без изменений) */
 .page-header {
-  padding: 20px 20px 10px 20px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  flex-shrink: 0; /* Не сжиматься */
+  padding: 20px 20px 10px 20px; display: flex; align-items: center;
+  justify-content: space-between; flex-shrink: 0;
 }
 .page-header__left, .page-header__center, .page-header__right { flex: 1; display: flex; }
 .page-header__center { flex-direction: column; align-items: center; gap: 4px; }
@@ -37,10 +29,19 @@ body {
 #current-date { font-size: 0.9rem; color: var(--text-muted); white-space: nowrap; }
 #current-time { font-size: 1.5rem; font-weight: 500; color: var(--text); line-height: 1.1; }
 
-/* 4. Анимированный переключатель темы (без изменений) */
+/* 4. Анимированный переключатель темы */
 .theme-switch { position: relative; display: inline-block; width: 54px; height: 28px; }
 .theme-switch input { opacity: 0; width: 0; height: 0; }
-.slider { position: absolute; inset: 0; cursor: pointer; background-color: var(--input-bg); border-radius: 28px; transition: .4s; }
+.slider {
+  position: absolute; inset: 0; cursor: pointer; background-color: var(--input-bg);
+  border-radius: 28px; transition: .4s;
+  border: 1px solid transparent; /* Резервируем место под рамку фокуса */
+}
+/* ИСПРАВЛЕНИЕ: Добавляем кастомную рамку при фокусе */
+.theme-switch input:focus-visible + .slider {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 25%, transparent);
+}
 .slider-thumb {
   position: absolute; height: 22px; width: 22px; left: 3px; bottom: 3px;
   background-color: var(--accent); border-radius: 50%;
@@ -58,13 +59,9 @@ html[data-theme="dark"] .slider-thumb { transform: translateX(0px); }
 html[data-theme="dark"] .fa-sun { opacity: 0; transform: rotate(-360deg); }
 html[data-theme="dark"] .fa-moon { opacity: 1; transform: rotate(0deg); }
 
+
 /* 5. Форма входа */
-.login-main {
-  display: grid;
-  place-items: center;
-  flex-grow: 1; /* Занимает все оставшееся место */
-  padding-bottom: 50px; /* Отступ от футера */
-}
+.login-main { display: grid; place-items: center; flex-grow: 1; padding-bottom: 50px; }
 .login-box {
   width: 100%; max-width: 360px; padding: 2.5rem;
   background-color: var(--panel-bg); border-radius: 16px;
@@ -83,15 +80,12 @@ html[data-theme="dark"] .fa-moon { opacity: 1; transform: rotate(0deg); }
   background-color: var(--input-bg); border: 1px solid var(--border);
   border-radius: 8px; color: var(--text); transition: all 0.2s;
 }
-/* ИСПРАВЛЕНИЕ: Убираем синюю обводку */
+/* Кастомный фокус уже был здесь, теперь он будет работать правильно */
 .form-group input:focus {
-  outline: none;
   border-color: var(--accent);
   box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 25%, transparent);
 }
-.toggle-password {
-  position: absolute; right: 0; padding: 15px; cursor: pointer; color: var(--text-muted);
-}
+.toggle-password { position: absolute; right: 0; padding: 15px; cursor: pointer; color: var(--text-muted); }
 #password { padding-right: 48px; }
 
 /* 7. Опции, кнопка, футер */
