@@ -1,10 +1,15 @@
 /*────────────────────────────────────────────
-  assets/js/login.js | СВЕТЛАЯ ТЕМА ПО УМОЛЧАНИЮ
+  assets/js/login.js | С РАБОЧИМ ПЕРЕХОДОМ
 ─────────────────────────────────────────────*/
 
 // --- Имитация хранилища, чтобы не было ошибок ---
+// В будущем мы заменим это на импорт из storage.js
 function authUser(login, password) {
-  const validUsers = { admin: 'admin', test: '123' };
+  const validUsers = {
+    admin: 'admin',
+    test: '123'
+    // В будущем здесь будут все пользователи из storage.js
+  };
   return validUsers[login] === password;
 }
 // --- Конец имитации ---
@@ -41,7 +46,6 @@ document.addEventListener('DOMContentLoaded', () => {
     applyTheme(newTheme);
   });
   
-  // ИСПРАВЛЕНИЕ: Светлая тема по умолчанию
   const savedTheme = localStorage.getItem('vipautologin_theme') || 'light';
   applyTheme(savedTheme);
 
@@ -61,22 +65,20 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-
   // Обработка отправки формы
   form.addEventListener('submit', (e) => {
     e.preventDefault();
     const login = userInput.value.trim();
     const password = passInput.value.trim();
 
-    console.log(`Попытка входа с логином: ${login}`);
-
     if (authUser(login, password)) {
-      console.log('Успешный вход!');
-      alert('Успешный вход! (Переход будет реализован позже)');
-      // window.location.href = 'index.html';
+      // УСПЕХ!
+      // *** ГЛАВНОЕ ИЗМЕНЕНИЕ: ПЕРЕНАПРАВЛЯЕМ НА ГЛАВНУЮ СТРАНИЦУ ***
+      window.location.href = 'index.html'; 
     } else {
-      console.log('Неверный логин или пароль.');
+      // НЕУДАЧА!
       alert('Неверный логин или пароль!');
+      // TODO: Заменить на красивое уведомление об ошибке
     }
   });
 
