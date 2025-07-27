@@ -1,125 +1,80 @@
 /*───────────────────────────────────────────────────────────────
-  File: assets/css/main.css
-  Новый стиль для дашборда (в духе страницы входа)
+  File: assets/css/main.css | ФИНАЛЬНАЯ ВЕРСИЯ
 ────────────────────────────────────────────────────────────────*/
 
-/* 1. Цвета (синхронизированы с login.css) */
-:root {
-  --bg:               #ECEDEE;
-  --panel-bg:         rgba(255,255,255,0.4);
-  --input-bg:         rgba(255,255,255,0.6);
-  --border:           rgba(0,0,0,0.1);
-  --text:             #333333;
-  --text-muted:       #666666;
-  --accent:           #399D9C;
-  --accent-light:     #4DBAB3;
-  --shadow:           rgba(0,0,0,0.1);
-  --btn-text:         #fff;
+/* 1. Цвета (эталон - страница входа) */
+:root { /* Светлая тема */
+  --bg: #ECEDEE; --panel-bg: rgba(255,255,255,0.4); --input-bg: rgba(255,255,255,0.6); --border: rgba(0,0,0,0.1); --text: #333333; --text-muted: #666666; --accent: #399D9C; --accent-light: #4DBAB3; --shadow: rgba(0,0,0,0.1); --btn-text: #fff;
 }
-html[data-theme="dark"] {
-  --bg:               #121212;
-  --panel-bg:         rgba(30,30,30,0.4);
-  --input-bg:         rgba(30,30,30,0.5);
-  --border:           rgba(255,255,255,0.12);
-  --text:             #E0E0E0;
-  --text-muted:       #888888;
-  --accent:           #FFD166;
-  --accent-light:     #FF9F1C;
-  --shadow:           rgba(0,0,0,0.7);
-  --btn-text:         #fff;
+html[data-theme="dark"] { /* Темная тема */
+  --bg: #1F1F1F; --panel-bg: rgba(45,45,45,0.4); --input-bg: rgba(55,55,55,0.5); --border: rgba(255,255,255,0.12); --text: #E0E0E0; --text-muted: #888888; --accent: #FFD166; --accent-light: #FF9F1C; --shadow: rgba(0,0,0,0.7); --btn-text: #000;
 }
 
-/* 2. Базовые стили */
-body {
-  font-family: 'Inter', sans-serif;
-  background: var(--bg);
-  color: var(--text);
-  transition: background 0.3s, color 0.3s;
-}
+/* 2. База */
+body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text); transition: background 0.3s, color 0.3s; }
 .hidden { display: none !important; }
 
-/* 3. ОБЩИЙ ХЭДЕР */
+/* 3. ОБЩИЙ ХЭДЕР (как на скриншоте) */
 .page-header {
-  position: sticky; top: 10px;
-  max-width: 1200px; margin: 0 auto 2rem;
-  display: flex; align-items: center; justify-content: space-between;
-  padding: 0.6rem 1rem;
-  background: var(--panel-bg); backdrop-filter: blur(8px);
-  border-radius: 12px; box-shadow: 0 4px 12px var(--shadow);
-  z-index: 10;
+  max-width: 1200px; margin: 10px auto; display: flex;
+  align-items: center; justify-content: space-between;
+  padding: 0.8rem 1.5rem;
 }
-.page-header__left,
-.page-header__center,
-.page-header__right {
-  flex: 1; display: flex; align-items: center; gap: 1rem;
-  font-size: 1rem; color: var(--text-muted);
-}
-.page-header__left { justify-content: flex-start; }
-.page-header__center { justify-content: center; }
+.page-header__left, .page-header__center, .page-header__right { flex: 1; display: flex; align-items: center; }
+.page-header__left { flex-direction: column; align-items: flex-start; gap: 2px; }
+.page-header__center { flex-direction: column; align-items: center; gap: 2px; }
 .page-header__right { justify-content: flex-end; }
-#current-time { font-size: 1.3rem; color: var(--text); }
-.app-logo { font-size: 1.5rem; font-weight: 700; color: var(--text); margin: 0; }
-.app-tagline { font-size: 0.9rem; color: var(--text-muted); margin: 0; }
+.app-logo { font-size: 1.6rem; font-weight: 700; color: var(--text); line-height: 1.1; }
+.app-tagline { font-size: 0.8rem; color: var(--text-muted); }
+#current-date { font-size: 0.8rem; color: var(--text-muted); }
+#current-time { font-size: 1.4rem; font-weight: 500; color: var(--text); line-height: 1.1; }
 
-/* 4. ОБЩИЙ ПЕРЕКЛЮЧАТЕЛЬ ТЕМЫ */
-.theme-switch {
-  position: relative; display: inline-block;
-  width: 60px; height: 32px; cursor: pointer;
-}
+/* 4. ОБЩИЙ ПЕРЕКЛЮЧАТЕЛЬ ТЕМЫ (минималистичный) */
+.theme-switch { position: relative; display: inline-block; width: 50px; height: 26px; }
 .theme-switch input { opacity: 0; width: 0; height: 0; }
 .slider {
-  position: absolute; inset: 0; background-color: var(--input-bg);
-  border-radius: 32px; border: 1px solid var(--border);
-  transition: background-color .4s;
+  position: absolute; inset: 0; cursor: pointer;
+  background-color: var(--input-bg); border: 1px solid var(--border);
+  border-radius: 26px; transition: .4s;
 }
 .slider:before {
-  content: ""; position: absolute; height: 24px; width: 24px;
+  content: ""; position: absolute; height: 18px; width: 18px;
   left: 3px; bottom: 3px; background-color: var(--accent);
   border-radius: 50%; transition: .4s;
 }
-.slider .fa-moon, .slider .fa-sun {
-  position: absolute; top: 50%; transform: translateY(-50%);
-  color: var(--text-muted); font-size: 14px; transition: opacity .4s;
+input:checked + .slider { background-color: var(--input-bg); }
+html[data-theme="light"] input:checked + .slider:before {
+  transform: translateX(24px);
 }
-.slider .fa-moon { right: 8px; opacity: 1; }
-.slider .fa-sun { left: 8px; opacity: 0; }
-input:checked + .slider:before { transform: translateX(28px); }
-input:checked + .slider .fa-moon { opacity: 0; }
-input:checked + .slider .fa-sun { opacity: 1; }
-html[data-theme="dark"] input:checked + .slider:before { background-color: var(--accent-light); }
-
-/* 5. Основной контейнер */
-.container { max-width: 1200px; margin: 0 auto; padding: 0 20px 20px; }
-hr { border: none; border-top: 1px solid var(--border); margin: 2rem 0; }
-
-/* 6. Навигация Журнал/Аналитика */
-.view-switcher {
-  display: flex; justify-content: center; gap: 10px;
-  margin-bottom: 2rem;
+html[data-theme="dark"] input:not(:checked) + .slider:before {
+  transform: translateX(24px);
 }
+
+/* 5. Контейнер и навигация */
+.container { max-width: 700px; margin: 0 auto; padding: 0 20px 20px; }
+.view-switcher { display: flex; justify-content: center; gap: 10px; margin-bottom: 2rem; }
 .view-switcher button {
-  display: inline-flex; align-items: center; gap: 8px;
   padding: 10px 20px; font-size: 1rem; font-weight: 500;
   color: var(--text); background: var(--input-bg);
   border: 1px solid var(--border); border-radius: 8px;
   cursor: pointer; transition: all 0.2s ease;
+  display: inline-flex; align-items: center; gap: 8px;
 }
 .view-switcher button.active {
   color: var(--btn-text);
-  background: linear-gradient(135deg, var(--accent), var(--accent-light));
-  border-color: transparent;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+  background: var(--accent);
+  border-color: var(--accent);
 }
 
-/* 7. Общие стили для блоков (форма, карточки, поиск) */
+/* 6. Общие стили для блоков */
 .entry-form, .log-search, .analytics-controls, .kpi-card, .chart-container, .accordion {
-  background: var(--form-bg); backdrop-filter: blur(8px);
+  background: var(--panel-bg); backdrop-filter: blur(8px);
   padding: 1.5rem; border: 1px solid var(--border);
   border-radius: 12px; margin-bottom: 2rem;
   box-shadow: 0 8px 24px var(--shadow);
 }
 
-/* 8. Форма и поля ввода */
+/* 7. Форма и поля ввода */
 .entry-form h2, #log-view h2, #analytics-view h2 {
   text-align: center; font-size: 1.5rem; font-weight: 600;
   margin-top: 0; margin-bottom: 1.5rem;
@@ -146,11 +101,11 @@ input:focus, select:focus {
 }
 #btn-submit, #apply-range, #service-confirm {
   color: var(--btn-text);
-  background: linear-gradient(135deg, var(--accent), var(--accent-light));
+  background: var(--accent);
 }
 #btn-cancel, #service-cancel { background: var(--input-bg); color: var(--text-muted); }
 
-/* 9. Аккордеон */
+/* 8. Аккордеон */
 #summary-block { text-align: right; font-size: 1.1rem; margin: -1rem 0 2rem 0; padding: 0 1rem; color: var(--text-muted); }
 #summary-block p { margin: 0.2rem 0; }
 #summary-block strong { color: var(--accent); font-weight: 600; }
@@ -162,16 +117,15 @@ input:focus, select:focus {
 .accordion th, .accordion td { padding: 0.75rem; text-align: left; border-bottom: 1px solid var(--border); }
 .accordion tr:last-child td { border-bottom: none; }
 .accordion td:last-child { text-align: right; }
-.accordion .btn-edit, .accordion .btn-delete { color: var(--text-muted); }
+.accordion .btn-edit, .accordion .btn-delete { color: var(--text-muted); background: none; border: none; font-size: 1rem; }
 
-/* 10. Аналитика */
+/* 9. Аналитика */
 .kpi-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1.5rem; }
 .kpi-card h4 { margin: 0 0 0.5rem; font-size: 1rem; color: var(--text-muted); font-weight: 500; }
 .kpi-card p { margin: 0; font-size: 2.2rem; font-weight: 700; color: var(--accent); }
 .charts-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; }
 
-/* 11. Модальное окно */
-.modal-overlay { /* ... */ }
+/* 10. Модальное окно */
 .modal-window { background: var(--bg); border: 1px solid var(--border); max-width: 500px; }
 .modal-header, .modal-footer { padding: 1.5rem; }
 .modal-body { padding: 0 1.5rem; }
