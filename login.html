@@ -6,21 +6,12 @@
   <title>Вход — VIPавто облачный бортовой журнал</title>
   <link rel="stylesheet" href="assets/css/reset.css" />
   <link rel="stylesheet" href="assets/css/login.css" />
-  <link
-    href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
-    rel="stylesheet"
-  />
-  <link
-    href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
-    rel="stylesheet"
-  />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet"/>
 </head>
 <body>
-  <!-- ХЭДЕР (структура без изменений) -->
   <header class="page-header">
-    <div class="page-header__left">
-       <!-- Пустое место для симметрии -->
-    </div>
+    <div class="page-header__left"></div>
     <div class="page-header__center">
       <span id="current-date">…</span>
       <span id="current-time">–:–:–</span>
@@ -28,42 +19,40 @@
     <div class="page-header__right">
       <label class="theme-switch">
         <input type="checkbox" id="theme-toggle" />
-        <!-- ИЗМЕНЕНИЕ: Добавлены иконки внутрь для анимации -->
         <span class="slider">
-          <i class="fas fa-moon"></i>
-          <i class="fas fa-sun"></i>
+           <span class="slider-thumb">
+                <i class="fas fa-moon"></i>
+                <i class="fas fa-sun"></i>
+           </span>
         </span>
       </label>
     </div>
   </header>
 
   <main class="login-main">
-    <div class="login-bg">
-      <img src="assets/img/login.png" alt="VIPавто" />
-    </div>
-
     <form id="login-form" class="login-box" novalidate>
       <h1 class="login-title">VIPавто</h1>
       <h2 class="login-subtitle">облачный бортовой журнал</h2>
 
       <div class="form-group">
-        <i class="fas fa-user input-fa"></i>
-        <input type="text" id="username" placeholder="Логин" required />
-        <span class="error-message" aria-live="polite"></span>
-      </div>
-
-      <!-- ИЗМЕНЕНИЕ: Новая структура для поля пароля и "глаза" -->
-      <div class="form-group password-group">
-        <div class="password-wrapper">
-            <i class="fas fa-lock input-fa"></i>
-            <input type="password" id="password" placeholder="Пароль" required />
+        <label for="username">Логин</label>
+        <div class="input-wrapper">
+            <i class="fas fa-user input-icon"></i>
+            <input type="text" id="username" required />
         </div>
-        <i class="fas fa-eye toggle-password" id="toggle-password"></i>
+        <span class="error-message"></span>
       </div>
-      <span class="error-message password-error-message" aria-live="polite"></span>
 
+      <div class="form-group">
+        <label for="password">Пароль</label>
+        <div class="input-wrapper">
+            <i class="fas fa-lock input-icon"></i>
+            <input type="password" id="password" required />
+            <i class="fas fa-eye toggle-password" id="toggle-password"></i>
+        </div>
+        <span class="error-message"></span>
+      </div>
 
-      <!-- ИЗМЕНЕНИЕ: Удалена ссылка "Забыли пароль?" -->
       <div class="form-options">
         <label class="checkbox-wrap">
           <input type="checkbox" id="remember-me" />
@@ -72,13 +61,13 @@
       </div>
 
       <button type="submit" class="btn-login">
-        <i class="fas fa-sign-in-alt btn-fa"></i>
+        <i class="fas fa-arrow-right-to-bracket btn-fa"></i>
         Войти
       </button>
     </form>
 
     <div class="page-footer">
-      <small>Версия 2.5.0-test © VIPавто, 2025</small>
+      <small>Версия 2.5.1-final © VIPавто, 2025</small>
     </div>
   </main>
 
