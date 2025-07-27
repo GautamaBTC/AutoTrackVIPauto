@@ -1,5 +1,5 @@
 /*────────────────────────────────────────────
-  assets/js/login.js | ФИНАЛЬНЫЙ ИСПРАВЛЕННЫЙ КОД
+  assets/js/login.js | СВЕТЛАЯ ТЕМА ПО УМОЛЧАНИЮ
 ─────────────────────────────────────────────*/
 
 // --- Имитация хранилища, чтобы не было ошибок ---
@@ -41,7 +41,8 @@ document.addEventListener('DOMContentLoaded', () => {
     applyTheme(newTheme);
   });
   
-  const savedTheme = localStorage.getItem('vipautologin_theme') || 'dark';
+  // ИСПРАВЛЕНИЕ: Светлая тема по умолчанию
+  const savedTheme = localStorage.getItem('vipautologin_theme') || 'light';
   applyTheme(savedTheme);
 
 
@@ -51,16 +52,10 @@ document.addEventListener('DOMContentLoaded', () => {
   const passInput = document.getElementById('password');
   const togglePassBtn = document.getElementById('toggle-password');
 
-  // ИСПРАВЛЕННЫЙ И РАБОЧИЙ "ГЛАЗИК"
   if (togglePassBtn) {
     togglePassBtn.addEventListener('click', () => {
-      // Проверяем текущий тип поля
       const isPassword = passInput.type === 'password';
-      
-      // Меняем тип поля
       passInput.type = isPassword ? 'text' : 'password';
-      
-      // Меняем иконку
       togglePassBtn.classList.toggle('fa-eye', !isPassword);
       togglePassBtn.classList.toggle('fa-eye-slash', isPassword);
     });
@@ -78,11 +73,10 @@ document.addEventListener('DOMContentLoaded', () => {
     if (authUser(login, password)) {
       console.log('Успешный вход!');
       alert('Успешный вход! (Переход будет реализован позже)');
-      // window.location.href = 'index.html'; // Это мы включим позже
+      // window.location.href = 'index.html';
     } else {
       console.log('Неверный логин или пароль.');
       alert('Неверный логин или пароль!');
-      // Здесь можно будет добавить сообщение об ошибке
     }
   });
 
