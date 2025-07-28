@@ -1,19 +1,13 @@
 /*────────────────────────────────────────────
-  assets/js/utils.js | РАСШИРЕННАЯ ВЕРСИЯ
+  assets/js/utils.js | УЛУЧШЕННАЯ ВЕРСИЯ
 ─────────────────────────────────────────────*/
 
-// 1. РАБОТА С ДАТАМИ
-/**
- * Форматирует дату для input type="date" (YYYY-MM-DD)
- */
+// Форматирование дат
 export function formatDateInput(date) {
     const d = date instanceof Date ? date : new Date(date);
     return d.toISOString().slice(0, 10);
 }
 
-/**
- * Форматирует дату для отображения (например, "12 июля 2025")
- */
 export function formatDateDisplay(dateValue) {
     const d = dateValue instanceof Date ? dateValue : new Date(dateValue);
     return d.toLocaleDateString('ru-RU', {
@@ -23,84 +17,75 @@ export function formatDateDisplay(dateValue) {
     });
 }
 
-/**
- * Форматирует дату с днем недели (например, "Понедельник, 12 июля")
- */
-export function formatDateWithWeekday(dateValue) {
+export function formatDateWithTime(dateValue) {
     const d = dateValue instanceof Date ? dateValue : new Date(dateValue);
-    return d.toLocaleDateString('ru-RU', {
-        weekday: 'long',
+    return d.toLocaleString('ru-RU', {
         day: 'numeric',
-        month: 'long'
+        month: 'long',
+        year: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit'
     });
 }
 
-/**
- * Проверяет, является ли дата сегодняшней
- */
-export function isToday(dateValue) {
-    const d = dateValue instanceof Date ? dateValue : new Date(dateValue);
-    const today = new Date();
-    return d.toDateString() === today.toDateString();
-}
+export function formatRelativeTime(date) {
+    const now = new Date();
+    const diff = now - (date instanceof Date ? date : new Date(date));
+    const minutes = Math.floor(diff / 60000);
+    const hours = Math.floor(diff / 3600000);
+    const days = Math.floor(diff / 86400000);
 
-/**
- * Получает массив дат между начальной и конечной
- */
-export function getDateRange(startDate, endDate) {
-    const dates = [];
-    const currentDate = new Date(startDate);
-    const lastDate = new Date(endDate);
-
-    while (currentDate <= lastDate) {
-        dates.push(formatDateInput(new Date(currentDate)));
-        currentDate.setDate(currentDate.getDate() + 1);
+    if (minutes < 60) {
+        return `${minutes} ${declension(minutes, ['минуту', 'минуты', 'минут'])} назад`;
+    } else if (hours < 24) {
+        return `${hours} ${declension(hours, ['час', 'часа', 'часов'])} назад`;
+    } else if (days < 7) {
+        return `${days} ${declension(days, ['день', 'дня', 'дней'])} назад`;
+    } else {
+        return formatDateDisplay(date);
     }
-    return dates;
 }
 
-// 2. ФОРМАТИРОВАНИЕ ЧИСЕЛ
-/**
- * Форматирует число как денежную сумму
- */
-export function formatMoney(amount) {
+// Форматирование чисел
+export function formatMoney(amount, currency = '₽') {
     return new Intl.NumberFormat('ru-RU', {
-        style: 'currency',
-        currency: 'RUB',
+        style: 'decimal',
         minimumFractionDigits: 0,
         maximumFractionDigits: 0
-    }).format(amount);
+    }).format(amount) + ' ' + currency;
 }
 
-/**
- * Форматирует число с разделителями разрядов
- */
-export function formatNumber(num) {
-    return new Intl.NumberFormat('ru-RU').format(num);
+export function formatNumber(num, decimals = 0) {
+    return new Intl.NumberFormat('ru-RU', {
+        minimumFractionDigits: decimals,
+        maximumFractionDigits: decimals
+    }).format(num);
 }
 
-/**
- * Форматирует процент
- */
 export function formatPercent(value) {
-    return `${value > 0 ? '+' : ''}${value.toFixed(1)}%`;
+    const sign = value > 0 ? '+' : '';
+    return `${sign}${value.toFixed(1)}%`;
 }
 
-// 3. УТИЛИТЫ ДЛЯ РАБОТЫ С DOM
-/**
- * Функция debounce для отложенного выполнения
- */
+// Склонение числительных
+export function declension(number, titles) {
+    const cases = [2, 0, 1, 1, 1, 2];
+    return titles[
+        (number % 100 > 4 && number % 100 < 20) ? 
+        2 : 
+        cases[(number % 10 < 5) ? number % 10 : 5]
+    ];
+}
+
+// Работа с DOM
 export function debounce(fn, ms = 300) {
     let timeout;
-    return function (...args) {
+    return function(...args) {
         clearTimeout(timeout);
         timeout = setTimeout(() => fn.apply(this, args), ms);
     };
 }
 
-/**
- * Функция throttle для ограничения частоты вызовов
- */
 export function throttle(fn, ms = 300) {
     let isThrottled = false;
     let savedArgs;
@@ -128,101 +113,28 @@ export function throttle(fn, ms = 300) {
     return wrapper;
 }
 
-// 4. ВАЛИДАЦИЯ
-/**
- * Проверяет корректность суммы
- */
-export function isValidAmount(value) {
-    return !isNaN(value) && value >= 0 && value <= 1000000;
+// Анимации
+export function animate({
+    timing = t => t,
+    draw,
+    duration = 300
+}) {
+    const start = performance.now();
+
+    requestAnimationFrame(function animate(time) {
+        let timeFraction = (time - start) / duration;
+        if (timeFraction > 1) timeFraction = 1;
+
+        const progress = timing(timeFraction);
+        draw(progress);
+
+        if (timeFraction < 1) {
+            requestAnimationFrame(animate);
+        }
+    });
 }
 
-/**
- * Проверяет корректность названия автомобиля
- */
-export function isValidCarName(value) {
-    return value.length >= 3 && value.length <= 50;
-}
-
-// 5. РАБОТА С ЛОКАЛЬНЫМ ХРАНИЛИЩЕМ
-/**
- * Безопасное сохранение в localStorage
- */
-export function safeSetItem(key, value) {
-    try {
-        localStorage.setItem(key, JSON.stringify(value));
-        return true;
-    } catch (error) {
-        console.error('Ошибка сохранения в localStorage:', error);
-        return false;
-    }
-}
-
-/**
- * Безопасное чтение из localStorage
- */
-export function safeGetItem(key, defaultValue = null) {
-    try {
-        const item = localStorage.getItem(key);
-        return item ? JSON.parse(item) : defaultValue;
-    } catch (error) {
-        console.error('Ошибка чтения из localStorage:', error);
-        return defaultValue;
-    }
-}
-
-// 6. ГЕНЕРАЦИЯ ID
-/**
- * Генерирует уникальный ID
- */
-export function generateId() {
-    return Date.now().toString(36) + Math.random().toString(36).substr(2);
-}
-
-// 7. РАБОТА С ЦВЕТАМИ
-/**
- * Осветляет/затемняет цвет
- */
-export function adjustColor(color, amount) {
-    return '#' + color.replace(/^#/, '').replace(/../g, color => 
-        ('0' + Math.min(255, Math.max(0, parseInt(color, 16) + amount))
-        .toString(16)).substr(-2));
-}
-
-// 8. УТИЛИТЫ ДЛЯ РАБОТЫ С МАССИВАМИ
-/**
- * Группирует массив по ключу
- */
-export function groupBy(array, key) {
-    return array.reduce((result, item) => {
-        (result[item[key]] = result[item[key]] || []).push(item);
-        return result;
-    }, {});
-}
-
-/**
- * Вычисляет статистику по массиву чисел
- */
-export function getStats(numbers) {
-    const sum = numbers.reduce((a, b) => a + b, 0);
-    const avg = sum / numbers.length;
-    const sorted = [...numbers].sort((a, b) => a - b);
-    const median = numbers.length % 2 === 0
-        ? (sorted[numbers.length / 2 - 1] + sorted[numbers.length / 2]) / 2
-        : sorted[Math.floor(numbers.length / 2)];
-
-    return {
-        sum,
-        avg,
-        median,
-        min: Math.min(...numbers),
-        max: Math.max(...numbers)
-    };
-}
-
-// 9. УТИЛИТЫ ДЛЯ РАБОТЫ С ОБЪЕКТАМИ
-/**
- * Глубокое клонирование объекта
- */
+// Работа с данными
 export function deepClone(obj) {
     if (obj === null || typeof obj !== 'object') return obj;
     if (obj instanceof Date) return new Date(obj);
@@ -234,9 +146,6 @@ export function deepClone(obj) {
     }
 }
 
-/**
- * Сравнение объектов
- */
 export function deepEqual(obj1, obj2) {
     if (obj1 === obj2) return true;
     if (typeof obj1 !== 'object' || typeof obj2 !== 'object') return false;
@@ -251,3 +160,66 @@ export function deepEqual(obj1, obj2) {
         keys2.includes(key) && deepEqual(obj1[key], obj2[key])
     );
 }
+
+// Валидация
+export function validateEmail(email) {
+    const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return re.test(email);
+}
+
+export function validatePhone(phone) {
+    const re = /^\+?[1-9]\d{10}$/;
+    return re.test(phone);
+}
+
+// Генерация ID
+export function generateId() {
+    return Date.now().toString(36) + Math.random().toString(36).substr(2);
+}
+
+// Работа с цветами
+export function adjustColor(color, amount) {
+    return '#' + color.replace(/^#/, '').replace(/../g, color => 
+        ('0' + Math.min(255, Math.max(0, parseInt(color, 16) + amount))
+        .toString(16)).substr(-2));
+}
+
+// Работа с URL
+export function getQueryParams() {
+    return Object.fromEntries(
+        new URLSearchParams(window.location.search).entries()
+    );
+}
+
+export function buildUrl(base, params) {
+    const url = new URL(base, window.location.origin);
+    Object.entries(params).forEach(([key, value]) => {
+        if (value !== undefined && value !== null) {
+            url.searchParams.append(key, value);
+        }
+    });
+    return url.toString();
+}
+
+// Экспорт всех утилит
+export {
+    formatDateInput,
+    formatDateDisplay,
+    formatDateWithTime,
+    formatRelativeTime,
+    formatMoney,
+    formatNumber,
+    formatPercent,
+    declension,
+    debounce,
+    throttle,
+    animate,
+    deepClone,
+    deepEqual,
+    validateEmail,
+    validatePhone,
+    generateId,
+    adjustColor,
+    getQueryParams,
+    buildUrl
+};
