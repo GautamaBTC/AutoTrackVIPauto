@@ -2,21 +2,46 @@
   assets/js/theme.js | УЛУЧШЕННАЯ ВЕРСИЯ
 ─────────────────────────────────────────────*/
 
+// Константы
 const STORAGE_KEY = 'vipautologin_theme';
+const TRANSITION_DURATION = 300;
 
-// Константы для тем
 const THEMES = {
     LIGHT: 'light',
     DARK: 'dark'
 };
 
-// Настройки анимации
-const ANIMATION = {
-    DURATION: 300, // миллисекунды
-    TIMING: 'cubic-bezier(0.4, 0, 0.2, 1)'
+// CSS переменные для каждой темы
+const THEME_VARIABLES = {
+    [THEMES.LIGHT]: {
+        '--bg': '#F0F2F5',
+        '--panel-bg': '#FFFFFF',
+        '--input-bg': '#F0F2F5',
+        '--border': '#DCDFE6',
+        '--text': '#303133',
+        '--text-muted': '#909399',
+        '--accent': '#399D9C',
+        '--accent-light': '#4DBAB3',
+        '--accent-dark': '#2D7F7E',
+        '--shadow': 'rgba(0, 0, 0, 0.05)',
+        '--btn-text': '#FFFFFF'
+    },
+    [THEMES.DARK]: {
+        '--bg': '#141414',
+        '--panel-bg': '#1D1D1D',
+        '--input-bg': '#262626',
+        '--border': '#424242',
+        '--text': '#E5EAF3',
+        '--text-muted': '#A3A6AD',
+        '--accent': '#FFD166',
+        '--accent-light': '#FFE0A3',
+        '--accent-dark': '#E5B85C',
+        '--shadow': 'rgba(0, 0, 0, 0.3)',
+        '--btn-text': '#1D1D1D'
+    }
 };
 
-// Состояние темы
+// Состояние
 let currentTheme = null;
 let isAnimating = false;
 
@@ -39,7 +64,7 @@ export function initHeader() {
     // Инициализация переключателя темы
     initThemeToggle(themeToggle);
 
-    // Проверяем системные настройки
+    // Отслеживаем системные настройки
     initSystemThemeListener();
 }
 
@@ -47,35 +72,45 @@ export function initHeader() {
  * Инициализация отображения времени и даты
  */
 function initDateTime(dateEl, timeEl) {
+    let lastDate = '';
+    let lastTime = '';
+
     function updateDateTime() {
         const now = new Date();
         
-        // Форматирование даты
-        dateEl.textContent = now.toLocaleDateString('ru-RU', {
+        // Обновляем дату только при изменении
+        const currentDate = now.toLocaleDateString('ru-RU', {
             weekday: 'long',
             day: 'numeric',
             month: 'long'
         });
-
-        // Форматирование времени
-        const hours = String(now.getHours()).padStart(2, '0');
-        const minutes = String(now.getMinutes()).padStart(2, '0');
-        const seconds = String(now.getSeconds()).padStart(2, '0');
         
-        // Анимированное обновление времени
-        if (timeEl.textContent !== `${hours}:${minutes}:${seconds}`) {
+        if (currentDate !== lastDate) {
+            dateEl.textContent = currentDate;
+            lastDate = currentDate;
+        }
+
+        // Обновляем время только при изменении
+        const [h, m, s] = [
+            now.getHours(),
+            now.getMinutes(),
+            now.getSeconds()
+        ].map(n => String(n).padStart(2, '0'));
+        
+        const currentTime = `${h}:${m}:${s}`;
+        
+        if (currentTime !== lastTime) {
+            // Плавное обновление времени
             timeEl.style.opacity = '0';
             setTimeout(() => {
-                timeEl.textContent = `${hours}:${minutes}:${seconds}`;
+                timeEl.textContent = currentTime;
                 timeEl.style.opacity = '1';
             }, 200);
+            lastTime = currentTime;
         }
     }
 
-    // Первоначальное обновление
     updateDateTime();
-    
-    // Обновление каждую секунду
     setInterval(updateDateTime, 1000);
 }
 
@@ -103,7 +138,7 @@ function initThemeToggle(toggle) {
 }
 
 /**
- * Следим за системными настройками темы
+ * Отслеживание системных настроек темы
  */
 function initSystemThemeListener() {
     const systemThemeQuery = window.matchMedia('(prefers-color-scheme: dark)');
@@ -133,7 +168,7 @@ function switchTheme(newTheme) {
         inset: 0;
         background: ${newTheme === THEMES.DARK ? '#141414' : '#F0F2F5'};
         opacity: 0;
-        transition: opacity ${ANIMATION.DURATION}ms ${ANIMATION.TIMING};
+        transition: opacity ${TRANSITION_DURATION}ms cubic-bezier(0.4, 0, 0.2, 1);
         pointer-events: none;
         z-index: 9999;
     `;
@@ -151,8 +186,8 @@ function switchTheme(newTheme) {
             setTimeout(() => {
                 overlay.remove();
                 isAnimating = false;
-            }, ANIMATION.DURATION);
-        }, ANIMATION.DURATION);
+            }, TRANSITION_DURATION);
+        }, TRANSITION_DURATION);
     });
 }
 
@@ -160,7 +195,15 @@ function switchTheme(newTheme) {
  * Применение темы
  */
 function applyTheme(theme) {
+    // Устанавливаем атрибут темы
     document.documentElement.setAttribute('data-theme', theme);
+    
+    // Применяем CSS переменные
+    Object.entries(THEME_VARIABLES[theme]).forEach(([variable, value]) => {
+        document.documentElement.style.setProperty(variable, value);
+    });
+    
+    // Сохраняем выбор пользователя
     localStorage.setItem(STORAGE_KEY, theme);
     currentTheme = theme;
 
@@ -176,32 +219,14 @@ function applyTheme(theme) {
     }));
 }
 
-/**
- * Получение текущей темы
- */
-export function getCurrentTheme() {
-    return currentTheme;
-}
-
-/**
- * Программное переключение темы
- */
-export function setTheme(theme) {
-    if (theme in THEMES) {
-        switchTheme(theme);
-    }
-}
-
-/**
- * Проверка, является ли тема темной
- */
-export function isDarkTheme() {
-    return currentTheme === THEMES.DARK;
-}
-
-/**
- * Добавление слушателя изменения темы
- */
-export function onThemeChange(callback) {
-    window.addEventListener('themechange', (e) => callback(e.detail.theme));
-}
+// Экспорт публичных функций
+export {
+    initHeader,
+    getCurrentTheme: () => currentTheme,
+    setTheme: (theme) => {
+        if (theme in THEMES) {
+            switchTheme(theme);
+        }
+    },
+    isDarkTheme: () => currentTheme === THEMES.DARK
+};
