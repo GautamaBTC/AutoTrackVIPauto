@@ -1,92 +1,241 @@
-//────────────────────────────────────────────────────────────────────────
-// storage.js — работа с пользователями и записями через localStorage
-//────────────────────────────────────────────────────────────────────────
+/*────────────────────────────────────────────
+  assets/js/storage.js | УЛУЧШЕННАЯ ВЕРСИЯ
+─────────────────────────────────────────────*/
 
-const USERS_KEY   = 'vipautojournal_users';
-const ENTRIES_KEY = 'vipautojournal_entries';
+import { safeGetItem, safeSetItem, generateId } from './utils.js';
 
-// 1) Инициализация списка пользователей
-function initUsers() {
-  let users = JSON.parse(localStorage.getItem(USERS_KEY) || 'null');
-  if (!users) {
-    users = {
-      admin:    'admin009',
-      vladimir: 'vlad123',
-      andrey:   'andr456',
-      danila:   'dan789',
-      maxim:    'max123',
-      artyom:   'art987'
-    };
-    localStorage.setItem(USERS_KEY, JSON.stringify(users));
-  }
-  return users;
+// Константы для ключей хранилища
+const STORAGE_KEYS = {
+    USERS: 'vipauto_users',
+    ENTRIES: 'vipauto_entries',
+    BONUSES: 'vipauto_bonuses',
+    SETTINGS: 'vipauto_settings',
+    BACKUP: 'vipauto_last_backup'
+};
+
+// Начальные пользователи системы
+const INITIAL_USERS = {
+    'vladimir.orlov': {
+        password: 'director2024',
+        role: 'director',
+        name: 'Владимир Орлов',
+        position: 'Директор'
+    },
+    'admin': {
+        password: 'admin2024',
+        role: 'admin',
+        name: 'Администратор',
+        position: 'Администратор'
+    },
+    'vladimir.ch': {
+        password: 'vlch2024',
+        role: 'master',
+        name: 'Владимир Ч.',
+        position: 'Мастер'
+    },
+    'vladimir.a': {
+        password: 'vla2024',
+        role: 'master',
+        name: 'Владимир А.',
+        position: 'Мастер'
+    },
+    'andrey': {
+        password: 'and2024',
+        role: 'master',
+        name: 'Андрей',
+        position: 'Мастер'
+    },
+    'danila': {
+        password: 'dan2024',
+        role: 'master',
+        name: 'Данила',
+        position: 'Мастер'
+    },
+    'maxim': {
+        password: 'max2024',
+        role: 'master',
+        name: 'Максим',
+        position: 'Мастер'
+    },
+    'artyom': {
+        password: 'art2024',
+        role: 'master',
+        name: 'Артём',
+        position: 'Мастер'
+    }
+};
+
+// Инициализация хранилища
+function initStorage() {
+    if (!safeGetItem(STORAGE_KEYS.USERS)) {
+        safeSetItem(STORAGE_KEYS.USERS, INITIAL_USERS);
+    }
+    if (!safeGetItem(STORAGE_KEYS.ENTRIES)) {
+        safeSetItem(STORAGE_KEYS.ENTRIES, []);
+    }
+    if (!safeGetItem(STORAGE_KEYS.BONUSES)) {
+        safeSetItem(STORAGE_KEYS.BONUSES, {});
+    }
+    if (!safeGetItem(STORAGE_KEYS.SETTINGS)) {
+        safeSetItem(STORAGE_KEYS.SETTINGS, {
+            defaultWorkDay: 8,
+            autoBackup: true,
+            backupInterval: 24 // часы
+        });
+    }
 }
 
-// 2) Аутентификация
-export function authUser(login, password) {
-  const users = initUsers();
-  return users[login] === password;
-}
+// Инициализируем при импорте модуля
+initStorage();
 
-// 3) Получить всех мастеров (список логинов)
+// Работа с пользователями
 export function getUsers() {
-  const users = initUsers();
-  return Object.keys(users);
+    return Object.values(safeGetItem(STORAGE_KEYS.USERS));
 }
 
-// 4) Записи журнала
-function loadEntries() {
-  return JSON.parse(localStorage.getItem(ENTRIES_KEY) || '[]');
-}
-function saveEntries(list) {
-  localStorage.setItem(ENTRIES_KEY, JSON.stringify(list));
+export function getUserByLogin(login) {
+    const users = safeGetItem(STORAGE_KEYS.USERS);
+    return users[login];
 }
 
-// 5) CRUD для записей
+export function authenticateUser(login, password) {
+    const user = getUserByLogin(login);
+    return user && user.password === password ? user : null;
+}
+
+// Работа с записями
 export function getAllEntries() {
-  return loadEntries();
+    return safeGetItem(STORAGE_KEYS.ENTRIES) || [];
 }
 
-/**
- * Добавить новую запись
- * @param {{ id?: number, date: string, master: string, car: string, services: string[],
- *            workCost: number, partsMarkup: number }} entry
- */
+export function getEntriesByMaster(masterName) {
+    return getAllEntries().filter(entry => entry.master === masterName);
+}
+
+export function getEntriesByDateRange(startDate, endDate) {
+    return getAllEntries().filter(entry => {
+        const entryDate = new Date(entry.date);
+        return entryDate >= startDate && entryDate <= endDate;
+    });
+}
+
 export function addEntry(entry) {
-  const list = loadEntries();
-  const newEntry = { id: Date.now(), ...entry };
-  list.push(newEntry);
-  saveEntries(list);
-  return newEntry;
+    const entries = getAllEntries();
+    const newEntry = {
+        id: generateId(),
+        timestamp: Date.now(),
+        ...entry
+    };
+    entries.push(newEntry);
+    safeSetItem(STORAGE_KEYS.ENTRIES, entries);
+    createBackup();
+    return newEntry;
 }
 
-/**
- * Обновить запись по id
- * @param {number} id
- * @param {object} data — обновлённые поля
- */
 export function updateEntry(id, data) {
-  const list = loadEntries();
-  const idx  = list.findIndex(e => e.id === id);
-  if (idx !== -1) {
-    list[idx] = { ...list[idx], ...data };
-    saveEntries(list);
-    return true;
-  }
-  return false;
+    const entries = getAllEntries();
+    const index = entries.findIndex(e => e.id === id);
+    if (index !== -1) {
+        entries[index] = {
+            ...entries[index],
+            ...data,
+            lastModified: Date.now()
+        };
+        safeSetItem(STORAGE_KEYS.ENTRIES, entries);
+        createBackup();
+        return true;
+    }
+    return false;
 }
 
-/**
- * Удалить запись
- * @param {number} id
- */
 export function deleteEntry(id) {
-  let list = loadEntries();
-  list = list.filter(e => e.id !== id);
-  saveEntries(list);
+    const entries = getAllEntries();
+    const filtered = entries.filter(e => e.id !== id);
+    if (filtered.length !== entries.length) {
+        safeSetItem(STORAGE_KEYS.ENTRIES, filtered);
+        createBackup();
+        return true;
+    }
+    return false;
 }
 
-// 6) Очистить все записи (для отладки)
-export function clearAllEntries() {
-  localStorage.removeItem(ENTRIES_KEY);
+// Работа с бонусами
+export function getBonuses(masterName, date) {
+    const bonuses = safeGetItem(STORAGE_KEYS.BONUSES) || {};
+    const key = `${date}_${masterName}`;
+    return bonuses[key] || { score: 0, amount: 0 };
+}
+
+export function setBonuses(masterName, date, data) {
+    const bonuses = safeGetItem(STORAGE_KEYS.BONUSES) || {};
+    const key = `${date}_${masterName}`;
+    bonuses[key] = {
+        ...data,
+        timestamp: Date.now()
+    };
+    safeSetItem(STORAGE_KEYS.BONUSES, bonuses);
+}
+
+// Настройки
+export function getSettings() {
+    return safeGetItem(STORAGE_KEYS.SETTINGS);
+}
+
+export function updateSettings(newSettings) {
+    const settings = getSettings();
+    safeSetItem(STORAGE_KEYS.SETTINGS, { ...settings, ...newSettings });
+}
+
+// Система резервного копирования
+function createBackup() {
+    const settings = getSettings();
+    if (!settings.autoBackup) return;
+
+    const lastBackup = safeGetItem(STORAGE_KEYS.BACKUP);
+    const now = Date.now();
+
+    if (!lastBackup || (now - lastBackup.timestamp) > settings.backupInterval * 3600000) {
+        const backup = {
+            timestamp: now,
+            entries: getAllEntries(),
+            bonuses: safeGetItem(STORAGE_KEYS.BONUSES),
+            settings: settings
+        };
+        safeSetItem(STORAGE_KEYS.BACKUP, backup);
+    }
+}
+
+export function restoreFromBackup() {
+    const backup = safeGetItem(STORAGE_KEYS.BACKUP);
+    if (backup) {
+        safeSetItem(STORAGE_KEYS.ENTRIES, backup.entries);
+        safeSetItem(STORAGE_KEYS.BONUSES, backup.bonuses);
+        safeSetItem(STORAGE_KEYS.SETTINGS, backup.settings);
+        return true;
+    }
+    return false;
+}
+
+// Экспорт/импорт данных
+export function exportData() {
+    const data = {
+        entries: getAllEntries(),
+        bonuses: safeGetItem(STORAGE_KEYS.BONUSES),
+        settings: getSettings(),
+        exportDate: new Date().toISOString()
+    };
+    return JSON.stringify(data);
+}
+
+export function importData(jsonString) {
+    try {
+        const data = JSON.parse(jsonString);
+        safeSetItem(STORAGE_KEYS.ENTRIES, data.entries);
+        safeSetItem(STORAGE_KEYS.BONUSES, data.bonuses);
+        safeSetItem(STORAGE_KEYS.SETTINGS, data.settings);
+        return true;
+    } catch (error) {
+        console.error('Ошибка импорта данных:', error);
+        return false;
+    }
 }
