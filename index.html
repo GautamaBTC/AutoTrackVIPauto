@@ -1,42 +1,56 @@
+<!-- ЧАСТЬ 1: НАЧАЛО -->
 <!DOCTYPE html>
 <html lang="ru" data-theme="dark">
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>VIPавто | Облачный бортовой журнал</title>
+    <meta name="theme-color" content="#141414" />
+    <title>Облачный журнал</title>
     <link rel="stylesheet" href="assets/css/reset.css" />
     <link rel="stylesheet" href="assets/css/main.css" />
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet" />
 </head>
 <body>
-    <!-- Хедер -->
+    <!-- Хедер (идентичный странице входа) -->
     <header class="page-header">
         <div class="page-header__left">
-            <h1 class="app-logo">VIPавто</h1>
-            <p class="app-tagline">облачный бортовой журнал</p>
+            <div class="user-menu">
+                <button id="user-menu-btn" class="user-menu-trigger">
+                    <i class="fas fa-user-circle"></i>
+                    <span id="user-name">...</span>
+                    <i class="fas fa-chevron-down menu-arrow"></i>
+                </button>
+                <div class="user-menu-dropdown hidden">
+                    <div class="user-info-details">
+                        <div class="user-avatar">
+                            <i class="fas fa-user-circle"></i>
+                        </div>
+                        <p class="user-role" id="user-role">...</p>
+                        <p class="user-position" id="user-position">...</p>
+                    </div>
+                    <hr>
+                    <button id="profile-btn" class="menu-btn">
+                        <i class="fas fa-id-card"></i>
+                        Профиль
+                    </button>
+                    <button id="settings-btn" class="menu-btn">
+                        <i class="fas fa-cog"></i>
+                        Настройки
+                    </button>
+                    <hr>
+                    <button id="logout-btn" class="menu-btn danger">
+                        <i class="fas fa-sign-out-alt"></i>
+                        Выйти
+                    </button>
+                </div>
+            </div>
         </div>
         <div class="page-header__center">
             <span id="current-date">…</span>
             <span id="current-time">–:–:–</span>
         </div>
         <div class="page-header__right">
-            <div class="user-menu">
-                <button id="user-menu-btn" class="user-menu-trigger">
-                    <i class="fas fa-user-circle"></i>
-                    <span id="user-name">Загрузка...</span>
-                </button>
-                <div class="user-menu-dropdown hidden">
-                    <div class="user-info">
-                        <p class="user-role" id="user-role">Загрузка...</p>
-                        <p class="user-position" id="user-position">Загрузка...</p>
-                    </div>
-                    <hr>
-                    <button id="logout-btn">
-                        <i class="fas fa-sign-out-alt"></i> Выйти
-                    </button>
-                </div>
-            </div>
             <label class="theme-switch">
                 <input type="checkbox" id="theme-toggle" />
                 <span class="slider">
@@ -50,201 +64,532 @@
     </header>
 
     <!-- Основной контент -->
-    <div class="container">
-        <!-- Навигация -->
-        <nav class="main-nav">
-            <button id="nav-journal" class="nav-btn active">
-                <i class="fas fa-book"></i> Журнал
+    <main class="app-container">
+        <!-- Быстрые действия -->
+        <div class="quick-actions">
+            <button id="quick-add-job" class="quick-action-btn primary">
+                <i class="fas fa-plus-circle"></i>
+                <span>Новая работа</span>
             </button>
-            <button id="nav-analytics" class="nav-btn">
-                <i class="fas fa-chart-line"></i> Аналитика
+            <button id="quick-stats" class="quick-action-btn">
+                <i class="fas fa-chart-bar"></i>
+                <span>Статистика</span>
             </button>
-            <button id="nav-masters" class="nav-btn director-only hidden">
-                <i class="fas fa-users"></i> Мастера
+            <button id="quick-services" class="quick-action-btn">
+                <i class="fas fa-tools"></i>
+                <span>Услуги</span>
             </button>
-            <button id="nav-settings" class="nav-btn">
-                <i class="fas fa-cog"></i> Настройки
-            </button>
-        </nav>
+        </div>
 
-        <!-- Секции контента -->
-        <main class="main-content">
-            <!-- 1. Журнал -->
-            <section id="journal-section" class="content-section">
-                <!-- Форма добавления записи -->
-                <div class="entry-form card">
-                    <h2>Добавить запись</h2>
-                    <form id="entry-form">
-                        <div class="form-row">
-                            <label>
-                                Дата:
-                                <input type="date" id="entry-date" required>
-                            </label>
-                            <label>
-                                Мастер:
-                                <select id="entry-master" required>
-                                    <option value="" disabled selected>Выберите мастера</option>
-                                </select>
-                            </label>
+        <!-- Интерфейс мастера -->
+        <div id="master-interface" class="interface-container hidden">
+            <!-- KPI мастера -->
+            <div class="kpi-grid">
+                <div class="kpi-card highlight">
+                    <div class="kpi-icon">
+                        <i class="fas fa-coins"></i>
+                    </div>
+                    <div class="kpi-content">
+                        <h3>Заработок сегодня</h3>
+                        <p id="master-today-earnings">0 ₽</p>
+                        <div class="kpi-trend positive">
+                            <i class="fas fa-arrow-up"></i>
+                            <span id="master-today-trend">0%</span>
+                            <span class="trend-label">к прошлому дню</span>
                         </div>
-                        <div class="form-row">
-                            <label>
-                                Автомобиль:
-                                <input type="text" id="entry-car" placeholder="Марка и модель" required>
-                            </label>
-                        </div>
-                        <div class="form-row">
-                            <label>
-                                Услуги:
-                                <div id="services-selector" class="services-field">
-                                    Нажмите, чтобы выбрать услуги...
-                                </div>
-                            </label>
-                        </div>
-                        <div class="form-row">
-                            <label>
-                                Работа (₽):
-                                <input type="number" id="entry-work-cost" min="0" required>
-                            </label>
-                            <label>
-                                Запчасти (₽):
-                                <input type="number" id="entry-parts-cost" min="0" required>
-                            </label>
-                        </div>
-                        <div class="form-actions">
-                            <button type="submit" class="btn btn-primary">
-                                <i class="fas fa-plus"></i> Добавить
-                            </button>
-                            <button type="reset" class="btn btn-secondary">
-                                <i class="fas fa-undo"></i> Сбросить
-                            </button>
-                        </div>
-                    </form>
+                    </div>
                 </div>
+                <div class="kpi-card">
+                    <div class="kpi-icon">
+                        <i class="fas fa-chart-line"></i>
+                    </div>
+                    <div class="kpi-content">
+                        <h3>За месяц</h3>
+                        <p id="master-month-earnings">0 ₽</p>
+                        <div class="kpi-progress">
+                            <div class="progress-bar">
+                                <div class="progress-fill" style="width: 0%"></div>
+                            </div>
+                            <span class="progress-label">0% от цели</span>
+                        </div>
+                    </div>
+                </div>
+                <!-- ЧАСТЬ 2: НАЧАЛО -->
+                <div class="kpi-card">
+                    <div class="kpi-icon">
+                        <i class="fas fa-wrench"></i>
+                    </div>
+                    <div class="kpi-content">
+                        <h3>Выполнено работ</h3>
+                        <div class="jobs-stats">
+                            <p id="master-jobs-count">0</p>
+                            <div class="jobs-breakdown">
+                                <span class="today">
+                                    <i class="fas fa-clock"></i>
+                                    Сегодня: <strong id="jobs-today">0</strong>
+                                </span>
+                                <span class="week">
+                                    <i class="fas fa-calendar-week"></i>
+                                    Неделя: <strong id="jobs-week">0</strong>
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="kpi-card">
+                    <div class="kpi-icon">
+                        <i class="fas fa-star"></i>
+                    </div>
+                    <div class="kpi-content">
+                        <h3>Бонусы</h3>
+                        <p id="master-bonus">0 ₽</p>
+                        <div class="bonus-indicator">
+                            <div class="bonus-stars">
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="far fa-star"></i>
+                                <i class="far fa-star"></i>
+                            </div>
+                            <span id="master-bonus-level">Уровень: 3/5</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
 
-                <!-- Записи журнала -->
-                <div class="journal-entries card">
-                    <div class="card-header">
-                        <h2>Записи журнала</h2>
-                        <div class="card-tools">
-                            <input type="search" id="journal-search" 
-                                   placeholder="Поиск по записям...">
-                            <select id="journal-filter">
-                                <option value="all">Все записи</option>
+            <!-- График активности -->
+            <div class="activity-chart-card">
+                <div class="chart-header">
+                    <h3>
+                        <i class="fas fa-chart-area"></i>
+                        Динамика работ
+                    </h3>
+                    <div class="chart-period-selector">
+                        <button class="period-btn active" data-period="week">Неделя</button>
+                        <button class="period-btn" data-period="month">Месяц</button>
+                    </div>
+                </div>
+                <canvas id="master-activity-chart"></canvas>
+            </div>
+
+            <!-- История работ (аккордеон) -->
+            <div class="section-card jobs-history">
+                <div class="section-header">
+                    <h2>
+                        <i class="fas fa-history"></i>
+                        История работ
+                    </h2>
+                    <div class="section-actions">
+                        <div class="search-box">
+                            <i class="fas fa-search"></i>
+                            <input type="search" id="jobs-search" 
+                                   placeholder="Поиск по работам...">
+                        </div>
+                        <button id="filter-jobs-btn" class="icon-btn" title="Фильтры">
+                            <i class="fas fa-filter"></i>
+                        </button>
+                        <button id="sort-jobs-btn" class="icon-btn" title="Сортировка">
+                            <i class="fas fa-sort"></i>
+                        </button>
+                    </div>
+                </div>
+                <div class="jobs-filters hidden">
+                    <div class="filter-group">
+                        <label>Период:</label>
+                        <select id="jobs-period-filter">
+                            <option value="all">Все время</option>
+                            <option value="today">Сегодня</option>
+                            <option value="week">Эта неделя</option>
+                            <option value="month">Этот месяц</option>
+                        </select>
+                    </div>
+                    <div class="filter-group">
+                        <label>Тип работ:</label>
+                        <select id="jobs-type-filter">
+                            <option value="all">Все работы</option>
+                            <option value="electrical">Электрика</option>
+                            <option value="mechanical">Механика</option>
+                            <option value="diagnostic">Диагностика</option>
+                        </select>
+                    </div>
+                </div>
+                <div id="master-jobs-list" class="accordion-container">
+                    <!-- Записи добавляются динамически -->
+                </div>
+            </div>
+        </div>
+        <!-- ЧАСТЬ 3: НАЧАЛО -->
+        <!-- Интерфейс директора/админа -->
+        <div id="admin-interface" class="interface-container hidden">
+            <!-- Вкладки -->
+            <nav class="tab-navigation">
+                <button class="tab-btn active" data-tab="overview">
+                    <i class="fas fa-chart-pie"></i>
+                    <span>Обзор</span>
+                </button>
+                <button class="tab-btn" data-tab="masters">
+                    <i class="fas fa-users"></i>
+                    <span>Мастера</span>
+                </button>
+                <button class="tab-btn" data-tab="analytics">
+                    <i class="fas fa-chart-line"></i>
+                    <span>Аналитика</span>
+                </button>
+                <div class="tab-indicator"></div>
+            </nav>
+
+            <!-- Контент вкладок -->
+            <div class="tab-content">
+                <!-- Вкладка обзора -->
+                <div id="overview-tab" class="tab-pane active">
+                    <!-- KPI сервиса -->
+                    <div class="kpi-grid">
+                        <div class="kpi-card large highlight">
+                            <div class="kpi-icon">
+                                <i class="fas fa-money-bill-wave"></i>
+                            </div>
+                            <div class="kpi-content">
+                                <h3>Общая выручка</h3>
+                                <p id="total-revenue">0 ₽</p>
+                                <div class="kpi-trend positive">
+                                    <i class="fas fa-arrow-up"></i>
+                                    <span id="revenue-trend">0%</span>
+                                    <span class="trend-label">к прошлому месяцу</span>
+                                </div>
+                                <div class="kpi-chart-mini">
+                                    <canvas id="revenue-trend-chart"></canvas>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="kpi-card large">
+                            <div class="kpi-icon">
+                                <i class="fas fa-chart-bar"></i>
+                            </div>
+                            <div class="kpi-content">
+                                <h3>Прибыль сервиса</h3>
+                                <p id="service-profit">0 ₽</p>
+                                <div class="profit-breakdown">
+                                    <div class="breakdown-item">
+                                        <span class="label">Работы</span>
+                                        <span class="value" id="labor-profit">0 ₽</span>
+                                    </div>
+                                    <div class="breakdown-item">
+                                        <span class="label">Запчасти</span>
+                                        <span class="value" id="parts-profit">0 ₽</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="kpi-card">
+                            <div class="kpi-icon">
+                                <i class="fas fa-users"></i>
+                            </div>
+                            <div class="kpi-content">
+                                <h3>Выплаты мастерам</h3>
+                                <p id="masters-payout">0 ₽</p>
+                                <div class="payout-progress">
+                                    <div class="progress-bar">
+                                        <div class="progress-fill" style="width: 0%"></div>
+                                    </div>
+                                    <span class="progress-label">0% от выручки</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="kpi-card">
+                            <div class="kpi-icon">
+                                <i class="fas fa-star"></i>
+                            </div>
+                            <div class="kpi-content">
+                                <h3>Бонусный фонд</h3>
+                                <p id="bonus-fund">0 ₽</p>
+                                <div class="bonus-distribution">
+                                    <canvas id="bonus-distribution-chart"></canvas>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Графики -->
+                    <div class="charts-grid">
+                        <div class="chart-card">
+                            <div class="chart-header">
+                                <h3>Выручка по дням</h3>
+                                <div class="chart-controls">
+                                    <div class="chart-period-selector">
+                                        <button class="period-btn active" data-period="week">Неделя</button>
+                                        <button class="period-btn" data-period="month">Месяц</button>
+                                    </div>
+                                    <button class="chart-fullscreen-btn">
+                                        <i class="fas fa-expand"></i>
+                                    </button>
+                                </div>
+                            </div>
+                            <canvas id="revenue-chart"></canvas>
+                        </div>
+                        <div class="chart-card">
+                            <div class="chart-header">
+                                <h3>Распределение работ</h3>
+                                <div class="chart-controls">
+                                    <div class="chart-type-selector">
+                                        <button class="type-btn active" data-type="masters">По мастерам</button>
+                                        <button class="type-btn" data-type="services">По услугам</button>
+                                    </div>
+                                    <button class="chart-fullscreen-btn">
+                                        <i class="fas fa-expand"></i>
+                                    </button>
+                                </div>
+                            </div>
+                            <canvas id="distribution-chart"></canvas>
+                        </div>
+                    </div>
+                </div>
+                <!-- ЧАСТЬ 4: НАЧАЛО -->
+                <!-- Вкладка мастеров -->
+                <div id="masters-tab" class="tab-pane">
+                    <!-- Фильтры и поиск -->
+                    <div class="masters-controls">
+                        <div class="search-box">
+                            <i class="fas fa-search"></i>
+                            <input type="search" id="masters-search" 
+                                   placeholder="Поиск по мастерам...">
+                        </div>
+                        <div class="view-switcher">
+                            <button class="view-btn active" data-view="cards">
+                                <i class="fas fa-th-large"></i>
+                            </button>
+                            <button class="view-btn" data-view="list">
+                                <i class="fas fa-list"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Сетка мастеров -->
+                    <div class="masters-grid">
+                        <!-- Карточки мастеров генерируются динамически -->
+                    </div>
+
+                    <!-- Шаблон карточки мастера -->
+                    <template id="master-card-template">
+                        <div class="master-card">
+                            <div class="master-header">
+                                <div class="master-info">
+                                    <div class="master-avatar">
+                                        <i class="fas fa-user-circle"></i>
+                                        <span class="status-indicator"></span>
+                                    </div>
+                                    <div class="master-details">
+                                        <h3 class="master-name">{master-name}</h3>
+                                        <span class="master-position">{position}</span>
+                                    </div>
+                                </div>
+                                <button class="master-menu-btn">
+                                    <i class="fas fa-ellipsis-v"></i>
+                                </button>
+                            </div>
+
+                            <div class="master-stats">
+                                <div class="stat-row">
+                                    <div class="stat-item">
+                                        <span class="stat-label">Сегодня</span>
+                                        <span class="stat-value">{today-revenue}</span>
+                                        <span class="stat-trend {trend-class}">
+                                            <i class="fas {trend-icon}"></i>
+                                            {trend-value}
+                                        </span>
+                                    </div>
+                                    <div class="stat-item">
+                                        <span class="stat-label">Месяц</span>
+                                        <span class="stat-value">{month-revenue}</span>
+                                        <div class="progress-mini">
+                                            <div class="progress-fill" style="width: {progress}%"></div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="stat-row">
+                                    <div class="stat-item">
+                                        <span class="stat-label">Работ выполнено</span>
+                                        <span class="stat-value">{jobs-count}</span>
+                                    </div>
+                                    <div class="stat-item">
+                                        <span class="stat-label">Средний чек</span>
+                                        <span class="stat-value">{average-bill}</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="master-bonus-section">
+                                <div class="bonus-header">
+                                    <h4>Бонусная система</h4>
+                                    <span class="bonus-amount">{bonus-amount}</span>
+                                </div>
+                                <div class="bonus-controls">
+                                    <div class="bonus-slider-wrap">
+                                        <input type="range" class="bonus-slider" 
+                                               min="0" max="10" value="{bonus-level}"
+                                               data-master-id="{master-id}">
+                                        <div class="bonus-scale">
+                                            <span>0%</span>
+                                            <span>+10%</span>
+                                            <span>+20%</span>
+                                        </div>
+                                    </div>
+                                    <div class="bonus-stars">
+                                        {bonus-stars}
+                                    </div>
+                                </div>
+                                <div class="bonus-info">
+                                    <span class="bonus-label">Текущий бонус:</span>
+                                    <span class="bonus-value">+{bonus-percent}%</span>
+                                </div>
+                            </div>
+
+                            <div class="master-actions">
+                                <button class="action-btn primary view-details">
+                                    <i class="fas fa-chart-line"></i>
+                                    Статистика
+                                </button>
+                                <button class="action-btn secondary edit-bonus">
+                                    <i class="fas fa-star"></i>
+                                    Изменить бонус
+                                </button>
+                            </div>
+                        </div>
+                    </template>
+                </div>
+                <!-- ЧАСТЬ 5: НАЧАЛО -->
+                <!-- Вкладка аналитики -->
+                <div id="analytics-tab" class="tab-pane">
+                    <div class="analytics-filters">
+                        <div class="filter-group">
+                            <label>Период:</label>
+                            <select id="period-select">
                                 <option value="today">Сегодня</option>
-                                <option value="week">Эта неделя</option>
-                                <option value="month">Этот месяц</option>
+                                <option value="week">Неделя</option>
+                                <option value="month" selected>Месяц</option>
+                                <option value="custom">Свой период</option>
                             </select>
                         </div>
+                        <div id="custom-period" class="filter-group hidden">
+                            <input type="date" id="date-from">
+                            <span>—</span>
+                            <input type="date" id="date-to">
+                        </div>
+                        <button id="apply-filters" class="primary-btn">
+                            <i class="fas fa-check"></i> Применить
+                        </button>
+                        <button id="export-data" class="secondary-btn">
+                            <i class="fas fa-download"></i> Экспорт
+                        </button>
                     </div>
-                    <div id="entries-list"></div>
-                </div>
-            </section>
 
-            <!-- 2. Аналитика -->
-            <section id="analytics-section" class="content-section hidden">
-                <!-- KPI панель -->
-                <div class="kpi-grid">
-                    <div class="kpi-card">
-                        <h3>Общая выручка</h3>
-                        <p id="kpi-revenue">0 ₽</p>
-                        <span class="kpi-trend positive">
-                            <i class="fas fa-arrow-up"></i> +5.2%
-                        </span>
-                    </div>
-                    <div class="kpi-card">
-                        <h3>Прибыль сервиса</h3>
-                        <p id="kpi-profit">0 ₽</p>
-                        <span class="kpi-trend positive">
-                            <i class="fas fa-arrow-up"></i> +3.8%
-                        </span>
-                    </div>
-                    <div class="kpi-card">
-                        <h3>Выплаты мастерам</h3>
-                        <p id="kpi-payouts">0 ₽</p>
-                        <span class="kpi-trend neutral">
-                            <i class="fas fa-minus"></i> 0%
-                        </span>
-                    </div>
-                    <div class="kpi-card">
-                        <h3>Количество работ</h3>
-                        <p id="kpi-jobs">0</p>
-                        <span class="kpi-trend positive">
-                            <i class="fas fa-arrow-up"></i> +12.5%
-                        </span>
+                    <div class="analytics-content">
+                        <!-- Графики добавляются динамически -->
                     </div>
                 </div>
-
-                <!-- Графики -->
-                <div class="charts-grid">
-                    <div class="card">
-                        <h3>Выручка по дням</h3>
-                        <canvas id="revenue-chart"></canvas>
-                    </div>
-                    <div class="card">
-                        <h3>Распределение работ</h3>
-                        <canvas id="masters-chart"></canvas>
-                    </div>
-                </div>
-            </section>
-
-            <!-- 3. Мастера (только для директора) -->
-            <section id="masters-section" class="content-section hidden">
-                <div class="masters-grid" id="masters-grid">
-                    <!-- Карточки мастеров генерируются динамически -->
-                </div>
-            </section>
-
-            <!-- 4. Настройки -->
-            <section id="settings-section" class="content-section hidden">
-                <div class="card">
-                    <h2>Настройки профиля</h2>
-                    <!-- Настройки добавим позже -->
-                </div>
-            </section>
-        </main>
-    </div>
+            </div>
+        </div>
+    </main>
 
     <!-- Модальные окна -->
-    <!-- 1. Выбор услуг -->
-    <div id="services-modal" class="modal hidden">
+    <!-- Форма добавления работы -->
+    <div id="add-job-modal" class="modal">
         <div class="modal-content">
             <div class="modal-header">
-                <h3>Выбор услуг</h3>
-                <input type="search" id="service-search" 
-                       placeholder="Поиск услуг...">
+                <h3>
+                    <i class="fas fa-plus-circle"></i>
+                    Новая работа
+                </h3>
+                <button class="close-modal">
+                    <i class="fas fa-times"></i>
+                </button>
             </div>
             <div class="modal-body">
-                <div class="services-tabs">
-                    <button class="tab-btn active">Все услуги</button>
-                    <button class="tab-btn">Избранные</button>
-                    <button class="tab-btn">Последние</button>
-                </div>
-                <div id="services-list"></div>
+                <form id="add-job-form">
+                    <div class="form-group">
+                        <label>
+                            <i class="fas fa-calendar"></i>
+                            Дата
+                        </label>
+                        <input type="date" id="job-date" required>
+                    </div>
+                    <div class="form-group">
+                        <label>
+                            <i class="fas fa-car"></i>
+                            Автомобиль
+                        </label>
+                        <input type="text" id="job-car" 
+                               placeholder="Марка и модель" required>
+                    </div>
+                    <div class="form-group">
+                        <label>
+                            <i class="fas fa-tools"></i>
+                            Услуги
+                        </label>
+                        <div id="services-selector" class="services-field">
+                            <span class="placeholder">Нажмите, чтобы выбрать услуги...</span>
+                            <div class="selected-services"></div>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>
+                                <i class="fas fa-hammer"></i>
+                                Работа (₽)
+                            </label>
+                            <input type="number" id="job-work-cost" 
+                                   min="0" required>
+                        </div>
+                        <div class="form-group">
+                            <label>
+                                <i class="fas fa-cogs"></i>
+                                Запчасти (₽)
+                            </label>
+                            <input type="number" id="job-parts-cost" 
+                                   min="0" required>
+                        </div>
+                    </div>
+                </form>
             </div>
             <div class="modal-footer">
-                <button class="btn btn-secondary" id="services-cancel">
+                <button class="secondary-btn" data-dismiss="modal">
                     Отмена
                 </button>
-                <button class="btn btn-primary" id="services-confirm">
-                    Подтвердить
+                <button class="primary-btn" id="save-job-btn">
+                    <i class="fas fa-save"></i>
+                    Сохранить
                 </button>
             </div>
         </div>
     </div>
 
-    <!-- 2. Модальное окно бонусов (для директора) -->
-    <div id="bonus-modal" class="modal hidden">
+    <!-- Модальное окно бонусов -->
+    <div id="bonus-modal" class="modal">
         <div class="modal-content">
             <div class="modal-header">
-                <h3>Система бонусов "Мастер+"</h3>
-                <p id="bonus-master-name"></p>
+                <h3>
+                    <i class="fas fa-star"></i>
+                    Система бонусов "Мастер+"
+                </h3>
+                <button class="close-modal">
+                    <i class="fas fa-times"></i>
+                </button>
             </div>
             <div class="modal-body">
+                <div class="bonus-master-info">
+                    <div class="master-avatar">
+                        <i class="fas fa-user-circle"></i>
+                    </div>
+                    <div class="master-details">
+                        <h4 id="bonus-master-name">Имя мастера</h4>
+                        <p id="bonus-master-stats">Статистика загружается...</p>
+                    </div>
+                </div>
+
                 <div class="bonus-controls">
                     <div class="bonus-slider-wrap">
                         <input type="range" id="bonus-slider" 
-                               min="0" max="10" step="1" value="0">
+                               min="0" max="10" step="1" value="0"
+                               class="bonus-range">
                         <div class="bonus-scale">
                             <span>0%</span>
                             <span>+10%</span>
@@ -256,20 +601,38 @@
                         <p>Сумма бонуса: <span id="bonus-amount">0 ₽</span></p>
                     </div>
                 </div>
-                <div class="bonus-criteria">
-                    <h4>Критерии оценки:</h4>
-                    <ul>
-                        <li>Качество работы</li>
-                        <li>Сложность задач</li>
-                        <li>Количество работ</li>
-                        <li>Отзывы клиентов</li>
-                        <li>Соблюдение сроков</li>
-                        <li>Чистота рабочего места</li>
-                        <li>Работа в команде</li>
-                    </ul>
+
+                <div class="bonus-history">
+                    <h4>История бонусов</h4>
+                    <div class="bonus-chart">
+                        <canvas id="bonus-history-chart"></canvas>
+                    </div>
                 </div>
+
+                <div class="bonus-criteria">
+                    <h4>
+                        <i class="fas fa-clipboard-check"></i>
+                        Критерии оценки
+                    </h4>
+                    <div class="criteria-grid">
+                        <div class="criterion">
+                            <i class="fas fa-check"></i>
+                            <span>Качество работы</span>
+                            <div class="criterion-rating">
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="far fa-star"></i>
+                                <i class="far fa-star"></i>
+                            </div>
+                        </div>
+                        <!-- Остальные критерии -->
+                    </div>
+                </div>
+
                 <div class="bonus-comment">
                     <label for="bonus-comment-input">
+                        <i class="fas fa-comment"></i>
                         Комментарий к оценке:
                     </label>
                     <textarea id="bonus-comment-input" 
@@ -278,10 +641,11 @@
                 </div>
             </div>
             <div class="modal-footer">
-                <button class="btn btn-secondary" id="bonus-cancel">
+                <button class="secondary-btn" data-dismiss="modal">
                     Отмена
                 </button>
-                <button class="btn btn-primary" id="bonus-confirm">
+                <button class="primary-btn" id="save-bonus">
+                    <i class="fas fa-save"></i>
                     Сохранить
                 </button>
             </div>
