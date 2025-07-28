@@ -1,277 +1,629 @@
 /*────────────────────────────────────────────
-  assets/js/charts.js | АНАЛИТИКА И ГРАФИКИ
+  assets/js/charts.js | ЧАСТЬ 1: ОСНОВНАЯ ЛОГИКА
 ─────────────────────────────────────────────*/
 
+import { formatMoney, formatDateDisplay } from './utils.js';
 import { getAllEntries } from './storage.js';
-import { formatDateInput, formatDateDisplay, getDateRange } from './utils.js';
-import { Chart, registerables } from 'https://cdn.jsdelivr.net/npm/chart.js';
+import { Chart } from 'https://cdn.jsdelivr.net/npm/chart.js';
 
-Chart.register(...registerables);
+// Глобальные настройки Chart.js
+Chart.defaults.font.family = "'Inter', sans-serif";
+Chart.defaults.color = getComputedStyle(document.documentElement)
+    .getPropertyValue('--text-muted').trim();
+Chart.defaults.responsive = true;
+Chart.defaults.maintainAspectRatio = false;
 
-let revenueChart, mastersChart, servicesChart;
-let currentPeriod = 'this_month';
+// Состояние графиков
+let revenueChart = null;
+let mastersChart = null;
+let servicesChart = null;
+let trendsChart = null;
 
-export function initAnalyticsView() {
-    setupPeriodSelector();
-    setupCharts();
-    updateAnalytics();
-}
+// Цветовые схемы
+const chartColors = {
+    light: {
+        primary: '#399D9C',
+        secondary: '#4DBAB3',
+        accent: '#FFD166',
+        background: 'rgba(57, 157, 156, 0.1)',
+        grid: 'rgba(0, 0, 0, 0.05)'
+    },
+    dark: {
+        primary: '#FFD166',
+        secondary: '#FFE0A3',
+        accent: '#399D9C',
+        background: 'rgba(255, 209, 102, 0.1)',
+        grid: 'rgba(255, 255, 255, 0.05)'
+    }
+};
 
-function setupPeriodSelector() {
-    const selector = document.getElementById('period-select');
-    const customRange = document.getElementById('custom-range');
-    
-    selector.addEventListener('change', () => {
-        currentPeriod = selector.value;
-        customRange.classList.toggle('hidden', currentPeriod !== 'custom');
-        updateAnalytics();
-    });
+// Инициализация графиков
+export function initCharts() {
+    // Определяем текущую тему
+    const isDarkTheme = document.documentElement.getAttribute('data-theme') === 'dark';
+    const colors = isDarkTheme ? chartColors.dark : chartColors.light;
 
-    // Обработчики для кастомного периода
-    const startDate = document.getElementById('start-date');
-    const endDate = document.getElementById('end-date');
-    const applyRange = document.getElementById('apply-range');
+    // Настраиваем градиенты
+    const revenueCtx = document.getElementById('revenue-chart')?.getContext('2d');
+    const mastersCtx = document.getElementById('masters-chart')?.getContext('2d');
+    const servicesCtx = document.getElementById('services-chart')?.getContext('2d');
+    const trendsCtx = document.getElementById('trends-chart')?.getContext('2d');
 
-    applyRange.addEventListener('click', () => {
-        if (startDate.value && endDate.value) {
-            updateAnalytics();
-        }
-    });
-}
+    if (revenueCtx) {
+        const revenueGradient = revenueCtx.createLinearGradient(0, 0, 0, 400);
+        revenueGradient.addColorStop(0, colors.background);
+        revenueGradient.addColorStop(1, 'rgba(0, 0, 0, 0)');
 
-function getPeriodDates() {
-    const today = new Date();
-    let start = new Date(today);
-    let end = new Date(today);
-
-    switch (currentPeriod) {
-        case 'today':
-            break;
-            
-        case 'this_week':
-            start.setDate(today.getDate() - today.getDay());
-            break;
-            
-        case 'last_week':
-            end.setDate(today.getDate() - today.getDay() - 1);
-            start.setDate(end.getDate() - 6);
-            break;
-            
-        case 'this_month':
-            start.setDate(1);
-            break;
-            
-        case 'last_month':
-            end = new Date(today.getFullYear(), today.getMonth(), 0);
-            start = new Date(end.getFullYear(), end.getMonth(), 1);
-            break;
-            
-        case 'custom':
-            start = new Date(document.getElementById('start-date').value);
-            end = new Date(document.getElementById('end-date').value);
-            break;
+        initRevenueChart(revenueCtx, colors, revenueGradient);
     }
 
-    return [start, end];
-}
+    if (mastersCtx) {
+        initMastersChart(mastersCtx, colors);
+    }
 
-function updateAnalytics() {
-    const [startDate, endDate] = getPeriodDates();
-    
-    // Фильтруем записи по периоду
-    const entries = getAllEntries().filter(entry => {
-        const entryDate = new Date(entry.date);
-        return entryDate >= startDate && entryDate <= endDate;
+    if (servicesCtx) {
+        initServicesChart(servicesCtx, colors);
+    }
+
+    if (trendsCtx) {
+        initTrendsChart(trendsCtx, colors);
+    }
+
+    // Слушатель изменения темы
+    document.addEventListener('themechange', (e) => {
+        const newColors = e.detail.theme === 'dark' ? chartColors.dark : chartColors.light;
+        updateChartsTheme(newColors);
     });
-
-    // Обновляем KPI
-    updateKPIs(entries);
-
-    // Обновляем графики
-    updateRevenueChart(entries, startDate, endDate);
-    updateMastersChart(entries);
-    updateServicesChart(entries);
 }
 
-function updateKPIs(entries) {
-    const totalRevenue = entries.reduce((sum, e) => sum + e.workCost + e.partsCost, 0);
-    const serviceProfit = totalRevenue * 0.5;
-    const mastersPayouts = entries.reduce((sum, e) => {
-        const base = (e.workCost + e.partsCost) * 0.5;
-        const bonus = calculateBonus(e);
-        return sum + base + bonus;
-    }, 0);
+function initRevenueChart(ctx, colors, gradient) {
+    if (revenueChart) {
+        revenueChart.destroy();
+    }
 
-    // Получаем данные за предыдущий период для сравнения
-    const prevEntries = getPreviousPeriodEntries();
-    const prevRevenue = prevEntries.reduce((sum, e) => sum + e.workCost + e.partsCost, 0);
-    
-    // Рассчитываем изменения
-    const revenueChange = ((totalRevenue - prevRevenue) / prevRevenue * 100) || 0;
-
-    // Обновляем элементы
-    document.getElementById('kpi-revenue').textContent = `${totalRevenue.toFixed(0)} ₽`;
-    document.getElementById('kpi-profit').textContent = `${serviceProfit.toFixed(0)} ₽`;
-    document.getElementById('kpi-payouts').textContent = `${mastersPayouts.toFixed(0)} ₽`;
-    document.getElementById('kpi-jobs').textContent = entries.length;
-
-    // Обновляем тренды
-    updateTrendIndicator('revenue-trend', revenueChange);
-}
-
-function updateTrendIndicator(elementId, change) {
-    const element = document.getElementById(elementId);
-    const isPositive = change > 0;
-    const isNeutral = change === 0;
-
-    element.className = `kpi-trend ${isPositive ? 'positive' : isNeutral ? 'neutral' : 'negative'}`;
-    element.innerHTML = `
-        <i class="fas fa-${isPositive ? 'arrow-up' : isNeutral ? 'minus' : 'arrow-down'}"></i>
-        ${Math.abs(change).toFixed(1)}%
-    `;
-}
-
-function updateRevenueChart(entries, startDate, endDate) {
-    const dates = getDateRange(startDate, endDate);
-    const data = dates.map(date => {
-        const dayEntries = entries.filter(e => e.date === date);
-        return dayEntries.reduce((sum, e) => sum + e.workCost + e.partsCost, 0);
-    });
-
-    if (revenueChart) revenueChart.destroy();
-
-    const ctx = document.getElementById('revenue-chart').getContext('2d');
     revenueChart = new Chart(ctx, {
-        type: 'bar',
+        type: 'line',
         data: {
-            labels: dates.map(d => formatDateDisplay(d)),
+            labels: [],
             datasets: [{
                 label: 'Выручка',
-                data: data,
-                backgroundColor: 'rgba(57, 157, 156, 0.6)',
-                borderColor: 'rgba(57, 157, 156, 1)',
-                borderWidth: 1
+                data: [],
+                borderColor: colors.primary,
+                backgroundColor: gradient,
+                borderWidth: 2,
+                fill: true,
+                tension: 0.4,
+                pointBackgroundColor: colors.primary,
+                pointBorderColor: '#fff',
+                pointBorderWidth: 2,
+                pointRadius: 4,
+                pointHoverRadius: 6,
+                pointHoverBorderWidth: 3,
+                pointHoverBackgroundColor: colors.primary,
+                pointHoverBorderColor: '#fff'
             }]
         },
         options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            scales: {
-                y: {
-                    beginAtZero: true,
-                    ticks: {
-                        callback: value => `${value} ₽`
-                    }
-                }
-            },
             plugins: {
+                legend: {
+                    display: false
+                },
                 tooltip: {
+                    mode: 'index',
+                    intersect: false,
+                    backgroundColor: colors.accent,
+                    titleColor: '#fff',
+                    bodyColor: '#fff',
+                    titleFont: {
+                        size: 14,
+                        weight: '600'
+                    },
+                    bodyFont: {
+                        size: 13
+                    },
+                    padding: 12,
+                    borderWidth: 0,
+                    cornerRadius: 8,
                     callbacks: {
-                        label: context => `Выручка: ${context.parsed.y.toFixed(2)} ₽`
-                    }
-                }
-            }
-        }
-    });
-}
-
-function updateMastersChart(entries) {
-    const masterStats = entries.reduce((acc, entry) => {
-        const total = entry.workCost + entry.partsCost;
-        acc[entry.master] = (acc[entry.master] || 0) + total;
-        return acc;
-    }, {});
-
-    const sortedData = Object.entries(masterStats)
-        .sort(([,a], [,b]) => b - a);
-
-    if (mastersChart) mastersChart.destroy();
-
-    const ctx = document.getElementById('masters-chart').getContext('2d');
-    mastersChart = new Chart(ctx, {
-        type: 'doughnut',
-        data: {
-            labels: sortedData.map(([master]) => master),
-            datasets: [{
-                data: sortedData.map(([,value]) => value),
-                backgroundColor: [
-                    'rgba(57, 157, 156, 0.8)',
-                    'rgba(77, 186, 179, 0.8)',
-                    'rgba(255, 209, 102, 0.8)',
-                    'rgba(255, 159, 28, 0.8)',
-                    'rgba(220, 53, 69, 0.8)',
-                    'rgba(108, 117, 125, 0.8)'
-                ]
-            }]
-        },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            plugins: {
-                tooltip: {
-                    callbacks: {
-                        label: context => {
-                            const value = context.parsed;
-                            const total = context.dataset.data.reduce((a, b) => a + b, 0);
-                            const percentage = ((value / total) * 100).toFixed(1);
-                            return `${context.label}: ${value.toFixed(2)} ₽ (${percentage}%)`;
+                        label: (context) => {
+                            return ` ${formatMoney(context.parsed.y)}`;
                         }
                     }
                 }
+            },
+            scales: {
+                x: {
+                    grid: {
+                        display: false
+                    },
+                    ticks: {
+                        font: {
+                            size: 12
+                        }
+                    }
+                },
+                y: {
+                    beginAtZero: true,
+                    grid: {
+                        color: colors.grid
+                    },
+                    ticks: {
+                        callback: (value) => formatMoney(value),
+                        font: {
+                            size: 12
+                        }
+                    }
+                }
+            },
+            interaction: {
+                mode: 'nearest',
+                axis: 'x',
+                intersect: false
+            },
+            animations: {
+                tension: {
+                    duration: 1000,
+                    easing: 'easeInOutCubic'
+                }
             }
         }
     });
 }
 
-function updateServicesChart(entries) {
-    // Собираем статистику по услугам
-    const serviceStats = entries.reduce((acc, entry) => {
-        entry.services.forEach(service => {
-            acc[service] = (acc[service] || 0) + 1;
-        });
-        return acc;
-    }, {});
+/*────────────────────────────────────────────
+  assets/js/charts.js | ЧАСТЬ 2: ГРАФИКИ И ОБНОВЛЕНИЕ
+─────────────────────────────────────────────*/
 
-    // Берем топ-10 услуг
-    const topServices = Object.entries(serviceStats)
-        .sort(([,a], [,b]) => b - a)
-        .slice(0, 10);
+function initMastersChart(ctx, colors) {
+    if (mastersChart) {
+        mastersChart.destroy();
+    }
 
-    if (servicesChart) servicesChart.destroy();
-
-    const ctx = document.getElementById('services-chart').getContext('2d');
-    servicesChart = new Chart(ctx, {
-        type: 'horizontalBar',
+    mastersChart = new Chart(ctx, {
+        type: 'doughnut',
         data: {
-            labels: topServices.map(([service]) => service),
+            labels: [],
+            datasets: [{
+                data: [],
+                backgroundColor: [
+                    colors.primary,
+                    colors.secondary,
+                    colors.accent,
+                    ...generateGradientColors(colors.primary, colors.secondary, 7)
+                ],
+                borderWidth: 2,
+                borderColor: getComputedStyle(document.documentElement)
+                    .getPropertyValue('--panel-bg').trim()
+            }]
+        },
+        options: {
+            cutout: '70%',
+            plugins: {
+                legend: {
+                    position: 'right',
+                    labels: {
+                        padding: 20,
+                        usePointStyle: true,
+                        pointStyle: 'circle',
+                        font: {
+                            size: 12
+                        }
+                    }
+                },
+                tooltip: {
+                    backgroundColor: colors.accent,
+                    titleColor: '#fff',
+                    bodyColor: '#fff',
+                    padding: 12,
+                    borderWidth: 0,
+                    cornerRadius: 8,
+                    callbacks: {
+                        label: (context) => {
+                            const value = context.parsed;
+                            const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                            const percentage = ((value / total) * 100).toFixed(1);
+                            return ` ${context.label}: ${formatMoney(value)} (${percentage}%)`;
+                        }
+                    }
+                }
+            },
+            animation: {
+                animateRotate: true,
+                animateScale: true
+            }
+        }
+    });
+}
+
+function initServicesChart(ctx, colors) {
+    if (servicesChart) {
+        servicesChart.destroy();
+    }
+
+    servicesChart = new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: [],
             datasets: [{
                 label: 'Количество заказов',
-                data: topServices.map(([,count]) => count),
-                backgroundColor: 'rgba(255, 209, 102, 0.8)',
-                borderColor: 'rgba(255, 209, 102, 1)',
-                borderWidth: 1
+                data: [],
+                backgroundColor: colors.primary,
+                borderRadius: 6,
+                borderSkipped: false
             }]
         },
         options: {
             indexAxis: 'y',
-            responsive: true,
-            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    display: false
+                },
+                tooltip: {
+                    backgroundColor: colors.accent,
+                    titleColor: '#fff',
+                    bodyColor: '#fff',
+                    padding: 12,
+                    borderWidth: 0,
+                    cornerRadius: 8
+                }
+            },
             scales: {
                 x: {
-                    beginAtZero: true
+                    grid: {
+                        display: false
+                    },
+                    ticks: {
+                        font: {
+                            size: 12
+                        }
+                    }
+                },
+                y: {
+                    grid: {
+                        display: false
+                    },
+                    ticks: {
+                        font: {
+                            size: 12
+                        }
+                    }
                 }
+            },
+            animation: {
+                duration: 1000,
+                easing: 'easeInOutQuart'
             }
         }
     });
 }
 
-// Вспомогательные функции
-function calculateBonus(entry) {
-    // Здесь будет логика расчета бонусов
-    return 0;
+function initTrendsChart(ctx, colors) {
+    if (trendsChart) {
+        trendsChart.destroy();
+    }
+
+    trendsChart = new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: [],
+            datasets: [
+                {
+                    label: 'Средний чек',
+                    data: [],
+                    borderColor: colors.primary,
+                    backgroundColor: 'transparent',
+                    borderWidth: 2,
+                    tension: 0.4,
+                    pointRadius: 4
+                },
+                {
+                    label: 'Количество работ',
+                    data: [],
+                    borderColor: colors.accent,
+                    backgroundColor: 'transparent',
+                    borderWidth: 2,
+                    tension: 0.4,
+                    pointRadius: 4
+                }
+            ]
+        },
+        options: {
+            plugins: {
+                tooltip: {
+                    mode: 'index',
+                    intersect: false,
+                    backgroundColor: colors.accent,
+                    titleColor: '#fff',
+                    bodyColor: '#fff',
+                    padding: 12,
+                    borderWidth: 0,
+                    cornerRadius: 8
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    grid: {
+                        color: colors.grid
+                    }
+                }
+            },
+            interaction: {
+                mode: 'nearest',
+                axis: 'x',
+                intersect: false
+            }
+        }
+    });
 }
 
-function getPreviousPeriodEntries() {
-    // Получаем записи за предыдущий период для сравнения
-    return [];
+// Обновление данных
+export function updateCharts(period = 'month') {
+    const entries = getAllEntries();
+    
+    // Фильтруем записи по периоду
+    const filteredEntries = filterEntriesByPeriod(entries, period);
+    
+    // Обновляем все графики
+    updateRevenueChart(filteredEntries);
+    updateMastersChart(filteredEntries);
+    updateServicesChart(filteredEntries);
+    updateTrendsChart(filteredEntries);
 }
+
+function updateRevenueChart(entries) {
+    if (!revenueChart) return;
+
+    // Группируем данные по датам
+    const dailyRevenue = entries.reduce((acc, entry) => {
+        const date = entry.date;
+        acc[date] = (acc[date] || 0) + entry.workCost + entry.partsCost;
+        return acc;
+    }, {});
+
+    // Сортируем даты
+    const sortedDates = Object.keys(dailyRevenue).sort();
+
+    revenueChart.data.labels = sortedDates.map(date => formatDateDisplay(date));
+    revenueChart.data.datasets[0].data = sortedDates.map(date => dailyRevenue[date]);
+    
+    // Анимированное обновление
+    revenueChart.update('active');
+}
+
+// Вспомогательные функции
+function generateGradientColors(startColor, endColor, steps) {
+    const colors = [];
+    for (let i = 0; i < steps; i++) {
+        const ratio = i / (steps - 1);
+        colors.push(interpolateColors(startColor, endColor, ratio));
+    }
+    return colors;
+}
+
+function interpolateColors(color1, color2, ratio) {
+    const r1 = parseInt(color1.slice(1, 3), 16);
+    const g1 = parseInt(color1.slice(3, 5), 16);
+    const b1 = parseInt(color1.slice(5, 7), 16);
+    
+    const r2 = parseInt(color2.slice(1, 3), 16);
+    const g2 = parseInt(color2.slice(3, 5), 16);
+    const b2 = parseInt(color2.slice(5, 7), 16);
+    
+    const r = Math.round(r1 + (r2 - r1) * ratio);
+    const g = Math.round(g1 + (g2 - g1) * ratio);
+    const b = Math.round(b1 + (b2 - b1) * ratio);
+    
+    return `#${[r, g, b].map(x => x.toString(16).padStart(2, '0')).join('')}`;
+}
+
+// Экспорт дополнительных функций
+export {
+    updateChartsTheme,
+    exportChartAsImage
+};
+
+/*────────────────────────────────────────────
+  assets/js/charts.js | ЧАСТЬ 3: ДОПОЛНИТЕЛЬНЫЕ ФУНКЦИИ
+─────────────────────────────────────────────*/
+
+// Обновление темы графиков
+function updateChartsTheme(colors) {
+    // Обновляем градиенты
+    const revenueCtx = document.getElementById('revenue-chart')?.getContext('2d');
+    if (revenueCtx && revenueChart) {
+        const revenueGradient = revenueCtx.createLinearGradient(0, 0, 0, 400);
+        revenueGradient.addColorStop(0, colors.background);
+        revenueGradient.addColorStop(1, 'rgba(0, 0, 0, 0)');
+
+        revenueChart.data.datasets[0].backgroundColor = revenueGradient;
+        revenueChart.data.datasets[0].borderColor = colors.primary;
+        revenueChart.data.datasets[0].pointBackgroundColor = colors.primary;
+        revenueChart.options.scales.y.grid.color = colors.grid;
+        revenueChart.update();
+    }
+
+    // Обновляем цвета круговой диаграммы
+    if (mastersChart) {
+        mastersChart.data.datasets[0].backgroundColor = [
+            colors.primary,
+            colors.secondary,
+            colors.accent,
+            ...generateGradientColors(colors.primary, colors.secondary, 7)
+        ];
+        mastersChart.data.datasets[0].borderColor = getComputedStyle(document.documentElement)
+            .getPropertyValue('--panel-bg').trim();
+        mastersChart.update();
+    }
+
+    // Обновляем цвета столбчатой диаграммы
+    if (servicesChart) {
+        servicesChart.data.datasets[0].backgroundColor = colors.primary;
+        servicesChart.update();
+    }
+
+    // Обновляем цвета графика трендов
+    if (trendsChart) {
+        trendsChart.data.datasets[0].borderColor = colors.primary;
+        trendsChart.data.datasets[1].borderColor = colors.accent;
+        trendsChart.options.scales.y.grid.color = colors.grid;
+        trendsChart.update();
+    }
+}
+
+// Экспорт графиков
+function exportChartAsImage(chartId, fileName) {
+    const chart = getChartById(chartId);
+    if (!chart) return;
+
+    // Создаем временный canvas с белым фоном
+    const tempCanvas = document.createElement('canvas');
+    const tempCtx = tempCanvas.getContext('2d');
+    tempCanvas.width = chart.canvas.width;
+    tempCanvas.height = chart.canvas.height;
+
+    // Рисуем белый фон
+    tempCtx.fillStyle = '#ffffff';
+    tempCtx.fillRect(0, 0, tempCanvas.width, tempCanvas.height);
+
+    // Копируем график
+    tempCtx.drawImage(chart.canvas, 0, 0);
+
+    // Создаем ссылку для скачивания
+    const link = document.createElement('a');
+    link.download = `${fileName || 'chart'}.png`;
+    link.href = tempCanvas.toDataURL('image/png');
+    link.click();
+}
+
+// Анимированное обновление данных
+function animateChartUpdate(chart, newData, duration = 1000) {
+    const startData = [...chart.data.datasets[0].data];
+    const diff = newData.map((val, i) => val - (startData[i] || 0));
+    const steps = 60;
+    const stepDuration = duration / steps;
+    let currentStep = 0;
+
+    function animate() {
+        currentStep++;
+        const progress = currentStep / steps;
+        
+        // Используем функцию плавности
+        const easeProgress = easeOutCubic(progress);
+
+        const currentData = newData.map((val, i) => 
+            startData[i] + (diff[i] * easeProgress)
+        );
+
+        chart.data.datasets[0].data = currentData;
+        chart.update('none'); // Отключаем встроенную анимацию
+
+        if (currentStep < steps) {
+            requestAnimationFrame(animate);
+        }
+    }
+
+    requestAnimationFrame(animate);
+}
+
+// Функция плавности
+function easeOutCubic(x) {
+    return 1 - Math.pow(1 - x, 3);
+}
+
+// Форматирование подписей
+function formatChartLabel(value, type) {
+    switch (type) {
+        case 'money':
+            return formatMoney(value);
+        case 'percent':
+            return `${value.toFixed(1)}%`;
+        case 'number':
+            return value.toLocaleString('ru-RU');
+        default:
+            return value;
+    }
+}
+
+// Создание легенды с дополнительной информацией
+function generateCustomLegend(chart) {
+    const ul = document.createElement('ul');
+    ul.className = 'custom-chart-legend';
+
+    chart.data.datasets[0].data.forEach((value, index) => {
+        const li = document.createElement('li');
+        li.className = 'legend-item';
+        
+        const color = chart.data.datasets[0].backgroundColor[index];
+        const label = chart.data.labels[index];
+        const percentage = ((value / chart.data.datasets[0].data.reduce((a, b) => a + b, 0)) * 100).toFixed(1);
+
+        li.innerHTML = `
+            <span class="legend-color" style="background-color: ${color}"></span>
+            <span class="legend-label">${label}</span>
+            <span class="legend-value">${formatMoney(value)}</span>
+            <span class="legend-percentage">${percentage}%</span>
+        `;
+
+        ul.appendChild(li);
+    });
+
+    return ul;
+}
+
+// Обработка взаимодействия с графиком
+function setupChartInteractions(chartId) {
+    const chart = getChartById(chartId);
+    if (!chart) return;
+
+    chart.canvas.addEventListener('mousemove', (e) => {
+        const points = chart.getElementsAtEventForMode(e, 'nearest', { intersect: true }, false);
+        
+        if (points.length) {
+            chart.canvas.style.cursor = 'pointer';
+        } else {
+            chart.canvas.style.cursor = 'default';
+        }
+    });
+
+    chart.canvas.addEventListener('click', (e) => {
+        const points = chart.getElementsAtEventForMode(e, 'nearest', { intersect: true }, false);
+        
+        if (points.length) {
+            const firstPoint = points[0];
+            const label = chart.data.labels[firstPoint.index];
+            const value = chart.data.datasets[firstPoint.datasetIndex].data[firstPoint.index];
+            
+            // Вызываем callback с данными точки
+            if (typeof chart.options.onClick === 'function') {
+                chart.options.onClick(label, value);
+            }
+        }
+    });
+}
+
+// Получение графика по ID
+function getChartById(chartId) {
+    switch (chartId) {
+        case 'revenue':
+            return revenueChart;
+        case 'masters':
+            return mastersChart;
+        case 'services':
+            return servicesChart;
+        case 'trends':
+            return trendsChart;
+        default:
+            return null;
+    }
+}
+
+// Экспорт всех необходимых функций
+export {
+    initCharts,
+    updateCharts,
+    updateChartsTheme,
+    exportChartAsImage,
+    generateCustomLegend,
+    setupChartInteractions
+};
