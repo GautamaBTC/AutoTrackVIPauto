@@ -1,13 +1,22 @@
 /*────────────────────────────────────────────
-  assets/css/login.css | БЕЗ СВЕЧЕНИЯ
+  assets/css/login.css | С УВЕДОМЛЕНИЯМИ
 ─────────────────────────────────────────────*/
 
 /* 1. Цветовые темы (без изменений) */
 :root {
-  --bg: #F0F2F5; --panel-bg: #FFFFFF; --input-bg: #F0F2F5; --border: #DCDFE6; --text: #303133; --text-muted: #909399; --accent: #399D9C; --shadow: rgba(0, 0, 0, 0.05); --btn-text: #FFFFFF;
+  --bg: #F0F2F5; --panel-bg: #FFFFFF; --input-bg: #F0F2F5; --border: #DCDFE6; 
+  --text: #303133; --text-muted: #909399; --accent: #399D9C; --shadow: rgba(0, 0, 0, 0.05); 
+  --btn-text: #FFFFFF;
+  /* Добавляем цвета для уведомлений */
+  --success: #28a745; --error: #dc3545;
 }
+
 html[data-theme="dark"] {
-  --bg: #141414; --panel-bg: #1D1D1D; --input-bg: #262626; --border: #424242; --text: #E5EAF3; --text-muted: #A3A6AD; --accent: #FFD166; --shadow: rgba(0, 0, 0, 0.3); --btn-text: #1D1D1D;
+  --bg: #141414; --panel-bg: #1D1D1D; --input-bg: #262626; --border: #424242; 
+  --text: #E5EAF3; --text-muted: #A3A6AD; --accent: #FFD166; --shadow: rgba(0, 0, 0, 0.3); 
+  --btn-text: #1D1D1D;
+  /* Темные версии цветов уведомлений */
+  --success: #2fd058; --error: #ff4d4d;
 }
 
 /* 2. База и структура */
@@ -37,7 +46,6 @@ body {
   border-radius: 28px; transition: .4s;
   border: 1px solid var(--border);
 }
-/* ИСПРАВЛЕНИЕ: Убираем свечение, оставляем только рамку */
 .theme-switch input:focus-visible + .slider {
   border-color: var(--accent);
 }
@@ -78,7 +86,6 @@ html[data-theme="dark"] .fa-moon { opacity: 1; transform: rotate(0deg); }
   background-color: var(--input-bg); border: 1px solid var(--border);
   border-radius: 8px; color: var(--text); transition: all 0.2s;
 }
-/* ИСПРАВЛЕНИЕ: Убираем свечение, оставляем только рамку */
 .form-group input:focus {
   border-color: var(--accent);
 }
@@ -97,8 +104,66 @@ html[data-theme="dark"] .fa-moon { opacity: 1; transform: rotate(0deg); }
   transition: transform .2s, box-shadow .2s;
 }
 .btn-login:hover { transform: translateY(-2px); }
+.btn-login:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+  transform: none;
+}
 .page-footer {
   position: absolute; bottom: 1.5rem;
   left: 0; right: 0; text-align: center;
   font-size: 0.8rem; color: var(--text-muted);
+}
+
+/* 8. Сообщения об ошибках */
+.error-message {
+  display: block;
+  font-size: 0.85rem;
+  color: var(--error);
+  margin-top: 0.5rem;
+  min-height: 1.2em;
+}
+
+/* 9. Уведомления */
+.notification {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  padding: 16px 24px;
+  border-radius: 8px;
+  background: var(--panel-bg);
+  box-shadow: 0 4px 12px var(--shadow);
+  transform: translateX(120%);
+  transition: transform 0.3s ease;
+  z-index: 1000;
+}
+
+.notification.show {
+  transform: translateX(0);
+}
+
+.notification-content {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.notification-content i {
+  font-size: 1.2rem;
+}
+
+.notification-error {
+  border-left: 4px solid var(--error);
+}
+
+.notification-error i {
+  color: var(--error);
+}
+
+.notification-success {
+  border-left: 4px solid var(--success);
+}
+
+.notification-success i {
+  color: var(--success);
 }
