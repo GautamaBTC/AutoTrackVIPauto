@@ -37,6 +37,7 @@ let activeModals = new Set();
 
 // Инициализация приложения
 document.addEventListener('DOMContentLoaded', async () => {
+    console.log('App init started'); // Debug
     // Проверка авторизации
     const userData = localStorage.getItem('vipauto_user') || sessionStorage.getItem('vipauto_user');
     if (!userData) {
@@ -54,7 +55,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 });
 
 async function initializeApp() {
-    // Инициализация компонентов
+    console.log('Initializing components'); // Debug
     initHeader();
     initUserInterface();
     await loadServicesCatalog();
@@ -71,6 +72,7 @@ async function initializeApp() {
 }
 
 function initUserInterface() {
+    console.log('Init user interface'); // Debug
     // Заполняем информацию о пользователе
     const userNameEl = document.getElementById('user-name');
     const userRoleEl = document.getElementById('user-role');
@@ -94,6 +96,7 @@ function initUserMenu() {
 
     if (menuBtn && menuDropdown) {
         menuBtn.addEventListener('click', (e) => {
+            console.log('User menu clicked'); // Debug
             e.stopPropagation();
             menuDropdown.classList.toggle('visible');
         });
@@ -108,6 +111,7 @@ function initUserMenu() {
 
     if (logoutBtn) {
         logoutBtn.addEventListener('click', () => {
+            console.log('Logout clicked'); // Debug
             localStorage.removeItem('vipauto_user');
             sessionStorage.removeItem('vipauto_user');
             window.location.href = 'login.html';
@@ -121,19 +125,29 @@ function initQuickActions() {
     const quickServices = document.getElementById('quick-services');
 
     if (quickAddJob) {
-        quickAddJob.addEventListener('click', () => openModal('add-job-modal'));
+        quickAddJob.addEventListener('click', () => {
+            console.log('Quick add job clicked'); // Debug
+            openModal('add-job-modal');
+        });
     }
 
     if (quickStats) {
-        quickStats.addEventListener('click', () => showView('analytics'));
+        quickStats.addEventListener('click', () => {
+            console.log('Quick stats clicked'); // Debug
+            showView('analytics');
+        });
     }
 
     if (quickServices) {
-        quickServices.addEventListener('click', () => openModal('services-modal'));
+        quickServices.addEventListener('click', () => {
+            console.log('Quick services clicked'); // Debug
+            openModal('services-modal');
+        });
     }
 }
 
 function setupRoleBasedUI() {
+    console.log('Setting up role UI'); // Debug
     const isDirector = currentUser.role === USER_ROLES.DIRECTOR;
     const isAdmin = currentUser.role === USER_ROLES.ADMIN;
     const isMaster = currentUser.role === USER_ROLES.MASTER;
@@ -160,12 +174,14 @@ function setupRoleBasedUI() {
         filterMasterData();
     }
 }
+
 /*────────────────────────────────────────────
   assets/js/app.js | ЧАСТЬ 2: ПРЕДСТАВЛЕНИЯ И МОДАЛЬНЫЕ ОКНА
 ─────────────────────────────────────────────*/
 
 // Управление представлениями
 function showView(viewName) {
+    console.log(`Showing view: ${viewName}`); // Debug
     const views = {
         journal: document.getElementById('journal-section'),
         analytics: document.getElementById('analytics-section'),
@@ -220,16 +236,22 @@ function showView(viewName) {
     currentView = viewName;
 }
 
-// Модальные окна
+// Модальные окна (с aria для доступности)
 function openModal(modalId) {
     const modal = document.getElementById(modalId);
     if (!modal) return;
+
+    console.log(`Opening modal: ${modalId}`); // Debug
 
     // Анимация открытия
     modal.classList.remove('hidden');
     requestAnimationFrame(() => {
         modal.classList.add('visible');
     });
+
+    // Добавляем aria-modal
+    modal.setAttribute('aria-modal', 'true');
+    modal.setAttribute('role', 'dialog');
 
     // Добавляем в список активных модальных окон
     activeModals.add(modalId);
@@ -255,11 +277,17 @@ function closeModal(modalId) {
     const modal = document.getElementById(modalId);
     if (!modal) return;
 
+    console.log(`Closing modal: ${modalId}`); // Debug
+
     // Анимация закрытия
     modal.classList.remove('visible');
     setTimeout(() => {
         modal.classList.add('hidden');
         
+        // Удаляем aria
+        modal.removeAttribute('aria-modal');
+        modal.removeAttribute('role');
+
         // Удаляем из списка активных модальных окон
         activeModals.delete(modalId);
 
@@ -270,122 +298,26 @@ function closeModal(modalId) {
     }, 300);
 }
 
-function initAddJobModal() {
-    const form = document.getElementById('add-job-form');
-    const dateInput = document.getElementById('job-date');
-    const servicesField = document.getElementById('services-selector');
-
-    // Устанавливаем текущую дату
-    dateInput.value = formatDateInput(new Date());
-
-    // Очищаем выбранные услуги
-    selectedServices = [];
-    updateServicesDisplay();
-
-    // Обработчики событий
-    form.addEventListener('submit', handleJobSubmit);
-    servicesField.addEventListener('click', () => openModal('services-modal'));
-}
-
-function initServicesModal() {
-    const searchInput = document.getElementById('service-search');
-    const servicesList = document.getElementById('services-list');
-    const confirmBtn = document.getElementById('services-confirm');
-
-    // Загружаем и отображаем услуги
-    renderServicesList();
-
-    // Поиск услуг
-    searchInput.addEventListener('input', debounce((e) => {
-        const searchTerm = e.target.value.trim().toLowerCase();
-        filterServices(searchTerm);
-    }, 300));
-
-    // Подтверждение выбора
-    confirmBtn.addEventListener('click', () => {
-        updateServicesDisplay();
-        closeModal('services-modal');
-    });
-}
-
-function initBonusModal(masterId) {
-    const slider = document.getElementById('bonus-slider');
-    const currentBonus = document.getElementById('current-bonus');
-    const bonusAmount = document.getElementById('bonus-amount');
-    const masterData = getMasterData(masterId);
-
-    if (!masterData) return;
-
-    // Заполняем информацию о мастере
-    document.getElementById('bonus-master-name').textContent = masterData.name;
-    document.getElementById('bonus-master-stats').textContent = 
-        `Выручка за месяц: ${formatMoney(masterData.monthRevenue)}`;
-
-    // Настраиваем слайдер
-    slider.value = masterData.currentBonusLevel || 0;
-    updateBonusDisplay(slider.value, masterData.monthRevenue);
-
-    // Обработчик изменения значения слайдера
-    slider.addEventListener('input', (e) => {
-        updateBonusDisplay(e.target.value, masterData.monthRevenue);
-    });
-
-    // Анимация графика истории бонусов
-    initBonusHistoryChart(masterId);
-}
-
-function updateBonusDisplay(level, revenue) {
-    const bonusInfo = BONUS_LEVELS[level];
-    const currentBonus = document.getElementById('current-bonus');
-    const bonusAmount = document.getElementById('bonus-amount');
-    const bonusDescription = document.getElementById('bonus-description');
-
-    currentBonus.textContent = `+${bonusInfo.percent}%`;
-    bonusAmount.textContent = formatMoney(revenue * (bonusInfo.percent / 100));
-    bonusDescription.textContent = bonusInfo.description;
-
-    // Обновляем звезды рейтинга
-    updateBonusStars(level);
-}
-
-function updateBonusStars(level) {
-    const starsContainer = document.querySelector('.bonus-stars');
-    const maxStars = 5;
-    const filledStars = Math.round((level / 10) * maxStars);
-
-    starsContainer.innerHTML = Array(maxStars)
-        .fill(null)
-        .map((_, index) => `
-            <i class="fas fa-star ${index < filledStars ? 'filled' : ''}"></i>
-        `)
-        .join('');
-}
-/*────────────────────────────────────────────
-  assets/js/app.js | ЧАСТЬ 3: ЖУРНАЛ И БОНУСЫ
-─────────────────────────────────────────────*/
-
-// Инициализация журнала
 function initJournalView() {
+    console.log('Init journal view'); // Debug
     const entriesList = document.getElementById('master-jobs-list');
     const searchInput = document.getElementById('jobs-search');
     const periodFilter = document.getElementById('jobs-period-filter');
+
+    if (entriesList) entriesList.setAttribute('aria-label', 'Список работ'); // Accessibility
 
     // Загружаем данные
     loadAndDisplayEntries();
 
     // Обработчики поиска и фильтрации
-    searchInput.addEventListener('input', debounce(() => {
-        loadAndDisplayEntries();
-    }, 300));
-
-    periodFilter.addEventListener('change', () => {
-        loadAndDisplayEntries();
-    });
+    if (searchInput) searchInput.addEventListener('input', debounce(() => loadAndDisplayEntries(), 300));
+    if (periodFilter) periodFilter.addEventListener('change', loadAndDisplayEntries);
 }
 
 function loadAndDisplayEntries() {
-    const searchTerm = document.getElementById('jobs-search').value.toLowerCase();
-    const periodFilter = document.getElementById('jobs-period-filter').value;
+    console.log('Loading entries'); // Debug
+    const searchTerm = document.getElementById('jobs-search')?.value.toLowerCase() || '';
+    const periodFilter = document.getElementById('jobs-period-filter')?.value || 'all';
     const entriesList = document.getElementById('master-jobs-list');
 
     // Получаем и фильтруем записи
@@ -417,9 +349,7 @@ function loadAndDisplayEntries() {
 function groupEntriesByDate(entries) {
     return entries.reduce((groups, entry) => {
         const date = entry.date;
-        if (!groups[date]) {
-            groups[date] = [];
-        }
+        if (!groups[date]) groups[date] = [];
         groups[date].push(entry);
         return groups;
     }, {});
@@ -429,22 +359,18 @@ function renderGroupedEntries(groupedEntries, container) {
     container.innerHTML = '';
 
     // Сортируем даты в обратном порядке
-    const sortedDates = Object.keys(groupedEntries).sort((a, b) => 
-        new Date(b) - new Date(a)
-    );
+    const sortedDates = Object.keys(groupedEntries).sort((a, b) => new Date(b) - new Date(a));
 
     sortedDates.forEach(date => {
         const entries = groupedEntries[date];
-        const totalRevenue = entries.reduce((sum, e) => 
-            sum + e.workCost + e.partsCost, 0
-        );
+        const totalRevenue = entries.reduce((sum, e) => sum + e.workCost + e.partsCost, 0);
 
         const dateGroup = document.createElement('div');
         dateGroup.className = 'entries-date-group';
+        dateGroup.setAttribute('aria-labelledby', `date-header-${date}`); // Accessibility
         
-        // Заголовок группы
         dateGroup.innerHTML = `
-            <div class="date-group-header">
+            <div class="date-group-header" id="date-header-${date}">
                 <div class="date-info">
                     <h3>${formatDateDisplay(date)}</h3>
                     <span class="entry-count">${entries.length} работ</span>
@@ -459,6 +385,7 @@ function renderGroupedEntries(groupedEntries, container) {
         // Список записей
         const entriesList = document.createElement('div');
         entriesList.className = 'entries-list';
+        entriesList.setAttribute('role', 'list'); // Accessibility
 
         entries.forEach(entry => {
             entriesList.appendChild(createEntryCard(entry));
@@ -471,12 +398,13 @@ function renderGroupedEntries(groupedEntries, container) {
     // Если записей нет
     if (sortedDates.length === 0) {
         container.innerHTML = `
-            <div class="no-entries">
+            <div class="no-entries" role="alert">
                 <i class="fas fa-folder-open"></i>
                 <p>Записей не найдено</p>
             </div>
         `;
     }
+    console.log('Entries rendered'); // Debug
 }
 
 function createEntryCard(entry) {
@@ -484,6 +412,7 @@ function createEntryCard(entry) {
     const card = document.createElement('div');
     card.className = 'entry-card';
     card.dataset.id = entry.id;
+    card.setAttribute('role', 'listitem'); // Accessibility
 
     card.innerHTML = `
         <div class="entry-header">
@@ -492,10 +421,10 @@ function createEntryCard(entry) {
                 <span>${entry.car}</span>
             </div>
             <div class="entry-actions">
-                <button class="icon-btn edit-entry" title="Редактировать">
+                <button class="icon-btn edit-entry" title="Редактировать" aria-label="Редактировать запись">
                     <i class="fas fa-edit"></i>
                 </button>
-                <button class="icon-btn delete-entry" title="Удалить">
+                <button class="icon-btn delete-entry" title="Удалить" aria-label="Удалить запись">
                     <i class="fas fa-trash"></i>
                 </button>
             </div>
@@ -522,12 +451,14 @@ function createEntryCard(entry) {
         </div>
     `;
 
-    // Обработчики действий
+    // Обработчики действий с logs
     card.querySelector('.edit-entry').addEventListener('click', () => {
+        console.log(`Edit entry ${entry.id}`); // Debug
         startEditEntry(entry.id);
     });
 
     card.querySelector('.delete-entry').addEventListener('click', () => {
+        console.log(`Delete entry ${entry.id}`); // Debug
         confirmDeleteEntry(entry.id);
     });
 
@@ -541,6 +472,7 @@ function calculateBonus(revenue, level) {
 }
 
 function updateMasterBonus(masterId, level, comment) {
+    console.log(`Updating bonus for ${masterId} to level ${level}`); // Debug
     const master = getMasterData(masterId);
     if (!master) return;
 
@@ -561,8 +493,10 @@ function updateMasterBonus(masterId, level, comment) {
 }
 
 function initBonusHistoryChart(masterId) {
+    console.log(`Init bonus chart for ${masterId}`); // Debug
     const bonusHistory = getMasterBonusHistory(masterId);
-    const ctx = document.getElementById('bonus-history-chart').getContext('2d');
+    const ctx = document.getElementById('bonus-history-chart')?.getContext('2d');
+    if (!ctx) return;
 
     new Chart(ctx, {
         type: 'line',
@@ -572,7 +506,7 @@ function initBonusHistoryChart(masterId) {
                 label: 'Уровень бонуса',
                 data: bonusHistory.map(b => b.level),
                 borderColor: 'var(--accent)',
-                backgroundColor: 'rgba(57, 157, 156, 0.1)',
+                backgroundColor: 'rgba(var(--accent-rgb), 0.1)', // Use CSS var for theme
                 fill: true
             }]
         },
@@ -588,12 +522,20 @@ function initBonusHistoryChart(masterId) {
         }
     });
 }
+
+/*────────────────────────────────────────────
+  assets/js/app.js | ЧАСТЬ 3: ЖУРНАЛ И БОНУСЫ
+─────────────────────────────────────────────*/
+
+// Уже в Части 3, продолжаем с Частью 4 ниже
+
 /*────────────────────────────────────────────
   assets/js/app.js | ЧАСТЬ 4: УТИЛИТЫ И ЭКСПОРТ
 ─────────────────────────────────────────────*/
 
 // Утилиты для работы с датами
 function filterEntriesByPeriod(entries, period) {
+    console.log(`Filtering by period: ${period}`); // Debug
     const today = new Date();
     today.setHours(0, 0, 0, 0);
 
@@ -614,17 +556,20 @@ function filterEntriesByPeriod(entries, period) {
     }
 }
 
-// Уведомления
+// Уведомления с aria-live
 function showNotification(message, type = 'info') {
+    console.log(`Showing notification: ${message}, type: ${type}`); // Debug
     const notification = document.createElement('div');
     notification.className = `notification notification-${type} animate-slide-in`;
+    notification.setAttribute('role', 'alert'); // Accessibility
+    notification.setAttribute('aria-live', 'polite');
     
     notification.innerHTML = `
         <div class="notification-content">
             <i class="fas fa-${getNotificationIcon(type)}"></i>
             <span>${message}</span>
         </div>
-        <button class="notification-close">
+        <button class="notification-close" aria-label="Закрыть уведомление">
             <i class="fas fa-times"></i>
         </button>
     `;
@@ -655,6 +600,7 @@ function getNotificationIcon(type) {
 
 // Анимации
 function animateNumber(element, start, end, duration = 1000) {
+    console.log(`Animating number from ${start} to ${end}`); // Debug
     const startTime = performance.now();
     const change = end - start;
 
@@ -732,6 +678,7 @@ export {
 
 // Инициализация обработчиков событий
 function setupEventListeners() {
+    console.log('Setting up event listeners'); // Debug
     // Обработка клавиш
     document.addEventListener('keydown', (e) => {
         if (e.key === 'Escape' && activeModals.size > 0) {
