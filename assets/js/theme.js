@@ -1,5 +1,5 @@
 /*────────────────────────────────────────────
-  assets/js/theme.js | УЛУЧШЕННАЯ ВЕРСИЯ
+  assets/js/theme.js | УЛУЧШЕННАЯ ВЕРСИЯ С ФИКСАМИ
 ─────────────────────────────────────────────*/
 
 // Константы
@@ -11,7 +11,7 @@ const THEMES = {
     DARK: 'dark'
 };
 
-// CSS переменные для каждой темы
+// CSS переменные для каждой темы (с бирюзовыми тонами в dark)
 const THEME_VARIABLES = {
     [THEMES.LIGHT]: {
         '--bg': '#F0F2F5',
@@ -27,17 +27,17 @@ const THEME_VARIABLES = {
         '--btn-text': '#FFFFFF'
     },
     [THEMES.DARK]: {
-        '--bg': '#141414',
-        '--panel-bg': '#1D1D1D',
-        '--input-bg': '#262626',
-        '--border': '#424242',
-        '--text': '#E5EAF3',
-        '--text-muted': '#A3A6AD',
-        '--accent': '#FFD166',
-        '--accent-light': '#FFE0A3',
-        '--accent-dark': '#E5B85C',
+        '--bg': '#001F3F', // Тёмно-бирюзовый фон
+        '--panel-bg': '#002B55',
+        '--input-bg': '#003D6B',
+        '--border': '#005588',
+        '--text': '#E0FFFF', // Светло-бирюзовый текст
+        '--text-muted': '#A0D2DB',
+        '--accent': '#008B8B', // Основной бирюзовый
+        '--accent-light': '#00A0A0',
+        '--accent-dark': '#006666',
         '--shadow': 'rgba(0, 0, 0, 0.3)',
-        '--btn-text': '#1D1D1D'
+        '--btn-text': '#001F3F'
     }
 };
 
@@ -69,7 +69,7 @@ export function initHeader() {
 }
 
 /**
- * Инициализация отображения времени и даты
+ * Инициализация отображения времени и даты (без секунд, крупно)
  */
 function initDateTime(dateEl, timeEl) {
     let lastDate = '';
@@ -90,14 +90,13 @@ function initDateTime(dateEl, timeEl) {
             lastDate = currentDate;
         }
 
-        // Обновляем время только при изменении
-        const [h, m, s] = [
+        // Обновляем время только при изменении (без секунд)
+        const [h, m] = [
             now.getHours(),
-            now.getMinutes(),
-            now.getSeconds()
+            now.getMinutes()
         ].map(n => String(n).padStart(2, '0'));
         
-        const currentTime = `${h}:${m}:${s}`;
+        const currentTime = `${h}:${m}`;
         
         if (currentTime !== lastTime) {
             // Плавное обновление времени
@@ -111,7 +110,7 @@ function initDateTime(dateEl, timeEl) {
     }
 
     updateDateTime();
-    setInterval(updateDateTime, 1000);
+    setInterval(updateDateTime, 60000); // Обновление каждую минуту
 }
 
 /**
@@ -128,8 +127,9 @@ function initThemeToggle(toggle) {
     // Устанавливаем состояние переключателя
     toggle.checked = currentTheme === THEMES.LIGHT;
     
-    // Обработчик изменения
+    // Обработчик изменения с debug log
     toggle.addEventListener('change', () => {
+        console.log('Theme toggle changed'); // Debug для проверки
         if (isAnimating) return;
         
         const newTheme = toggle.checked ? THEMES.LIGHT : THEMES.DARK;
@@ -151,6 +151,7 @@ function initSystemThemeListener() {
     }
 
     systemThemeQuery.addListener(handleSystemThemeChange);
+    handleSystemThemeChange(systemThemeQuery); // Initial check
 }
 
 /**
@@ -160,13 +161,14 @@ function switchTheme(newTheme) {
     if (currentTheme === newTheme || isAnimating) return;
     
     isAnimating = true;
+    console.log(`Switching to ${newTheme}`); // Debug
 
     // Создаем элемент для анимации перехода
     const overlay = document.createElement('div');
     overlay.style.cssText = `
         position: fixed;
         inset: 0;
-        background: ${newTheme === THEMES.DARK ? '#141414' : '#F0F2F5'};
+        background: ${THEME_VARIABLES[newTheme]['--bg']};
         opacity: 0;
         transition: opacity ${TRANSITION_DURATION}ms cubic-bezier(0.4, 0, 0.2, 1);
         pointer-events: none;
@@ -186,6 +188,7 @@ function switchTheme(newTheme) {
             setTimeout(() => {
                 overlay.remove();
                 isAnimating = false;
+                console.log(`Theme switched to ${newTheme}`); // Debug
             }, TRANSITION_DURATION);
         }, TRANSITION_DURATION);
     });
@@ -210,13 +213,14 @@ function applyTheme(theme) {
     // Обновляем мета-тег theme-color для мобильных браузеров
     const metaThemeColor = document.querySelector('meta[name="theme-color"]');
     if (metaThemeColor) {
-        metaThemeColor.content = theme === THEMES.DARK ? '#141414' : '#F0F2F5';
+        metaThemeColor.content = THEME_VARIABLES[theme]['--bg'];
     }
 
     // Отправляем событие изменения темы
     window.dispatchEvent(new CustomEvent('themechange', { 
         detail: { theme } 
     }));
+    console.log('Theme applied and event dispatched'); // Debug
 }
 
 // Экспорт публичных функций
