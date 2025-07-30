@@ -1,9 +1,9 @@
 /*────────────────────────────────────────────
-  assets/js/app.js | ЧАСТЬ 1: ОСНОВНАЯ ЛОГИКА
+  assets/js/app.js | ПОЛНЫЙ ОБНОВЛЁННЫЙ ФАЙЛ
 ─────────────────────────────────────────────*/
 
 import { initHeader } from './theme.js';
-import { loadServicesCatalog } from './servicesCatalog.js';
+import { loadServicesCatalog, getServicesStats } from './servicesCatalog.js';
 import { getAllEntries, addEntry, updateEntry, deleteEntry, getUserByLogin } from './storage.js';
 import { formatDateInput, formatDateDisplay, formatMoney, debounce } from './utils.js';
 import { initCharts, updateCharts } from './charts.js';
@@ -29,16 +29,22 @@ const BONUS_LEVELS = {
     10: { percent: 20, description: 'Легенда сервиса' }
 };
 
-// Состояние приложения
+// Критерии для авто-расчёта (пример)
+const BONUS_CRITERIA = {
+    jobs: { min: 50, bonus: 2 },
+    revenue: { min: 100000, bonus: 3 },
+    servicesVariety: { min: 20, bonus: 1 } // From stats
+};
+
+// Состояние
 let currentUser = null;
 let currentView = 'journal';
 let selectedServices = [];
 let activeModals = new Set();
 
-// Инициализация приложения
+// Инициализация
 document.addEventListener('DOMContentLoaded', async () => {
     console.log('App init started'); // Debug
-    // Проверка авторизации
     const userData = localStorage.getItem('vipauto_user') || sessionStorage.getItem('vipauto_user');
     if (!userData) {
         window.location.href = 'login.html';
@@ -49,8 +55,8 @@ document.addEventListener('DOMContentLoaded', async () => {
         currentUser = JSON.parse(userData);
         await initializeApp();
     } catch (error) {
-        console.error('Ошибка инициализации:', error);
-        showNotification('Ошибка загрузки приложения', 'error');
+        console.error('Init error:', error);
+        showNotification('Ошибка загрузки', 'error');
     }
 });
 
@@ -60,15 +66,10 @@ async function initializeApp() {
     initUserInterface();
     await loadServicesCatalog();
     initCharts();
-    
-    // Настройка интерфейса под роль
     setupRoleBasedUI();
-    
-    // Загрузка начального вида
     showView(currentView);
-    
-    // Обработчики событий
     setupEventListeners();
+    console.log('App initialized'); // Debug
 }
 
 function initUserInterface() {
@@ -98,13 +99,15 @@ function initUserMenu() {
         menuBtn.addEventListener('click', (e) => {
             console.log('User menu clicked'); // Debug
             e.stopPropagation();
-            menuDropdown.classList.toggle('visible');
+            const isVisible = menuDropdown.classList.toggle('visible');
+            menuDropdown.setAttribute('aria-expanded', isVisible); // Accessibility
         });
 
         // Закрытие при клике вне меню
         document.addEventListener('click', (e) => {
             if (!menuDropdown.contains(e.target) && !menuBtn.contains(e.target)) {
                 menuDropdown.classList.remove('visible');
+                menuDropdown.setAttribute('aria-expanded', 'false');
             }
         });
     }
@@ -147,7 +150,7 @@ function initQuickActions() {
 }
 
 function setupRoleBasedUI() {
-    console.log('Setting up role UI'); // Debug
+    console.log('Setting up role UI for ' + currentUser.role); // Debug
     const isDirector = currentUser.role === USER_ROLES.DIRECTOR;
     const isAdmin = currentUser.role === USER_ROLES.ADMIN;
     const isMaster = currentUser.role === USER_ROLES.MASTER;
@@ -162,12 +165,15 @@ function setupRoleBasedUI() {
             (requiredRole === 'master' && isMaster);
 
         el.classList.toggle('hidden', !shouldShow);
+        if (shouldShow) el.setAttribute('aria-hidden', 'false');
+        else el.setAttribute('aria-hidden', 'true');
     });
 
     // Настраиваем интерфейс мастера
     if (isMaster) {
         document.querySelectorAll('[data-master-only]').forEach(el => {
             el.classList.remove('hidden');
+            el.setAttribute('aria-hidden', 'false');
         });
         
         // Фильтруем данные только для текущего мастера
@@ -175,11 +181,7 @@ function setupRoleBasedUI() {
     }
 }
 
-/*────────────────────────────────────────────
-  assets/js/app.js | ЧАСТЬ 2: ПРЕДСТАВЛЕНИЯ И МОДАЛЬНЫЕ ОКНА
-─────────────────────────────────────────────*/
-
-// Управление представлениями
+// Управление представлениями (с анимациями)
 function showView(viewName) {
     console.log(`Showing view: ${viewName}`); // Debug
     const views = {
@@ -204,20 +206,22 @@ function showView(viewName) {
         tabIndicator.style.transform = `translateX(${tabLeft}px)`;
     }
 
-    // Показываем выбранное представление
+    // Показываем выбранное представление с анимацией
     Object.entries(views).forEach(([name, section]) => {
         if (section) {
             if (name === viewName) {
                 section.classList.remove('hidden');
                 section.classList.add('animate-slide-in');
+                section.setAttribute('aria-hidden', 'false');
             } else {
                 section.classList.add('hidden');
                 section.classList.remove('animate-slide-in');
+                section.setAttribute('aria-hidden', 'true');
             }
         }
     });
 
-    // Инициализируем содержимое представления
+    // Инициализируем содержимое
     switch(viewName) {
         case 'journal':
             initJournalView();
@@ -236,30 +240,24 @@ function showView(viewName) {
     currentView = viewName;
 }
 
-// Модальные окна (с aria для доступности)
+// Модальные окна (с aria и enhanced swipe)
 function openModal(modalId) {
     const modal = document.getElementById(modalId);
     if (!modal) return;
 
     console.log(`Opening modal: ${modalId}`); // Debug
 
-    // Анимация открытия
     modal.classList.remove('hidden');
     requestAnimationFrame(() => {
         modal.classList.add('visible');
     });
 
-    // Добавляем aria-modal
     modal.setAttribute('aria-modal', 'true');
     modal.setAttribute('role', 'dialog');
 
-    // Добавляем в список активных модальных окон
     activeModals.add(modalId);
-
-    // Блокируем прокрутку body
     document.body.style.overflow = 'hidden';
 
-    // Инициализация содержимого модального окна
     switch(modalId) {
         case 'add-job-modal':
             initAddJobModal();
@@ -279,23 +277,69 @@ function closeModal(modalId) {
 
     console.log(`Closing modal: ${modalId}`); // Debug
 
-    // Анимация закрытия
     modal.classList.remove('visible');
     setTimeout(() => {
         modal.classList.add('hidden');
-        
-        // Удаляем aria
         modal.removeAttribute('aria-modal');
         modal.removeAttribute('role');
-
-        // Удаляем из списка активных модальных окон
         activeModals.delete(modalId);
-
-        // Разблокируем прокрутку body если нет активных модальных окон
         if (activeModals.size === 0) {
             document.body.style.overflow = '';
         }
     }, 300);
+}
+
+function initAddJobModal() {
+    const form = document.getElementById('add-job-form');
+    const dateInput = document.getElementById('job-date');
+    const servicesField = document.getElementById('services-selector');
+
+    dateInput.value = formatDateInput(new Date());
+    selectedServices = [];
+    updateServicesDisplay();
+
+    form.addEventListener('submit', handleJobSubmit);
+    servicesField.addEventListener('click', () => openModal('services-modal'));
+}
+
+function initServicesModal() {
+    const searchInput = document.getElementById('service-search');
+    const servicesList = document.getElementById('services-list');
+    const confirmBtn = document.getElementById('services-confirm');
+
+    renderServicesList();
+
+    searchInput.addEventListener('input', debounce((e) => {
+        const searchTerm = e.target.value.trim().toLowerCase();
+        filterServices(searchTerm);
+    }, 300));
+
+    confirmBtn.addEventListener('click', () => {
+        updateServicesDisplay();
+        closeModal('services-modal');
+    });
+}
+
+function initBonusModal(masterId) {
+    const slider = document.getElementById('bonus-slider');
+    const currentBonus = document.getElementById('current-bonus');
+    const bonusAmount = document.getElementById('bonus-amount');
+    const masterData = getMasterData(masterId);
+
+    if (!masterData) return;
+
+    document.getElementById('bonus-master-name').textContent = masterData.name;
+    document.getElementById('bonus-master-stats').textContent = 
+        `Выручка за месяц: ${formatMoney(masterData.monthRevenue)}`;
+
+    slider.value = masterData.currentBonusLevel || 0;
+    updateBonusDisplay(slider.value, masterData.monthRevenue);
+
+    slider.addEventListener('input', (e) => {
+        updateBonusDisplay(e.target.value, masterData.monthRevenue);
+    });
+
+    initBonusHistoryChart(masterId);
 }
 
 function initJournalView() {
@@ -306,10 +350,8 @@ function initJournalView() {
 
     if (entriesList) entriesList.setAttribute('aria-label', 'Список работ'); // Accessibility
 
-    // Загружаем данные
     loadAndDisplayEntries();
 
-    // Обработчики поиска и фильтрации
     if (searchInput) searchInput.addEventListener('input', debounce(() => loadAndDisplayEntries(), 300));
     if (periodFilter) periodFilter.addEventListener('change', loadAndDisplayEntries);
 }
@@ -320,18 +362,14 @@ function loadAndDisplayEntries() {
     const periodFilter = document.getElementById('jobs-period-filter')?.value || 'all';
     const entriesList = document.getElementById('master-jobs-list');
 
-    // Получаем и фильтруем записи
     let entries = getAllEntries();
     
-    // Фильтр по мастеру для роли мастера
     if (currentUser.role === USER_ROLES.MASTER) {
         entries = entries.filter(e => e.master === currentUser.name);
     }
 
-    // Фильтр по периоду
     entries = filterEntriesByPeriod(entries, periodFilter);
 
-    // Поисковый фильтр
     if (searchTerm) {
         entries = entries.filter(e => 
             e.car.toLowerCase().includes(searchTerm) ||
@@ -339,10 +377,8 @@ function loadAndDisplayEntries() {
         );
     }
 
-    // Группируем по дате
     const groupedEntries = groupEntriesByDate(entries);
 
-    // Отображаем записи
     renderGroupedEntries(groupedEntries, entriesList);
 }
 
@@ -358,7 +394,6 @@ function groupEntriesByDate(entries) {
 function renderGroupedEntries(groupedEntries, container) {
     container.innerHTML = '';
 
-    // Сортируем даты в обратном порядке
     const sortedDates = Object.keys(groupedEntries).sort((a, b) => new Date(b) - new Date(a));
 
     sortedDates.forEach(date => {
@@ -367,8 +402,8 @@ function renderGroupedEntries(groupedEntries, container) {
 
         const dateGroup = document.createElement('div');
         dateGroup.className = 'entries-date-group';
-        dateGroup.setAttribute('aria-labelledby', `date-header-${date}`); // Accessibility
-        
+        dateGroup.setAttribute('aria-labelledby', `date-header-${date}`);
+
         dateGroup.innerHTML = `
             <div class="date-group-header" id="date-header-${date}">
                 <div class="date-info">
@@ -382,20 +417,16 @@ function renderGroupedEntries(groupedEntries, container) {
             </div>
         `;
 
-        // Список записей
         const entriesList = document.createElement('div');
         entriesList.className = 'entries-list';
-        entriesList.setAttribute('role', 'list'); // Accessibility
+        entriesList.setAttribute('role', 'list');
 
-        entries.forEach(entry => {
-            entriesList.appendChild(createEntryCard(entry));
-        });
+        entries.forEach(entry => entriesList.appendChild(createEntryCard(entry)));
 
         dateGroup.appendChild(entriesList);
         container.appendChild(dateGroup);
     });
 
-    // Если записей нет
     if (sortedDates.length === 0) {
         container.innerHTML = `
             <div class="no-entries" role="alert">
@@ -412,7 +443,7 @@ function createEntryCard(entry) {
     const card = document.createElement('div');
     card.className = 'entry-card';
     card.dataset.id = entry.id;
-    card.setAttribute('role', 'listitem'); // Accessibility
+    card.setAttribute('role', 'listitem');
 
     card.innerHTML = `
         <div class="entry-header">
@@ -451,7 +482,6 @@ function createEntryCard(entry) {
         </div>
     `;
 
-    // Обработчики действий с logs
     card.querySelector('.edit-entry').addEventListener('click', () => {
         console.log(`Edit entry ${entry.id}`); // Debug
         startEditEntry(entry.id);
@@ -465,35 +495,74 @@ function createEntryCard(entry) {
     return card;
 }
 
-// Система бонусов
+// Система бонусов (с авто-расчётом)
 function calculateBonus(revenue, level) {
     const bonusInfo = BONUS_LEVELS[level];
     return revenue * (bonusInfo.percent / 100);
 }
 
-function updateMasterBonus(masterId, level, comment) {
-    console.log(`Updating bonus for ${masterId} to level ${level}`); // Debug
+function updateMasterBonus(masterId, level = null, comment) {
+    console.log(`Updating bonus for ${masterId}`); // Debug
     const master = getMasterData(masterId);
     if (!master) return;
 
+    // Auto-calc if not provided
+    let calculatedLevel = level || calculateAutoLevel(master);
+
     const bonus = {
-        level,
-        percent: BONUS_LEVELS[level].percent,
-        amount: calculateBonus(master.monthRevenue, level),
+        level: calculatedLevel,
+        percent: BONUS_LEVELS[calculatedLevel].percent,
+        amount: calculateBonus(master.monthRevenue, calculatedLevel),
         comment,
         timestamp: Date.now()
     };
 
-    // Сохраняем бонус
     saveMasterBonus(masterId, bonus);
 
-    // Обновляем отображение
-    updateBonusDisplay(level, master.monthRevenue);
+    updateBonusDisplay(calculatedLevel, master.monthRevenue);
     updateMasterCard(masterId);
 }
 
+function calculateAutoLevel(master) {
+    let autoLevel = 0;
+
+    if (master.jobsCount > BONUS_CRITERIA.jobs.min) autoLevel += BONUS_CRITERIA.jobs.bonus;
+    if (master.monthRevenue > BONUS_CRITERIA.revenue.min) autoLevel += BONUS_CRITERIA.revenue.bonus;
+
+    // Integrate services stats
+    const stats = getServicesStats();
+    if (stats.totalServices > BONUS_CRITERIA.servicesVariety.min) autoLevel += BONUS_CRITERIA.servicesVariety.bonus;
+
+    return Math.min(Math.max(autoLevel, 0), 10);
+}
+
+function updateBonusDisplay(level, revenue) {
+    const bonusInfo = BONUS_LEVELS[level];
+    const currentBonus = document.getElementById('current-bonus');
+    const bonusAmount = document.getElementById('bonus-amount');
+    const bonusDescription = document.getElementById('bonus-description');
+
+    if (currentBonus) currentBonus.textContent = `+${bonusInfo.percent}%`;
+    if (bonusAmount) bonusAmount.textContent = formatMoney(revenue * (bonusInfo.percent / 100));
+    if (bonusDescription) bonusDescription.textContent = bonusInfo.description;
+
+    updateBonusStars(level);
+}
+
+function updateBonusStars(level) {
+    const starsContainer = document.querySelector('.bonus-stars');
+    const maxStars = 5;
+    const filledStars = Math.round((level / 10) * maxStars);
+
+    starsContainer.innerHTML = Array(maxStars)
+        .fill(null)
+        .map((_, index) => `
+            <i class="fas fa-star ${index < filledStars ? 'filled' : ''}"></i>
+        `)
+        .join('');
+}
+
 function initBonusHistoryChart(masterId) {
-    console.log(`Init bonus chart for ${masterId}`); // Debug
     const bonusHistory = getMasterBonusHistory(masterId);
     const ctx = document.getElementById('bonus-history-chart')?.getContext('2d');
     if (!ctx) return;
@@ -506,7 +575,7 @@ function initBonusHistoryChart(masterId) {
                 label: 'Уровень бонуса',
                 data: bonusHistory.map(b => b.level),
                 borderColor: 'var(--accent)',
-                backgroundColor: 'rgba(var(--accent-rgb), 0.1)', // Use CSS var for theme
+                backgroundColor: 'rgba(var(--accent-rgb), 0.1)',
                 fill: true
             }]
         },
@@ -523,19 +592,8 @@ function initBonusHistoryChart(masterId) {
     });
 }
 
-/*────────────────────────────────────────────
-  assets/js/app.js | ЧАСТЬ 3: ЖУРНАЛ И БОНУСЫ
-─────────────────────────────────────────────*/
-
-// Уже в Части 3, продолжаем с Частью 4 ниже
-
-/*────────────────────────────────────────────
-  assets/js/app.js | ЧАСТЬ 4: УТИЛИТЫ И ЭКСПОРТ
-─────────────────────────────────────────────*/
-
 // Утилиты для работы с датами
 function filterEntriesByPeriod(entries, period) {
-    console.log(`Filtering by period: ${period}`); // Debug
     const today = new Date();
     today.setHours(0, 0, 0, 0);
 
@@ -556,33 +614,28 @@ function filterEntriesByPeriod(entries, period) {
     }
 }
 
-// Уведомления с aria-live
+// Уведомления
 function showNotification(message, type = 'info') {
-    console.log(`Showing notification: ${message}, type: ${type}`); // Debug
     const notification = document.createElement('div');
     notification.className = `notification notification-${type} animate-slide-in`;
-    notification.setAttribute('role', 'alert'); // Accessibility
-    notification.setAttribute('aria-live', 'polite');
     
     notification.innerHTML = `
         <div class="notification-content">
             <i class="fas fa-${getNotificationIcon(type)}"></i>
             <span>${message}</span>
         </div>
-        <button class="notification-close" aria-label="Закрыть уведомление">
+        <button class="notification-close">
             <i class="fas fa-times"></i>
         </button>
     `;
 
     document.body.appendChild(notification);
 
-    // Автоматическое скрытие
     setTimeout(() => {
         notification.classList.add('notification-hiding');
         setTimeout(() => notification.remove(), 300);
     }, 5000);
 
-    // Обработчик закрытия
     notification.querySelector('.notification-close').addEventListener('click', () => {
         notification.classList.add('notification-hiding');
         setTimeout(() => notification.remove(), 300);
@@ -600,7 +653,6 @@ function getNotificationIcon(type) {
 
 // Анимации
 function animateNumber(element, start, end, duration = 1000) {
-    console.log(`Animating number from ${start} to ${end}`); // Debug
     const startTime = performance.now();
     const change = end - start;
 
@@ -608,7 +660,6 @@ function animateNumber(element, start, end, duration = 1000) {
         const elapsed = currentTime - startTime;
         const progress = Math.min(elapsed / duration, 1);
 
-        // Функция плавности
         const easing = t => t < .5 ? 4 * t * t * t : (t - 1) * (2 * t - 2) * (2 * t - 2) + 1;
         
         const currentValue = start + (change * easing(progress));
@@ -633,7 +684,6 @@ function getRoleDisplay(role) {
 }
 
 function getMasterData(masterId) {
-    // Получаем данные мастера из хранилища
     const entries = getAllEntries().filter(e => e.master === masterId);
     const today = new Date().toISOString().slice(0, 10);
     
@@ -678,8 +728,6 @@ export {
 
 // Инициализация обработчиков событий
 function setupEventListeners() {
-    console.log('Setting up event listeners'); // Debug
-    // Обработка клавиш
     document.addEventListener('keydown', (e) => {
         if (e.key === 'Escape' && activeModals.size > 0) {
             const lastModal = Array.from(activeModals).pop();
@@ -687,7 +735,6 @@ function setupEventListeners() {
         }
     });
 
-    // Обработка свайпов на мобильных устройствах
     let touchStartX = 0;
     let touchEndX = 0;
 
@@ -704,19 +751,14 @@ function setupEventListeners() {
         const SWIPE_THRESHOLD = 50;
         const diff = touchEndX - touchStartX;
 
-        if (Math.abs(diff) > SWIPE_THRESHOLD) {
-            // Свайп вправо - назад
-            if (diff > 0 && activeModals.size > 0) {
-                const lastModal = Array.from(activeModals).pop();
-                closeModal(lastModal);
-            }
+        if (Math.abs(diff) > SWIPE_THRESHOLD && diff > 0 && activeModals.size > 0) {
+            const lastModal = Array.from(activeModals).pop();
+            closeModal(lastModal);
         }
     }
 }
 
-// Автоматическое сохранение состояния
 window.addEventListener('beforeunload', () => {
-    // Сохраняем текущее состояние приложения
     localStorage.setItem('vipauto_last_state', JSON.stringify({
         currentView,
         selectedServices,
