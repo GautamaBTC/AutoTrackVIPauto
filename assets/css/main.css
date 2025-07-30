@@ -2,7 +2,7 @@
   assets/css/main.css | ЧАСТЬ 1: ОСНОВНЫЕ СТИЛИ
 ─────────────────────────────────────────────*/
 
-/* 1. ЦВЕТОВЫЕ ТЕМЫ И ПЕРЕМЕННЫЕ */
+/* 1. ЦВЕТОВЫЕ ТЕМЫ И ПЕРЕМЕННЫЕ (с бирюзовыми тонами в dark) */
 :root {
     /* Основные цвета */
     --bg: #F0F2F5;
@@ -49,23 +49,23 @@
     --spacing-xl: 32px;
 }
 
-/* Темная тема */
+/* Темная тема с бирюзовыми тонами */
 html[data-theme="dark"] {
-    --bg: #141414;
-    --panel-bg: #1D1D1D;
-    --input-bg: #262626;
-    --border: #424242;
-    --text: #E5EAF3;
-    --text-muted: #A3A6AD;
+    --bg: #001F3F;
+    --panel-bg: #002B55;
+    --input-bg: #003D6B;
+    --border: #005588;
+    --text: #E0FFFF;
+    --text-muted: #A0D2DB;
     
-    --accent: #FFD166;
-    --accent-light: #FFE0A3;
-    --accent-dark: #E5B85C;
+    --accent: #008B8B;
+    --accent-light: #00A0A0;
+    --accent-dark: #006666;
     --accent-gradient: linear-gradient(45deg, var(--accent), var(--accent-light));
     
-    --success: #2fd058;
+    --success: #00A0A0;
     --warning: #ffcd39;
-    --danger: #ff4d4d;
+    --danger: #8B0000;
     --info: #4dc4d4;
     
     --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.2);
@@ -159,13 +159,14 @@ p {
   assets/css/main.css | ЧАСТЬ 2: ХЕДЕР И НАВИГАЦИЯ
 ─────────────────────────────────────────────*/
 
-/* 6. ХЕДЕР */
+/* 6. ХЕДЕР (полупрозрачный, sticky) */
 .page-header {
     padding: var(--spacing-lg);
     display: flex;
     align-items: center;
     justify-content: space-between;
-    background: var(--panel-bg);
+    background: rgba(var(--panel-bg), 0.8); /* Полупрозрачный */
+    backdrop-filter: blur(5px); /* Для стиля */
     box-shadow: var(--shadow-sm);
     position: sticky;
     top: 0;
@@ -192,7 +193,7 @@ p {
     gap: var(--spacing-md);
 }
 
-/* Время и дата */
+/* Время и дата (крупное время в центре) */
 #current-date {
     font-size: 0.9rem;
     color: var(--text-muted);
@@ -200,14 +201,14 @@ p {
 }
 
 #current-time {
-    font-size: 1.5rem;
+    font-size: 2rem; /* Крупнее для центра */
     font-weight: 500;
     color: var(--text);
     line-height: 1.1;
     transition: opacity var(--transition-fast);
 }
 
-/* Меню пользователя */
+/* Меню пользователя (с анимацией) */
 .user-menu {
     position: relative;
 }
@@ -219,7 +220,7 @@ p {
     padding: var(--spacing-sm) var(--spacing-md);
     border-radius: var(--radius-md);
     color: var(--text);
-    transition: background var(--transition-fast);
+    transition: background var(--transition-fast), transform var(--transition-fast);
     cursor: pointer;
     border: none;
     background: none;
@@ -227,6 +228,7 @@ p {
 
 .user-menu-trigger:hover {
     background: var(--input-bg);
+    transform: translateY(-2px);
 }
 
 .user-menu-trigger i {
@@ -255,7 +257,7 @@ p {
     opacity: 0;
     visibility: hidden;
     transform: translateY(-10px);
-    transition: all var(--transition-normal);
+    transition: opacity var(--transition-normal), transform var(--transition-normal), visibility var(--transition-normal);
 }
 
 .user-menu-dropdown.visible {
@@ -308,7 +310,7 @@ p {
     width: 100%;
     padding: var(--spacing-md);
     color: var(--text);
-    transition: background var(--transition-fast);
+    transition: background var(--transition-fast), transform var(--transition-fast);
     border: none;
     background: none;
     cursor: pointer;
@@ -317,6 +319,7 @@ p {
 
 .menu-btn:hover {
     background: var(--input-bg);
+    transform: translateX(4px);
 }
 
 .menu-btn.danger {
@@ -328,7 +331,7 @@ p {
     text-align: center;
 }
 
-/* Переключатель темы */
+/* Переключатель темы (с анимацией) */
 .theme-switch {
     position: relative;
     display: inline-block;
@@ -406,7 +409,7 @@ html[data-theme="dark"] .fa-moon {
   assets/css/main.css | ЧАСТЬ 3: КАРТОЧКИ И СЕТКИ
 ─────────────────────────────────────────────*/
 
-/* 7. БЫСТРЫЕ ДЕЙСТВИЯ */
+/* 7. БЫСТРЫЕ ДЕЙСТВИЯ (с анимациями) */
 .quick-actions {
     display: flex;
     gap: var(--spacing-md);
@@ -415,6 +418,11 @@ html[data-theme="dark"] .fa-moon {
     background: var(--panel-bg);
     border-radius: var(--radius-lg);
     box-shadow: var(--shadow-sm);
+    transition: box-shadow var(--transition-normal);
+}
+
+.quick-actions:hover {
+    box-shadow: var(--shadow-md);
 }
 
 .quick-action-btn {
@@ -426,7 +434,7 @@ html[data-theme="dark"] .fa-moon {
     padding: var(--spacing-md);
     border-radius: var(--radius-md);
     font-weight: 500;
-    transition: all var(--transition-fast);
+    transition: transform var(--transition-fast), box-shadow var(--transition-fast), background var(--transition-fast);
     border: none;
     cursor: pointer;
     color: var(--text);
@@ -439,11 +447,15 @@ html[data-theme="dark"] .fa-moon {
 }
 
 .quick-action-btn:hover {
-    transform: translateY(-2px);
+    transform: translateY(-2px) scale(1.02);
     box-shadow: var(--shadow-md);
 }
 
-/* 8. KPI КАРТОЧКИ */
+.quick-action-btn:active {
+    transform: translateY(0) scale(0.98);
+}
+
+/* 8. KPI КАРТОЧКИ (с hover анимацией) */
 .kpi-grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
@@ -456,13 +468,13 @@ html[data-theme="dark"] .fa-moon {
     border-radius: var(--radius-lg);
     padding: var(--spacing-lg);
     box-shadow: var(--shadow-sm);
-    transition: all var(--transition-normal);
+    transition: transform var(--transition-normal), box-shadow var(--transition-normal);
     position: relative;
     overflow: hidden;
 }
 
 .kpi-card:hover {
-    transform: translateY(-2px);
+    transform: translateY(-4px) scale(1.02);
     box-shadow: var(--shadow-hover);
 }
 
@@ -475,6 +487,11 @@ html[data-theme="dark"] .fa-moon {
     height: 100%;
     background: var(--accent-gradient);
     border-radius: var(--radius-sm) 0 0 var(--radius-sm);
+    transition: width var(--transition-fast);
+}
+
+.kpi-card.highlight:hover::before {
+    width: 8px;
 }
 
 .kpi-icon {
@@ -486,6 +503,11 @@ html[data-theme="dark"] .fa-moon {
     align-items: center;
     justify-content: center;
     margin-bottom: var(--spacing-md);
+    transition: transform var(--transition-slow);
+}
+
+.kpi-card:hover .kpi-icon {
+    transform: rotate(10deg);
 }
 
 .kpi-icon i {
@@ -503,6 +525,11 @@ html[data-theme="dark"] .fa-moon {
     font-size: 1.75rem;
     font-weight: 600;
     margin-bottom: var(--spacing-sm);
+    transition: color var(--transition-fast);
+}
+
+.kpi-card:hover .kpi-content p {
+    color: var(--accent);
 }
 
 .kpi-trend {
@@ -512,6 +539,11 @@ html[data-theme="dark"] .fa-moon {
     padding: 4px 8px;
     border-radius: var(--radius-sm);
     font-size: 0.9rem;
+    transition: transform var(--transition-fast);
+}
+
+.kpi-card:hover .kpi-trend {
+    transform: scale(1.1);
 }
 
 .kpi-trend.positive {
@@ -534,7 +566,7 @@ html[data-theme="dark"] .fa-moon {
     margin-top: var(--spacing-md);
 }
 
-/* 9. КАРТОЧКИ МАСТЕРОВ */
+/* 9. КАРТОЧКИ МАСТЕРОВ (с анимацией) */
 .masters-grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
@@ -546,11 +578,11 @@ html[data-theme="dark"] .fa-moon {
     border-radius: var(--radius-lg);
     padding: var(--spacing-lg);
     box-shadow: var(--shadow-sm);
-    transition: all var(--transition-normal);
+    transition: transform var(--transition-normal), box-shadow var(--transition-normal);
 }
 
 .master-card:hover {
-    transform: translateY(-2px);
+    transform: translateY(-4px) scale(1.02);
     box-shadow: var(--shadow-hover);
 }
 
@@ -571,6 +603,11 @@ html[data-theme="dark"] .fa-moon {
     position: relative;
     width: 48px;
     height: 48px;
+    transition: transform var(--transition-slow);
+}
+
+.master-card:hover .master-avatar {
+    transform: scale(1.1);
 }
 
 .master-avatar i {
@@ -587,15 +624,7 @@ html[data-theme="dark"] .fa-moon {
     border-radius: 50%;
     border: 2px solid var(--panel-bg);
     background: var(--success);
-}
-
-.master-details h3 {
-    margin-bottom: 2px;
-}
-
-.master-position {
-    font-size: 0.9rem;
-    color: var(--text-muted);
+    transition: background var(--transition-fast);
 }
 
 .master-stats {
@@ -614,6 +643,11 @@ html[data-theme="dark"] .fa-moon {
     display: flex;
     flex-direction: column;
     gap: 4px;
+    transition: color var(--transition-fast);
+}
+
+.master-card:hover .stat-value {
+    color: var(--accent);
 }
 
 .stat-label {
@@ -631,6 +665,7 @@ html[data-theme="dark"] .fa-moon {
     background: var(--input-bg);
     border-radius: 2px;
     overflow: hidden;
+    transition: background var(--transition-slow);
 }
 
 .progress-fill {
@@ -643,7 +678,7 @@ html[data-theme="dark"] .fa-moon {
   assets/css/main.css | ЧАСТЬ 4: ФОРМЫ И КНОПКИ
 ─────────────────────────────────────────────*/
 
-/* 10. ФОРМЫ */
+/* 10. ФОРМЫ (с анимациями и фокусом) */
 .form-group {
     margin-bottom: var(--spacing-lg);
 }
@@ -659,6 +694,7 @@ html[data-theme="dark"] .fa-moon {
 
 .form-group label i {
     color: var(--accent);
+    transition: color var(--transition-fast);
 }
 
 .form-row {
@@ -677,14 +713,15 @@ textarea {
     border-radius: var(--radius-md);
     color: var(--text);
     font-size: 1rem;
-    transition: all var(--transition-fast);
+    transition: border-color var(--transition-fast), box-shadow var(--transition-fast), transform var(--transition-fast);
 }
 
 input:focus,
 select:focus,
 textarea:focus {
     border-color: var(--accent);
-    box-shadow: 0 0 0 2px rgba(57, 157, 156, 0.1);
+    box-shadow: 0 0 0 2px rgba(var(--accent-rgb), 0.1); /* Бирюзовый фокус */
+    transform: translateY(-2px);
     outline: none;
 }
 
@@ -693,7 +730,7 @@ textarea {
     resize: vertical;
 }
 
-/* Поле выбора услуг */
+/* Поле выбора услуг (с hover) */
 .services-field {
     background: var(--input-bg);
     border: 1px solid var(--border);
@@ -701,11 +738,12 @@ textarea {
     min-height: 48px;
     padding: var(--spacing-sm);
     cursor: pointer;
-    transition: all var(--transition-fast);
+    transition: border-color var(--transition-fast), transform var(--transition-fast);
 }
 
 .services-field:hover {
     border-color: var(--accent);
+    transform: translateY(-2px);
 }
 
 .services-field .placeholder {
@@ -728,6 +766,11 @@ textarea {
     color: var(--panel-bg);
     border-radius: var(--radius-sm);
     font-size: 0.9rem;
+    transition: transform var(--transition-fast);
+}
+
+.service-tag:hover {
+    transform: scale(1.05);
 }
 
 .service-tag i {
@@ -739,7 +782,7 @@ textarea {
     transform: scale(1.2);
 }
 
-/* 11. КНОПКИ */
+/* 11. КНОПКИ (с анимациями и active state) */
 .btn {
     display: inline-flex;
     align-items: center;
@@ -749,7 +792,7 @@ textarea {
     border-radius: var(--radius-md);
     font-size: 1rem;
     font-weight: 500;
-    transition: all var(--transition-fast);
+    transition: transform var(--transition-fast), box-shadow var(--transition-fast), background var(--transition-fast);
     border: none;
     cursor: pointer;
 }
@@ -760,8 +803,12 @@ textarea {
 }
 
 .primary-btn:hover {
-    transform: translateY(-2px);
+    transform: translateY(-2px) scale(1.02);
     box-shadow: var(--shadow-md);
+}
+
+.primary-btn:active {
+    transform: translateY(0) scale(0.98);
 }
 
 .secondary-btn {
@@ -771,6 +818,11 @@ textarea {
 
 .secondary-btn:hover {
     background: var(--border);
+    transform: translateY(-2px);
+}
+
+.secondary-btn:active {
+    transform: translateY(0);
 }
 
 .icon-btn {
@@ -784,12 +836,16 @@ textarea {
     color: var(--text);
     border: none;
     cursor: pointer;
-    transition: all var(--transition-fast);
+    transition: transform var(--transition-fast), background var(--transition-fast);
 }
 
 .icon-btn:hover {
     background: var(--border);
     transform: scale(1.1);
+}
+
+.icon-btn:active {
+    transform: scale(0.95);
 }
 
 /* Состояния кнопок */
@@ -798,6 +854,7 @@ textarea {
     opacity: 0.7;
     cursor: not-allowed;
     pointer-events: none;
+    transform: none;
 }
 
 .btn.loading {
@@ -819,11 +876,16 @@ textarea {
     to { transform: rotate(360deg); }
 }
 
-/* 12. ПОИСК И ФИЛЬТРЫ */
+/* 12. ПОИСК И ФИЛЬТРЫ (с фокус анимацией) */
 .search-box {
     position: relative;
     width: 100%;
     max-width: 300px;
+    transition: box-shadow var(--transition-fast);
+}
+
+.search-box:focus-within {
+    box-shadow: 0 0 0 2px rgba(var(--accent-rgb), 0.1);
 }
 
 .search-box i {
@@ -832,10 +894,16 @@ textarea {
     top: 50%;
     transform: translateY(-50%);
     color: var(--text-muted);
+    transition: color var(--transition-fast);
+}
+
+.search-box:focus-within i {
+    color: var(--accent);
 }
 
 .search-box input {
     padding-left: calc(var(--spacing-md) * 2 + 16px);
+    transition: padding var(--transition-fast);
 }
 
 .filter-group {
@@ -849,7 +917,7 @@ textarea {
     font-size: 0.9rem;
 }
 
-/* 13. ПЕРЕКЛЮЧАТЕЛИ */
+/* 13. ПЕРЕКЛЮЧАТЕЛИ (с анимацией индикатора) */
 .tab-navigation {
     display: flex;
     gap: var(--spacing-sm);
@@ -858,6 +926,7 @@ textarea {
     background: var(--panel-bg);
     border-radius: var(--radius-lg);
     position: relative;
+    transition: background var(--transition-normal);
 }
 
 .tab-btn {
@@ -869,7 +938,7 @@ textarea {
     padding: var(--spacing-md);
     border-radius: var(--radius-md);
     font-weight: 500;
-    transition: all var(--transition-fast);
+    transition: color var(--transition-fast), transform var(--transition-fast);
     border: none;
     cursor: pointer;
     color: var(--text-muted);
@@ -880,6 +949,7 @@ textarea {
 
 .tab-btn.active {
     color: var(--panel-bg);
+    transform: scale(1.05);
 }
 
 .tab-indicator {
@@ -888,14 +958,14 @@ textarea {
     height: calc(100% - var(--spacing-sm) * 2);
     background: var(--accent-gradient);
     border-radius: var(--radius-md);
-    transition: all var(--transition-normal);
+    transition: transform var(--transition-normal), width var(--transition-normal);
 }
 
 /*────────────────────────────────────────────
   assets/css/main.css | ЧАСТЬ 5: МОДАЛЬНЫЕ ОКНА И БОНУСЫ
 ─────────────────────────────────────────────*/
 
-/* 14. МОДАЛЬНЫЕ ОКНА */
+/* 14. МОДАЛЬНЫЕ ОКНА (с анимацией и мобильным fullscreen) */
 .modal {
     position: fixed;
     inset: 0;
@@ -906,7 +976,7 @@ textarea {
     padding: var(--spacing-md);
     opacity: 0;
     visibility: hidden;
-    transition: all var(--transition-normal);
+    transition: opacity var(--transition-normal), visibility var(--transition-normal);
     z-index: 1000;
     backdrop-filter: blur(4px);
 }
@@ -933,6 +1003,16 @@ textarea {
     transform: scale(1);
 }
 
+/* Мобильный fullscreen для модалок */
+@media screen and (max-width: 576px) {
+    .modal-content {
+        max-width: none;
+        max-height: none;
+        height: 100vh;
+        border-radius: 0;
+    }
+}
+
 .modal-header {
     padding: var(--spacing-lg);
     border-bottom: 1px solid var(--border);
@@ -940,6 +1020,7 @@ textarea {
     align-items: center;
     justify-content: space-between;
     gap: var(--spacing-lg);
+    transition: background var(--transition-slow);
 }
 
 .modal-header h3 {
@@ -951,6 +1032,7 @@ textarea {
 
 .modal-header h3 i {
     color: var(--accent);
+    transition: color var(--transition-fast);
 }
 
 .close-modal {
@@ -961,7 +1043,7 @@ textarea {
     background: var(--input-bg);
     color: var(--text-muted);
     cursor: pointer;
-    transition: all var(--transition-fast);
+    transition: background var(--transition-fast), color var(--transition-fast), transform var(--transition-fast);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -970,12 +1052,13 @@ textarea {
 .close-modal:hover {
     background: var(--border);
     color: var(--danger);
-    transform: rotate(90deg);
+    transform: rotate(90deg) scale(1.1);
 }
 
 .modal-body {
     padding: var(--spacing-lg);
     overflow-y: auto;
+    transition: opacity var(--transition-normal);
 }
 
 .modal-footer {
@@ -984,9 +1067,10 @@ textarea {
     display: flex;
     justify-content: flex-end;
     gap: var(--spacing-md);
+    transition: background var(--transition-slow);
 }
 
-/* 15. СИСТЕМА БОНУСОВ */
+/* 15. СИСТЕМА БОНУСОВ (с бирюзовыми градиентами и анимацией) */
 .bonus-master-info {
     display: flex;
     align-items: center;
@@ -995,12 +1079,22 @@ textarea {
     padding: var(--spacing-lg);
     background: var(--input-bg);
     border-radius: var(--radius-lg);
+    transition: box-shadow var(--transition-normal);
+}
+
+.bonus-master-info:hover {
+    box-shadow: var(--shadow-md);
 }
 
 .bonus-master-info .master-avatar {
     width: 64px;
     height: 64px;
     flex-shrink: 0;
+    transition: transform var(--transition-slow);
+}
+
+.bonus-master-info:hover .master-avatar {
+    transform: scale(1.1);
 }
 
 .bonus-master-info .master-avatar i {
@@ -1027,6 +1121,7 @@ textarea {
     );
     border-radius: 3px;
     outline: none;
+    transition: background var(--transition-slow);
 }
 
 .bonus-range::-webkit-slider-thumb {
@@ -1038,11 +1133,12 @@ textarea {
     border-radius: 50%;
     cursor: pointer;
     box-shadow: var(--shadow-md);
-    transition: all var(--transition-fast);
+    transition: transform var(--transition-fast), box-shadow var(--transition-fast);
 }
 
 .bonus-range::-webkit-slider-thumb:hover {
     transform: scale(1.2);
+    box-shadow: var(--shadow-hover);
 }
 
 .bonus-scale {
@@ -1060,6 +1156,11 @@ textarea {
     padding: var(--spacing-md);
     background: var(--input-bg);
     border-radius: var(--radius-md);
+    transition: background var(--transition-fast);
+}
+
+.bonus-info:hover {
+    background: rgba(var(--accent-rgb), 0.1);
 }
 
 .bonus-info p {
@@ -1088,6 +1189,7 @@ textarea {
 .bonus-chart {
     height: 200px;
     margin-top: var(--spacing-md);
+    transition: height var(--transition-slow);
 }
 
 .bonus-criteria {
@@ -1095,6 +1197,11 @@ textarea {
     border-radius: var(--radius-lg);
     padding: var(--spacing-lg);
     margin-bottom: var(--spacing-xl);
+    transition: box-shadow var(--transition-normal);
+}
+
+.bonus-criteria:hover {
+    box-shadow: var(--shadow-md);
 }
 
 .criteria-grid {
@@ -1108,6 +1215,11 @@ textarea {
     display: flex;
     align-items: center;
     gap: var(--spacing-sm);
+    transition: transform var(--transition-fast);
+}
+
+.criterion:hover {
+    transform: translateX(4px);
 }
 
 .criterion i {
@@ -1121,10 +1233,20 @@ textarea {
 .criterion-rating i {
     color: var(--warning);
     font-size: 0.9rem;
+    transition: color var(--transition-fast);
+}
+
+.criterion:hover .criterion-rating i {
+    color: var(--accent);
 }
 
 .bonus-comment textarea {
     margin-top: var(--spacing-sm);
+    transition: border-color var(--transition-fast);
+}
+
+.bonus-comment textarea:focus {
+    border-color: var(--accent);
 }
 
 /* Анимации для бонусов */
@@ -1142,7 +1264,7 @@ textarea {
   assets/css/main.css | ЧАСТЬ 6: АДАПТИВНОСТЬ И АНИМАЦИИ
 ─────────────────────────────────────────────*/
 
-/* 16. АНИМАЦИИ */
+/* 16. АНИМАЦИИ (с keyframes и easing) */
 @keyframes slideIn {
     from {
         opacity: 0;
@@ -1171,18 +1293,18 @@ textarea {
 }
 
 .animate-slide-in {
-    animation: slideIn var(--transition-normal);
+    animation: slideIn var(--transition-normal) ease-out;
 }
 
 .animate-fade-in {
-    animation: fadeIn var(--transition-normal);
+    animation: fadeIn var(--transition-normal) ease-in;
 }
 
 .animate-scale-in {
-    animation: scaleIn var(--transition-normal);
+    animation: scaleIn var(--transition-normal) ease-in-out;
 }
 
-/* 17. АДАПТИВНОСТЬ */
+/* 17. АДАПТИВНОСТЬ (улучшенные media для мобильных) */
 /* Большие экраны */
 @media screen and (min-width: 1400px) {
     .app-container {
@@ -1225,6 +1347,7 @@ textarea {
 
     .quick-action-btn {
         min-width: 200px;
+        font-size: 1.1rem; /* Larger for touch */
     }
 }
 
@@ -1261,14 +1384,16 @@ textarea {
 
     .tab-btn {
         flex: 1 1 calc(50% - var(--spacing-sm));
+        font-size: 1.1rem; /* Larger text for mobile */
     }
 }
 
-/* Мобильные устройства */
+/* Мобильные устройства (fullscreen/ larger paddings) */
 @media screen and (max-width: 576px) {
     :root {
         --spacing-lg: 16px;
         --spacing-xl: 24px;
+        font-size: 18px; /* Larger base font for touch readability */
     }
 
     .kpi-grid {
@@ -1277,6 +1402,7 @@ textarea {
 
     .quick-action-btn {
         width: 100%;
+        padding: var(--spacing-lg); /* Larger for touch */
     }
 
     .modal-header {
@@ -1304,10 +1430,20 @@ textarea {
 
     .modal-footer button {
         width: 100%;
+        padding: var(--spacing-lg); /* Larger buttons for fingers */
+    }
+
+    /* Fullscreen modal on small screens */
+    .modal-content {
+        border-radius: 0;
+        max-width: 100vw;
+        max-height: 100vh;
+        height: 100vh;
+        width: 100vw;
     }
 }
 
-/* 18. УТИЛИТЫ ДЛЯ ПЕЧАТИ */
+/* 18. УТИЛИТЫ ДЛЯ ПЕЧАТИ (улучшенные) */
 @media print {
     .page-header,
     .quick-actions,
@@ -1327,6 +1463,7 @@ textarea {
         break-inside: avoid;
         box-shadow: none !important;
         border: 1px solid #ddd;
+        page-break-inside: avoid;
     }
 
     body {
@@ -1336,10 +1473,11 @@ textarea {
 
     @page {
         margin: 2cm;
+        size: A4;
     }
 }
 
-/* 19. ДОСТУПНОСТЬ */
+/* 19. ДОСТУПНОСТЬ (custom focus и reduced-motion) */
 @media (prefers-reduced-motion: reduce) {
     *,
     *::before,
@@ -1361,4 +1499,12 @@ textarea {
     clip: rect(0, 0, 0, 0);
     white-space: nowrap;
     border: 0;
+}
+
+/* Custom focus styles (override reset) */
+:focus-visible {
+    outline: 2px solid var(--accent) !important;
+    outline-offset: 2px !important;
+    box-shadow: 0 0 0 4px rgba(var(--accent-rgb), 0.2) !important;
+    transition: box-shadow var(--transition-fast);
 }
