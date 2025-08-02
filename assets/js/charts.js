@@ -64,7 +64,6 @@ function initRevenueChart(ctx, colors) {
     console.log('Init revenue chart');
     return new Chart(ctx, {
         type: 'line',
-         {
             labels: [], // Будут заполнены позже
             datasets: [{
                 label: 'Выручка (₽)',
