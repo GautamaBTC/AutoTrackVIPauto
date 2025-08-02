@@ -4,16 +4,16 @@
 
 /* 1. Цветовые темы (без изменений) */
 :root {
-  --bg: #F0F2F5; --panel-bg: #FFFFFF; --input-bg: #F0F2F5; --border: #DCDFE6;
-  --text: #303133; --text-muted: #909399; --accent: #399D9C; --shadow: rgba(0, 0, 0, 0.05);
+  --bg: #F0F2F5; --panel-bg: #FFFFFF; --input-bg: #F0F2F5; --border: #DCDFE6; 
+  --text: #303133; --text-muted: #909399; --accent: #399D9C; --shadow: rgba(0, 0, 0, 0.05); 
   --btn-text: #FFFFFF;
   /* Добавляем цвета для уведомлений */
   --success: #28a745; --error: #dc3545;
 }
 
 html[data-theme="dark"] {
-  --bg: #141414; --panel-bg: #1D1D1D; --input-bg: #262626; --border: #424242;
-  --text: #E5EAF3; --text-muted: #A3A6AD; --accent: #FFD166; --shadow: rgba(0, 0, 0, 0.3);
+  --bg: #141414; --panel-bg: #1D1D1D; --input-bg: #262626; --border: #424242; 
+  --text: #E5EAF3; --text-muted: #A3A6AD; --accent: #FFD166; --shadow: rgba(0, 0, 0, 0.3); 
   --btn-text: #1D1D1D;
   /* Темные версии цветов уведомлений */
   --success: #2fd058; --error: #ff4d4d;
@@ -88,6 +88,10 @@ html[data-theme="dark"] .fa-moon { opacity: 1; transform: rotate(0deg); }
 }
 .form-group input:focus {
   border-color: var(--accent);
+}
+.form-group input::placeholder {
+  color: var(--text-muted);
+  opacity: 0.7;
 }
 .toggle-password { position: absolute; right: 0; padding: 15px; cursor: pointer; color: var(--text-muted); }
 #password { padding-right: 48px; }
