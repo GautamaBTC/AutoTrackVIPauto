@@ -89,20 +89,27 @@ async function mockServerLogin(login, password) {
     // Имитация сетевой задержки
     await new Promise(resolve => setTimeout(resolve, 800));
 
-    const user = INITIAL_USERS[login];
+    // Нормализуем логин (убираем пробелы и приводим к нижнему регистру)
+    const normalizedLogin = login.trim().toLowerCase();
+    
+    // Ищем пользователя (в объекте ключи в нижнем регистре)
+    const user = Object.entries(INITIAL_USERS).find(([key]) => key.toLowerCase() === normalizedLogin);
+    
     if (!user) {
         throw new Error('Неверный логин или пароль!');
     }
 
+    const [userLogin, userData] = user;
+    
     // Хэшируем введенный пароль для сравнения
     const enteredPasswordHash = await mockHashPassword(password);
 
-    if (user.passwordHash === enteredPasswordHash) {
+    if (userData.passwordHash === enteredPasswordHash) {
         return {
-            login,
-            name: user.name,
-            role: user.role,
-            position: user.position,
+            login: userLogin, // Возвращаем оригинальный логин из объекта
+            name: userData.name,
+            role: userData.role,
+            position: userData.position,
             timestamp: new Date().toISOString()
         };
     } else {
@@ -187,7 +194,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const isPassValid = validateField(passInput);
         if (!isLoginValid || !isPassValid) return;
 
-        const login = userInput.value.trim().toLowerCase();
+        const login = userInput.value.trim(); // Убираем только пробелы, сохраняем регистр для отображения
         const password = passInput.value.trim();
 
         // Анимация загрузки
