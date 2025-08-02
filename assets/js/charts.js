@@ -2,37 +2,40 @@
   assets/js/charts.js | ГРАФИКИ С Chart.js
 ─────────────────────────────────────────────*/
 
-// Импорты
-import { formatMoney } from './utils.js';
+// --- Импорты ---
+import { formatMoney, formatNumber } from './utils.js';
 
-// Глобальные переменные для хранения экземпляров графиков
+// --- Глобальные переменные для хранения экземпляров графиков ---
 let revenueChart = null;
 let mastersChart = null;
 let servicesChart = null;
 let trendsChart = null;
+let bonusHistoryChart = null; // Для модального окна бонусов
 
-// Цветовые схемы (с бирюзовыми в dark)
+// --- Цветовые схемы (с бирюзовыми в dark) ---
 const chartColors = {
     light: {
         primary: '#399D9C',
         secondary: '#4DBAB3',
         accent: '#2D7F7E',
         background: 'rgba(57, 157, 156, 0.1)',
-        grid: 'rgba(0, 0, 0, 0.05)'
+        grid: 'rgba(0, 0, 0, 0.05)',
+        text: '#303133'
     },
     dark: {
         primary: '#008B8B',
         secondary: '#00A0A0',
         accent: '#006666',
         background: 'rgba(0, 139, 139, 0.1)',
-        grid: 'rgba(255, 255, 255, 0.05)'
+        grid: 'rgba(255, 255, 255, 0.05)',
+        text: '#E0FFFF'
     }
 };
 
-// Инициализация графиков
+// --- Инициализация графиков ---
 export function initCharts() {
-    console.log('Init charts'); // Debug
-
+    console.log('Initializing charts');
+    
     // Получаем текущие цвета темы
     const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
     const colors = isDark ? chartColors.dark : chartColors.light;
@@ -51,17 +54,17 @@ export function initCharts() {
 
     // Слушатель события смены темы для динамического обновления цветов
     window.addEventListener('themechange', (e) => {
-        console.log('Theme changed, updating charts'); // Debug
+        console.log('Theme changed, updating charts');
         updateChartsTheme(e.detail.theme === 'dark' ? chartColors.dark : chartColors.light);
     });
 }
 
-// Функции инициализации отдельных графиков
+// --- Функции инициализации отдельных графиков ---
 function initRevenueChart(ctx, colors) {
-    console.log('Init revenue chart'); // Debug
+    console.log('Init revenue chart');
     return new Chart(ctx, {
         type: 'line',
-        data: {
+         {
             labels: [], // Будут заполнены позже
             datasets: [{
                 label: 'Выручка (₽)',
@@ -124,10 +127,10 @@ function initRevenueChart(ctx, colors) {
 }
 
 function initMastersChart(ctx, colors) {
-    console.log('Init masters chart'); // Debug
+    console.log('Init masters chart');
     return new Chart(ctx, {
         type: 'doughnut',
-        data: {
+         {
             labels: [], // Будут заполнены позже
             datasets: [{
                 data: [],
@@ -183,7 +186,7 @@ function initMastersChart(ctx, colors) {
 }
 
 function initServicesChart(ctx, colors) {
-    console.log('Init services chart'); // Debug
+    console.log('Init services chart');
     return new Chart(ctx, {
         type: 'bar',
          {
@@ -242,7 +245,7 @@ function initServicesChart(ctx, colors) {
 }
 
 function initTrendsChart(ctx, colors) {
-    console.log('Init trends chart'); // Debug
+    console.log('Init trends chart');
     return new Chart(ctx, {
         type: 'line',
          {
@@ -273,7 +276,6 @@ function initTrendsChart(ctx, colors) {
                     tension: 0.4,
                     yAxisID: 'y1'
                 }
-                // Бонусный уровень будет добавлен динамически
             ]
         },
         options: {
@@ -333,14 +335,14 @@ function initTrendsChart(ctx, colors) {
 
 // --- Обновление данных графиков ---
 export function updateCharts(period = 'month') {
-    console.log(`Updating charts for period: ${period}`); // Debug
-
+    console.log(`Updating charts for period: ${period}`);
+    
     // Получаем все записи
     const allEntries = JSON.parse(localStorage.getItem('vipauto_entries') || '[]');
-
+    
     // Фильтруем по периоду
     const filteredEntries = filterEntriesByPeriod(allEntries, period);
-
+    
     // Обновляем каждый график
     updateRevenueChart(filteredEntries);
     updateMastersChart(filteredEntries);
@@ -500,39 +502,13 @@ function updateTrendsChart(entries) {
     trendsChart.data.labels = labels;
     trendsChart.data.datasets[0].data = avgCheckData; // Средний чек
     trendsChart.data.datasets[1].data = countData;   // Количество работ
-    // TODO: Добавить данные по бонусам
     trendsChart.update();
 }
 
 // --- Вспомогательные функции ---
-// Генерация градиентов (пример)
-function generateGradientColors(ctx, color1, color2, steps) {
-    const gradient = ctx.createLinearGradient(0, 0, 0, 400);
-    gradient.addColorStop(0, color1);
-    gradient.addColorStop(1, color2);
-    return gradient;
-}
-
-// Интерполяция цветов (пример)
-function interpolateColors(color1, color2, factor) {
-    const r1 = parseInt(color1.substring(1, 3), 16);
-    const g1 = parseInt(color1.substring(3, 5), 16);
-    const b1 = parseInt(color1.substring(5, 7), 16);
-
-    const r2 = parseInt(color2.substring(1, 3), 16);
-    const g2 = parseInt(color2.substring(3, 5), 16);
-    const b2 = parseInt(color2.substring(5, 7), 16);
-
-    const r = Math.round(r1 + factor * (r2 - r1));
-    const g = Math.round(g1 + factor * (g2 - g1));
-    const b = Math.round(b1 + factor * (b2 - b1));
-
-    return `#${r.toString(16).padStart(2, '0')}${g.toString(16).padStart(2, '0')}${b.toString(16).padStart(2, '0')}`;
-}
-
 // Обновление темы графиков
 function updateChartsTheme(colors) {
-    console.log('Updating charts theme'); // Debug
+    console.log('Updating charts theme');
     // Обновляем каждый график с новыми цветами
     if (revenueChart) {
         revenueChart.data.datasets[0].borderColor = colors.primary;
@@ -567,64 +543,89 @@ function updateChartsTheme(colors) {
     }
 }
 
-// Экспорт графиков (пример)
-function exportChartAsImage(chartId, fileName) {
-    const canvas = document.getElementById(chartId);
-    if (!canvas) return;
+// Инициализация графика истории бонусов (для модального окна)
+export function initBonusHistoryChart(masterName) {
+    // Получаем историю бонусов из storage.js
+    const bonusHistory = JSON.parse(localStorage.getItem(`vipauto_bonus_history_${masterName}`) || '[]');
+    
+    const ctx = document.getElementById('bonus-history-chart')?.getContext('2d');
+    if (!ctx) return;
 
-    const url = canvas.toDataURL('image/png');
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = fileName || `${chartId}.png`;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-}
-
-// Анимированное обновление (пример)
-function animateChartUpdate(chart, newData) {
-    const duration = 1000;
-    const start = performance.now();
-
-    const animate = (time) => {
-        const elapsed = time - start;
-        const progress = Math.min(elapsed / duration, 1);
-        // Применяем easing
-        const ease = t => t < .5 ? 4 * t * t * t : (t - 1) * (2 * t - 2) * (2 * t - 2) + 1;
-
-        // Интерполируем данные
-        // ... (логика интерполяции)
-
-        chart.update();
-
-        if (progress < 1) {
-            requestAnimationFrame(animate);
-        }
-    };
-
-    requestAnimationFrame(animate);
-}
-
-// Форматирование подписей (пример)
-function formatChartLabel(value, type) {
-    switch (type) {
-        case 'money':
-            return formatMoney(value);
-        case 'percent':
-            return `${value.toFixed(1)}%`;
-        case 'number':
-            return value.toLocaleString('ru-RU');
-        default:
-            return value;
+    // Уничтожаем предыдущий график, если он есть
+    if (window.bonusHistoryChartInstance) {
+        window.bonusHistoryChartInstance.destroy();
     }
+
+    // Подготавливаем данные
+    const labels = bonusHistory.map(b => {
+        const date = new Date(b.timestamp);
+        return date.toLocaleDateString('ru-RU', { day: 'numeric', month: 'short' });
+    });
+    const data = bonusHistory.map(b => b.level);
+
+    // Создаем новый график
+    window.bonusHistoryChartInstance = new Chart(ctx, {
+        type: 'line',
+         {
+            labels: labels,
+            datasets: [{
+                label: 'Уровень бонуса',
+                 data,
+                borderColor: '#399D9C',
+                backgroundColor: 'rgba(57, 157, 156, 0.1)',
+                borderWidth: 2,
+                pointBackgroundColor: '#399D9C',
+                pointRadius: 4,
+                pointHoverRadius: 6,
+                tension: 0.4,
+                fill: true
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    display: false
+                },
+                tooltip: {
+                    backgroundColor: '#399D9C',
+                    titleColor: '#fff',
+                    bodyColor: '#fff',
+                    padding: 12,
+                    borderWidth: 0,
+                    cornerRadius: 8
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    max: 10,
+                    ticks: {
+                        stepSize: 1
+                    },
+                    grid: {
+                        color: 'rgba(0, 0, 0, 0.05)'
+                    }
+                },
+                x: {
+                    grid: {
+                        display: false
+                    }
+                }
+            },
+            animation: {
+                duration: 1000,
+                easing: 'easeInOutQuart'
+            }
+        }
+    });
 }
 
-// ... (другие вспомогательные функции)
-
-// Экспорт всех функций
+// --- Экспорт функций ---
 export {
     initCharts,
     updateCharts,
     updateChartsTheme,
-    exportChartAsImage
+    initBonusHistoryChart
 };
