@@ -1,8 +1,8 @@
 /*────────────────────────────────────────────
-  assets/js/theme.js | УЛУЧШЕННАЯ ВЕРСИЯ С ФИКСАМИ
+  assets/js/theme.js | СИСТЕМА ТЕМ И ХЕДЕРА
 ─────────────────────────────────────────────*/
 
-// Константы
+// --- Константы ---
 const STORAGE_KEY = 'vipautologin_theme';
 const TRANSITION_DURATION = 300;
 
@@ -11,7 +11,7 @@ const THEMES = {
     DARK: 'dark'
 };
 
-// CSS переменные для каждой темы (с бирюзовыми тонами в dark)
+// --- CSS переменные для каждой темы (с бирюзовыми тонами в dark) ---
 const THEME_VARIABLES = {
     [THEMES.LIGHT]: {
         '--bg': '#F0F2F5',
@@ -41,7 +41,7 @@ const THEME_VARIABLES = {
     }
 };
 
-// Состояние
+// --- Состояние ---
 let currentTheme = null;
 let isAnimating = false;
 
@@ -52,7 +52,7 @@ export function initHeader() {
     const dateEl = document.getElementById('current-date');
     const timeEl = document.getElementById('current-time');
     const themeToggle = document.getElementById('theme-toggle');
-
+    
     if (!dateEl || !timeEl || !themeToggle) {
         console.warn('Не найдены необходимые элементы хедера');
         return;
@@ -60,7 +60,7 @@ export function initHeader() {
 
     // Инициализация времени и даты
     initDateTime(dateEl, timeEl);
-
+    
     // Инициализация переключателя темы
     initThemeToggle(themeToggle);
 
@@ -77,14 +77,14 @@ function initDateTime(dateEl, timeEl) {
 
     function updateDateTime() {
         const now = new Date();
-
+        
         // Обновляем дату только при изменении
         const currentDate = now.toLocaleDateString('ru-RU', {
             weekday: 'long',
             day: 'numeric',
             month: 'long'
         });
-
+        
         if (currentDate !== lastDate) {
             dateEl.textContent = currentDate;
             lastDate = currentDate;
@@ -95,9 +95,9 @@ function initDateTime(dateEl, timeEl) {
             now.getHours(),
             now.getMinutes()
         ].map(n => String(n).padStart(2, '0'));
-
+        
         const currentTime = `${h}:${m}`;
-
+        
         if (currentTime !== lastTime) {
             // Плавное обновление времени
             timeEl.style.opacity = '0';
@@ -120,18 +120,18 @@ function initThemeToggle(toggle) {
     // Загружаем сохраненную тему
     const savedTheme = localStorage.getItem(STORAGE_KEY);
     currentTheme = savedTheme || THEMES.DARK; // По умолчанию темная тема
-
+    
     // Применяем тему
     applyTheme(currentTheme);
-
+    
     // Устанавливаем состояние переключателя
     toggle.checked = currentTheme === THEMES.LIGHT;
-
+    
     // Обработчик изменения с debug log
     toggle.addEventListener('change', () => {
         console.log('Theme toggle changed'); // Debug для проверки
         if (isAnimating) return;
-
+        
         const newTheme = toggle.checked ? THEMES.LIGHT : THEMES.DARK;
         switchTheme(newTheme);
     });
@@ -142,7 +142,7 @@ function initThemeToggle(toggle) {
  */
 function initSystemThemeListener() {
     const systemThemeQuery = window.matchMedia('(prefers-color-scheme: dark)');
-
+    
     function handleSystemThemeChange(e) {
         // Меняем тему только если пользователь не выбрал её сам
         if (!localStorage.getItem(STORAGE_KEY)) {
@@ -156,6 +156,7 @@ function initSystemThemeListener() {
     } else {
         systemThemeQuery.addListener(handleSystemThemeChange);
     }
+    
     handleSystemThemeChange(systemThemeQuery); // Initial check
 }
 
@@ -164,7 +165,7 @@ function initSystemThemeListener() {
  */
 function switchTheme(newTheme) {
     if (currentTheme === newTheme || isAnimating) return;
-
+    
     isAnimating = true;
     console.log(`Switching to ${newTheme}`); // Debug
 
@@ -188,7 +189,7 @@ function switchTheme(newTheme) {
 
         setTimeout(() => {
             applyTheme(newTheme);
-
+            
             overlay.style.opacity = '0';
             setTimeout(() => {
                 overlay.remove();
@@ -205,12 +206,12 @@ function switchTheme(newTheme) {
 function applyTheme(theme) {
     // Устанавливаем атрибут темы
     document.documentElement.setAttribute('data-theme', theme);
-
+    
     // Применяем CSS переменные
     Object.entries(THEME_VARIABLES[theme]).forEach(([variable, value]) => {
         document.documentElement.style.setProperty(variable, value);
     });
-
+    
     // Сохраняем выбор пользователя
     localStorage.setItem(STORAGE_KEY, theme);
     currentTheme = theme;
@@ -222,13 +223,13 @@ function applyTheme(theme) {
     }
 
     // Отправляем событие изменения темы
-    window.dispatchEvent(new CustomEvent('themechange', {
-        detail: { theme }
+    window.dispatchEvent(new CustomEvent('themechange', { 
+        detail: { theme } 
     }));
     console.log('Theme applied and event dispatched'); // Debug
 }
 
-// Экспорт публичных функций
+// --- Экспорт публичных функций ---
 export {
     initHeader,
     getCurrentTheme: () => currentTheme,
