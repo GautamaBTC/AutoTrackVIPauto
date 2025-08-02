@@ -5,7 +5,7 @@
 import { initHeader } from './theme.js';
 import { loadServicesCatalog, getServicesStats } from './servicesCatalog.js';
 import { getAllEntries, addEntry, updateEntry, deleteEntry, getUserByLogin } from './storage.js';
-import { formatDateInput, formatDateDisplay, formatMoney, debounce } from './utils.js';
+import { formatDateInput, formatDateDisplay, formatMoney, debounce, showNotification as utilsShowNotification } from './utils.js';
 import { initCharts, updateCharts } from './charts.js';
 
 // Константы
@@ -16,20 +16,15 @@ const USER_ROLES = {
 };
 
 const BONUS_LEVELS = {
-    0: { percent: 0, description: 'Базовый уровень' },
-    1: { percent: 3, description: 'Начальный бонус' },
-    2: { percent: 5, description: 'Стабильный рост' },
-    3: { percent: 7, description: 'Хорошая работа' },
-    4: { percent: 9, description: 'Отличный результат' },
-    5: { percent: 11, description: 'Превосходно' },
-    6: { percent: 13, description: 'Профессионал' },
-    7: { percent: 15, description: 'Эксперт' },
-    8: { percent: 17, description: 'Мастер своего дела' },
-    9: { percent: 19, description: 'Виртуоз' },
-    10: { percent: 20, description: 'Легенда сервиса' }
+    0: { name: 'Нет', color: '#909399', min: 0 },
+    1: { name: 'Бронза', color: '#CD7F32', min: 1 },
+    2: { name: 'Серебро', color: '#C0C0C0', min: 2 },
+    3: { name: 'Золото', color: '#FFD700', min: 3 },
+    4: { name: 'Платина', color: '#E5E4E2', min: 4 },
+    5: { name: 'Алмаз', color: '#B9F2FF', min: 5 }
 };
 
-// Критерии для авто-расчёта (пример)
+// Критерии для автоматического расчета бонуса
 const BONUS_CRITERIA = {
     jobs: { min: 50, bonus: 2 },
     revenue: { min: 100000, bonus: 3 },
@@ -38,13 +33,14 @@ const BONUS_CRITERIA = {
 
 // Состояние
 let currentUser = null;
-let currentView = 'journal';
+let currentView = 'journal'; // Для мастеров это 'journal', для админов/директоров 'overview' по умолчанию
 let selectedServices = [];
 let activeModals = new Set();
 
 // Инициализация
 document.addEventListener('DOMContentLoaded', async () => {
     console.log('App init started'); // Debug
+    
     const userData = localStorage.getItem('vipauto_user') || sessionStorage.getItem('vipauto_user');
     if (!userData) {
         window.location.href = 'login.html';
@@ -62,59 +58,64 @@ document.addEventListener('DOMContentLoaded', async () => {
 
 async function initializeApp() {
     console.log('Initializing components'); // Debug
+    
     initHeader();
     initUserInterface();
+    
     await loadServicesCatalog();
     initCharts();
+    
     setupRoleBasedUI();
-    showView(currentView);
+    
+    // Устанавливаем начальный вид в зависимости от роли
+    const initialView = currentUser.role === USER_ROLES.MASTER ? 'journal' : 'overview';
+    showView(initialView);
+    
     setupEventListeners();
     console.log('App initialized'); // Debug
 }
 
 function initUserInterface() {
     console.log('Init user interface'); // Debug
-    // Заполняем информацию о пользователе
+    
+    // Заполняем информацию о пользователе в хедере
     const userNameEl = document.getElementById('user-name');
     const userRoleEl = document.getElementById('user-role');
-    const userPositionEl = document.getElementById('user-position');
-
+    
     if (userNameEl) userNameEl.textContent = currentUser.name;
     if (userRoleEl) userRoleEl.textContent = getRoleDisplay(currentUser.role);
-    if (userPositionEl) userPositionEl.textContent = currentUser.position;
 
     // Инициализация меню пользователя
     initUserMenu();
 
-    // Быстрые действия
+    // Быстрые действия (если есть)
     initQuickActions();
 }
 
 function initUserMenu() {
-    const menuBtn = document.getElementById('user-menu-btn');
-    const menuDropdown = document.querySelector('.user-menu-dropdown');
+    const menuBtn = document.getElementById('user-menu-trigger');
+    const menuDropdown = document.getElementById('user-menu-dropdown');
     const logoutBtn = document.getElementById('logout-btn');
 
     if (menuBtn && menuDropdown) {
         menuBtn.addEventListener('click', (e) => {
-            console.log('User menu clicked'); // Debug
             e.stopPropagation();
-            const isVisible = menuDropdown.classList.toggle('visible');
-            menuDropdown.setAttribute('aria-expanded', isVisible); // Accessibility
+            const isExpanded = menuBtn.getAttribute('aria-expanded') === 'true';
+            menuBtn.setAttribute('aria-expanded', !isExpanded);
+            menuDropdown.classList.toggle('hidden');
         });
 
-        // Закрытие при клике вне меню
+        // Закрытие меню при клике вне его
         document.addEventListener('click', (e) => {
-            if (!menuDropdown.contains(e.target) && !menuBtn.contains(e.target)) {
-                menuDropdown.classList.remove('visible');
-                menuDropdown.setAttribute('aria-expanded', 'false');
+            if (!menuBtn.contains(e.target) && !menuDropdown.contains(e.target)) {
+                menuBtn.setAttribute('aria-expanded', 'false');
+                menuDropdown.classList.add('hidden');
             }
         });
     }
 
     if (logoutBtn) {
         logoutBtn.addEventListener('click', () => {
-            console.log('Logout clicked'); // Debug
             localStorage.removeItem('vipauto_user');
             sessionStorage.removeItem('vipauto_user');
             window.location.href = 'login.html';
@@ -123,141 +124,311 @@ function initUserMenu() {
 }
 
 function initQuickActions() {
-    const quickAddJob = document.getElementById('quick-add-job');
-    const quickStats = document.getElementById('quick-stats');
-    const quickServices = document.getElementById('quick-services');
-
-    if (quickAddJob) {
-        quickAddJob.addEventListener('click', () => {
-            console.log('Quick add job clicked'); // Debug
-            openModal('add-job-modal');
-        });
-    }
-
-    if (quickStats) {
-        quickStats.addEventListener('click', () => {
-            console.log('Quick stats clicked'); // Debug
-            showView('analytics');
-        });
-    }
-
-    if (quickServices) {
-        quickServices.addEventListener('click', () => {
-            console.log('Quick services clicked'); // Debug
-            openModal('services-modal');
-        });
+    // Обработчики для быстрых действий, если они есть в интерфейсе
+    const quickAddJobBtn = document.getElementById('add-job-btn') || document.getElementById('quick-add-job');
+    if (quickAddJobBtn) {
+        quickAddJobBtn.addEventListener('click', () => openModal('add-job-modal'));
     }
 }
 
+/**
+ * Настраивает UI в зависимости от роли пользователя
+ */
 function setupRoleBasedUI() {
-    console.log('Setting up role UI for ' + currentUser.role); // Debug
+    console.log('Setting up role-based UI for:', currentUser); // Debug
+    
+    if (!currentUser) {
+        console.warn('No current user, redirecting to login');
+        window.location.href = 'login.html';
+        return;
+    }
+
     const isDirector = currentUser.role === USER_ROLES.DIRECTOR;
     const isAdmin = currentUser.role === USER_ROLES.ADMIN;
     const isMaster = currentUser.role === USER_ROLES.MASTER;
+    
+    console.log('User roles:', { isDirector, isAdmin, isMaster }); // Debug
 
-    // Показываем/скрываем элементы в зависимости от роли
-    document.querySelectorAll('[data-role]').forEach(el => {
-        const requiredRole = el.dataset.role;
-        const shouldShow = 
-            requiredRole === 'all' ||
-            (requiredRole === 'director' && isDirector) ||
-            (requiredRole === 'admin' && (isDirector || isAdmin)) ||
-            (requiredRole === 'master' && isMaster);
-
-        el.classList.toggle('hidden', !shouldShow);
-        if (shouldShow) el.setAttribute('aria-hidden', 'false');
-        else el.setAttribute('aria-hidden', 'true');
-    });
-
-    // Настраиваем интерфейс мастера
-    if (isMaster) {
-        document.querySelectorAll('[data-master-only]').forEach(el => {
-            el.classList.remove('hidden');
-            el.setAttribute('aria-hidden', 'false');
-        });
-        
-        // Фильтруем данные только для текущего мастера
-        filterMasterData();
+    // Показываем соответствующий интерфейс
+    const masterInterface = document.getElementById('master-interface');
+    const adminInterface = document.getElementById('admin-interface');
+    
+    if (masterInterface && adminInterface) {
+        if (isMaster) {
+            console.log('Showing master interface'); // Debug
+            masterInterface.classList.remove('hidden');
+            adminInterface.classList.add('hidden');
+            // Инициализируем интерфейс мастера
+            initMasterInterface();
+        } else if (isDirector || isAdmin) {
+            console.log('Showing admin interface'); // Debug
+            adminInterface.classList.remove('hidden');
+            masterInterface.classList.add('hidden');
+            // Инициализируем интерфейс администратора
+            initAdminInterface();
+        } else {
+            // Если роль не определена, показываем мастерский интерфейс по умолчанию
+            console.log('Showing default master interface'); // Debug
+            masterInterface.classList.remove('hidden');
+            adminInterface.classList.add('hidden');
+            initMasterInterface();
+        }
+    } else {
+        console.error('Interface containers not found');
     }
+
+    // Обновляем информацию о пользователе в хедере (уже сделано в initUserInterface)
 }
 
-// Управление представлениями (с анимациями)
-function showView(viewName) {
-    console.log(`Showing view: ${viewName}`); // Debug
-    const views = {
-        journal: document.getElementById('journal-section'),
-        analytics: document.getElementById('analytics-section'),
-        masters: document.getElementById('masters-section'),
-        settings: document.getElementById('settings-section')
+function getRoleDisplay(role) {
+    const roles = {
+        [USER_ROLES.DIRECTOR]: 'Директор',
+        [USER_ROLES.ADMIN]: 'Администратор',
+        [USER_ROLES.MASTER]: 'Мастер'
     };
+    return roles[role] || 'Пользователь';
+}
 
-    // Обновляем активную вкладку
-    document.querySelectorAll('.tab-btn').forEach(btn => {
-        btn.classList.toggle('active', btn.dataset.tab === viewName);
+// Инициализация интерфейса мастера
+function initMasterInterface() {
+    console.log('Initializing master interface');
+    // Здесь будет код инициализации интерфейса мастера
+    loadAndDisplayEntries(); // Загружаем записи для текущего мастера
+    updateMasterKPI(); // Обновляем KPI
+}
+
+// Инициализация интерфейса администратора
+function initAdminInterface() {
+    console.log('Initializing admin interface');
+    // Здесь будет код инициализации интерфейса администратора
+    showView('overview'); // Показываем вкладку "Обзор" по умолчанию
+    updateAdminKPI(); // Обновляем KPI
+}
+
+/**
+ * Показывает определенный вид/вкладку
+ */
+function showView(viewName) {
+    console.log(`Switching to view: ${viewName}`); // Debug
+    currentView = viewName;
+
+    // Скрываем все вкладки админ-панели
+    document.querySelectorAll('#admin-interface .tab-pane').forEach(tab => {
+        tab.classList.add('hidden');
     });
 
-    // Анимируем индикатор вкладки
-    const activeTab = document.querySelector(`.tab-btn[data-tab="${viewName}"]`);
-    const tabIndicator = document.querySelector('.tab-indicator');
-    if (activeTab && tabIndicator) {
-        const tabWidth = activeTab.offsetWidth;
-        const tabLeft = activeTab.offsetLeft;
-        tabIndicator.style.width = `${tabWidth}px`;
-        tabIndicator.style.transform = `translateX(${tabLeft}px)`;
+    // Показываем выбранную вкладку
+    const targetTab = document.getElementById(`${viewName}-tab`);
+    if (targetTab) {
+        targetTab.classList.remove('hidden');
     }
 
-    // Показываем выбранное представление с анимацией
-    Object.entries(views).forEach(([name, section]) => {
-        if (section) {
-            if (name === viewName) {
-                section.classList.remove('hidden');
-                section.classList.add('animate-slide-in');
-                section.setAttribute('aria-hidden', 'false');
-            } else {
-                section.classList.add('hidden');
-                section.classList.remove('animate-slide-in');
-                section.setAttribute('aria-hidden', 'true');
-            }
-        }
+    // Обновляем активные кнопки навигации
+    document.querySelectorAll('.tab-btn').forEach(btn => {
+        btn.classList.remove('active');
+        btn.setAttribute('aria-selected', 'false');
     });
+    
+    const activeBtn = document.querySelector(`.tab-btn[data-tab="${viewName}-tab"]`);
+    if (activeBtn) {
+        activeBtn.classList.add('active');
+        activeBtn.setAttribute('aria-selected', 'true');
+    }
 
-    // Инициализируем содержимое
+    // Обновляем данные в зависимости от вкладки
     switch(viewName) {
-        case 'journal':
-            initJournalView();
-            break;
-        case 'analytics':
-            initAnalyticsView();
+        case 'overview':
+            updateOverviewTab();
             break;
         case 'masters':
-            initMastersView();
+            updateMastersTab();
             break;
-        case 'settings':
-            initSettingsView();
+        case 'analytics':
+            updateAnalyticsTab();
+            break;
+        case 'journal':
+            loadAndDisplayEntries();
             break;
     }
-
-    currentView = viewName;
 }
 
-// Модальные окна (с aria и enhanced swipe)
+// --- Функции обновления вкладок админ-панели ---
+async function updateOverviewTab() {
+    console.log('Updating overview tab');
+    // Здесь будет логика обновления данных на вкладке "Обзор"
+    // Например, загрузка общей статистики и обновление графиков
+    const allEntries = await getAllEntries();
+    // Обновляем KPI
+    document.getElementById('total-revenue').textContent = formatMoney(
+        allEntries.reduce((sum, e) => sum + e.workCost + e.partsCost, 0)
+    );
+    document.getElementById('total-jobs').textContent = allEntries.length;
+    document.getElementById('active-masters').textContent = '6'; // Заглушка
+    
+    // Обновляем графики
+    updateCharts('month'); // Заглушка для периода
+}
+
+async function updateMastersTab() {
+    console.log('Updating masters tab');
+    // Здесь будет логика обновления данных на вкладке "Мастера"
+    // Например, загрузка списка мастеров и их статистики
+}
+
+async function updateAnalyticsTab() {
+    console.log('Updating analytics tab');
+    // Здесь будет логика обновления данных на вкладке "Аналитика"
+    // Например, загрузка и отображение графиков
+    updateCharts('month'); // Заглушка для периода
+}
+
+// --- Функции работы с журналом мастера ---
+async function loadAndDisplayEntries(filter = {}) {
+    console.log('Loading entries for master:', currentUser.name);
+    try {
+        let allEntries = await getAllEntries();
+        
+        // Фильтруем записи только для текущего мастера
+        const masterEntries = allEntries.filter(entry => entry.master === currentUser.name);
+        
+        // Применяем дополнительные фильтры, если они есть
+        let filteredEntries = masterEntries;
+        if (filter.period) {
+            filteredEntries = filterEntriesByPeriod(filteredEntries, filter.period);
+        }
+        if (filter.search) {
+            // Простая текстовая фильтрация
+            const searchTerm = filter.search.toLowerCase();
+            filteredEntries = filteredEntries.filter(entry => 
+                entry.car.toLowerCase().includes(searchTerm) ||
+                entry.client.toLowerCase().includes(searchTerm) ||
+                entry.services.some(service => service.toLowerCase().includes(searchTerm))
+            );
+        }
+        
+        renderGroupedEntries(filteredEntries);
+        updateMasterKPI(); // Обновляем KPI после загрузки записей
+    } catch (error) {
+        console.error('Error loading entries:', error);
+        showNotification('Ошибка загрузки записей', 'error');
+    }
+}
+
+function renderGroupedEntries(entries) {
+    const container = document.getElementById('master-jobs-list');
+    if (!container) {
+        console.error('Container #master-jobs-list not found');
+        return;
+    }
+
+    if (entries.length === 0) {
+        container.innerHTML = `
+            <div class="no-entries" role="status">
+                <i class="fas fa-folder-open"></i>
+                <p>Нет записей для отображения</p>
+            </div>
+        `;
+        return;
+    }
+
+    // Группировка по дате
+    const grouped = entries.reduce((acc, entry) => {
+        const date = entry.date;
+        if (!acc[date]) acc[date] = [];
+        acc[date].push(entry);
+        return acc;
+    }, {});
+
+    // Сортировка дат по убыванию
+    const sortedDates = Object.keys(grouped).sort((a, b) => new Date(b) - new Date(a));
+
+    let html = '';
+    sortedDates.forEach(date => {
+        html += `<div class="entries-group">
+                    <h4 class="entries-date">${formatDateDisplay(date)}</h4>
+                    <div class="entries-cards">`;
+        
+        grouped[date].forEach(entry => {
+            html += createEntryCard(entry);
+        });
+        
+        html += `</div></div>`;
+    });
+
+    container.innerHTML = html;
+}
+
+function createEntryCard(entry) {
+    return `
+        <div class="entry-card" data-entry-id="${entry.id}">
+            <div class="entry-header">
+                <h5 class="entry-car">${entry.car}</h5>
+                <div class="entry-actions">
+                    <button class="icon-btn edit-entry" data-entry-id="${entry.id}" title="Редактировать">
+                        <i class="fas fa-edit"></i>
+                    </button>
+                    <button class="icon-btn delete-entry" data-entry-id="${entry.id}" title="Удалить">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                </div>
+            </div>
+            <div class="entry-details">
+                <p><i class="fas fa-user"></i> ${entry.client || 'Клиент не указан'}</p>
+                <p><i class="fas fa-list"></i> ${entry.services.join(', ')}</p>
+                <p class="entry-cost"><i class="fas fa-sack-dollar"></i> ${formatMoney(entry.workCost + entry.partsCost)}</p>
+            </div>
+            <div class="entry-footer">
+                <span class="entry-master"><i class="fas fa-user-tag"></i> ${entry.master}</span>
+                <span class="entry-time"><i class="fas fa-clock"></i> ${new Date(entry.timestamp).toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' })}</span>
+            </div>
+        </div>
+    `;
+}
+
+function updateMasterKPI() {
+    // Заглушка для обновления KPI мастера
+    // В реальной реализации здесь будет логика расчета статистики
+    document.getElementById('master-today-earnings').textContent = formatMoney(0);
+    document.getElementById('master-month-earnings').textContent = formatMoney(0);
+    document.getElementById('master-jobs-count').textContent = '0';
+    // Бонусы обновляются отдельно
+    updateMasterBonus();
+}
+
+async function updateMasterBonus() {
+    // Заглушка для обновления уровня бонуса
+    const bonusLevel = 0; // Заглушка
+    document.getElementById('master-bonus-level').textContent = bonusLevel;
+    
+    // Обновление звездочек бонуса
+    const starsContainer = document.getElementById('master-bonus-stars');
+    if (starsContainer) {
+        starsContainer.innerHTML = '';
+        for (let i = 1; i <= 5; i++) {
+            const star = document.createElement('i');
+            star.className = `fas fa-star${i <= bonusLevel ? '' : '-empty'}`;
+            starsContainer.appendChild(star);
+        }
+    }
+}
+
+// --- Модальные окна ---
 function openModal(modalId) {
     const modal = document.getElementById(modalId);
     if (!modal) return;
-
+    
     console.log(`Opening modal: ${modalId}`); // Debug
-
     modal.classList.remove('hidden');
     requestAnimationFrame(() => {
         modal.classList.add('visible');
     });
-
+    
     modal.setAttribute('aria-modal', 'true');
     modal.setAttribute('role', 'dialog');
-
     activeModals.add(modalId);
+    
     document.body.style.overflow = 'hidden';
-
+    
     switch(modalId) {
         case 'add-job-modal':
             initAddJobModal();
@@ -274,9 +445,8 @@ function openModal(modalId) {
 function closeModal(modalId) {
     const modal = document.getElementById(modalId);
     if (!modal) return;
-
+    
     console.log(`Closing modal: ${modalId}`); // Debug
-
     modal.classList.remove('visible');
     setTimeout(() => {
         modal.classList.add('hidden');
@@ -292,316 +462,46 @@ function closeModal(modalId) {
 function initAddJobModal() {
     const form = document.getElementById('add-job-form');
     const dateInput = document.getElementById('job-date');
-    const servicesField = document.getElementById('services-selector');
-
-    dateInput.value = formatDateInput(new Date());
+    
+    // Устанавливаем сегодняшнюю дату по умолчанию
+    if (dateInput) {
+        dateInput.value = formatDateInput(new Date());
+    }
+    
+    // Очищаем выбранные услуги
     selectedServices = [];
-    updateServicesDisplay();
-
-    form.addEventListener('submit', handleJobSubmit);
-    servicesField.addEventListener('click', () => openModal('services-modal'));
+    updateSelectedServicesDisplay();
+    
+    // Сброс формы (если нужно)
+    if (form) {
+        form.reset();
+        // Но восстанавливаем дату
+        if (dateInput) {
+            dateInput.value = formatDateInput(new Date());
+        }
+    }
 }
 
 function initServicesModal() {
-    const searchInput = document.getElementById('service-search');
-    const servicesList = document.getElementById('services-list');
-    const confirmBtn = document.getElementById('services-confirm');
-
-    renderServicesList();
-
-    searchInput.addEventListener('input', debounce((e) => {
-        const searchTerm = e.target.value.trim().toLowerCase();
-        filterServices(searchTerm);
-    }, 300));
-
-    confirmBtn.addEventListener('click', () => {
-        updateServicesDisplay();
-        closeModal('services-modal');
-    });
+    // Логика инициализации модального окна выбора услуг
+    console.log('Initializing services modal');
 }
 
-function initBonusModal(masterId) {
-    const slider = document.getElementById('bonus-slider');
-    const currentBonus = document.getElementById('current-bonus');
-    const bonusAmount = document.getElementById('bonus-amount');
-    const masterData = getMasterData(masterId);
-
-    if (!masterData) return;
-
-    document.getElementById('bonus-master-name').textContent = masterData.name;
-    document.getElementById('bonus-master-stats').textContent = 
-        `Выручка за месяц: ${formatMoney(masterData.monthRevenue)}`;
-
-    slider.value = masterData.currentBonusLevel || 0;
-    updateBonusDisplay(slider.value, masterData.monthRevenue);
-
-    slider.addEventListener('input', (e) => {
-        updateBonusDisplay(e.target.value, masterData.monthRevenue);
-    });
-
-    initBonusHistoryChart(masterId);
+function initBonusModal() {
+    // Логика инициализации модального окна бонусов
+    console.log('Initializing bonus modal');
 }
 
-function initJournalView() {
-    console.log('Init journal view'); // Debug
-    const entriesList = document.getElementById('master-jobs-list');
-    const searchInput = document.getElementById('jobs-search');
-    const periodFilter = document.getElementById('jobs-period-filter');
-
-    if (entriesList) entriesList.setAttribute('aria-label', 'Список работ'); // Accessibility
-
-    loadAndDisplayEntries();
-
-    if (searchInput) searchInput.addEventListener('input', debounce(() => loadAndDisplayEntries(), 300));
-    if (periodFilter) periodFilter.addEventListener('change', loadAndDisplayEntries);
-}
-
-function loadAndDisplayEntries() {
-    console.log('Loading entries'); // Debug
-    const searchTerm = document.getElementById('jobs-search')?.value.toLowerCase() || '';
-    const periodFilter = document.getElementById('jobs-period-filter')?.value || 'all';
-    const entriesList = document.getElementById('master-jobs-list');
-
-    let entries = getAllEntries();
-    
-    if (currentUser.role === USER_ROLES.MASTER) {
-        entries = entries.filter(e => e.master === currentUser.name);
-    }
-
-    entries = filterEntriesByPeriod(entries, periodFilter);
-
-    if (searchTerm) {
-        entries = entries.filter(e => 
-            e.car.toLowerCase().includes(searchTerm) ||
-            e.services.some(s => s.toLowerCase().includes(searchTerm))
-        );
-    }
-
-    const groupedEntries = groupEntriesByDate(entries);
-
-    renderGroupedEntries(groupedEntries, entriesList);
-}
-
-function groupEntriesByDate(entries) {
-    return entries.reduce((groups, entry) => {
-        const date = entry.date;
-        if (!groups[date]) groups[date] = [];
-        groups[date].push(entry);
-        return groups;
-    }, {});
-}
-
-function renderGroupedEntries(groupedEntries, container) {
-    container.innerHTML = '';
-
-    const sortedDates = Object.keys(groupedEntries).sort((a, b) => new Date(b) - new Date(a));
-
-    sortedDates.forEach(date => {
-        const entries = groupedEntries[date];
-        const totalRevenue = entries.reduce((sum, e) => sum + e.workCost + e.partsCost, 0);
-
-        const dateGroup = document.createElement('div');
-        dateGroup.className = 'entries-date-group';
-        dateGroup.setAttribute('aria-labelledby', `date-header-${date}`);
-
-        dateGroup.innerHTML = `
-            <div class="date-group-header" id="date-header-${date}">
-                <div class="date-info">
-                    <h3>${formatDateDisplay(date)}</h3>
-                    <span class="entry-count">${entries.length} работ</span>
-                </div>
-                <div class="date-total">
-                    <span class="total-label">Выручка:</span>
-                    <span class="total-amount">${formatMoney(totalRevenue)}</span>
-                </div>
-            </div>
-        `;
-
-        const entriesList = document.createElement('div');
-        entriesList.className = 'entries-list';
-        entriesList.setAttribute('role', 'list');
-
-        entries.forEach(entry => entriesList.appendChild(createEntryCard(entry)));
-
-        dateGroup.appendChild(entriesList);
-        container.appendChild(dateGroup);
-    });
-
-    if (sortedDates.length === 0) {
-        container.innerHTML = `
-            <div class="no-entries" role="alert">
-                <i class="fas fa-folder-open"></i>
-                <p>Записей не найдено</p>
-            </div>
-        `;
-    }
-    console.log('Entries rendered'); // Debug
-}
-
-function createEntryCard(entry) {
-    const total = entry.workCost + entry.partsCost;
-    const card = document.createElement('div');
-    card.className = 'entry-card';
-    card.dataset.id = entry.id;
-    card.setAttribute('role', 'listitem');
-
-    card.innerHTML = `
-        <div class="entry-header">
-            <div class="car-info">
-                <i class="fas fa-car"></i>
-                <span>${entry.car}</span>
-            </div>
-            <div class="entry-actions">
-                <button class="icon-btn edit-entry" title="Редактировать" aria-label="Редактировать запись">
-                    <i class="fas fa-edit"></i>
-                </button>
-                <button class="icon-btn delete-entry" title="Удалить" aria-label="Удалить запись">
-                    <i class="fas fa-trash"></i>
-                </button>
-            </div>
-        </div>
-        <div class="entry-services">
-            ${entry.services.map(service => `
-                <span class="service-tag">${service}</span>
-            `).join('')}
-        </div>
-        <div class="entry-footer">
-            <div class="cost-breakdown">
-                <span class="cost-item">
-                    <i class="fas fa-tools"></i>
-                    Работа: ${formatMoney(entry.workCost)}
-                </span>
-                <span class="cost-item">
-                    <i class="fas fa-cogs"></i>
-                    Запчасти: ${formatMoney(entry.partsCost)}
-                </span>
-            </div>
-            <div class="total-cost">
-                Итого: <strong>${formatMoney(total)}</strong>
-            </div>
-        </div>
-    `;
-
-    card.querySelector('.edit-entry').addEventListener('click', () => {
-        console.log(`Edit entry ${entry.id}`); // Debug
-        startEditEntry(entry.id);
-    });
-
-    card.querySelector('.delete-entry').addEventListener('click', () => {
-        console.log(`Delete entry ${entry.id}`); // Debug
-        confirmDeleteEntry(entry.id);
-    });
-
-    return card;
-}
-
-// Система бонусов (с авто-расчётом)
-function calculateBonus(revenue, level) {
-    const bonusInfo = BONUS_LEVELS[level];
-    return revenue * (bonusInfo.percent / 100);
-}
-
-function updateMasterBonus(masterId, level = null, comment) {
-    console.log(`Updating bonus for ${masterId}`); // Debug
-    const master = getMasterData(masterId);
-    if (!master) return;
-
-    // Auto-calc if not provided
-    let calculatedLevel = level || calculateAutoLevel(master);
-
-    const bonus = {
-        level: calculatedLevel,
-        percent: BONUS_LEVELS[calculatedLevel].percent,
-        amount: calculateBonus(master.monthRevenue, calculatedLevel),
-        comment,
-        timestamp: Date.now()
-    };
-
-    saveMasterBonus(masterId, bonus);
-
-    updateBonusDisplay(calculatedLevel, master.monthRevenue);
-    updateMasterCard(masterId);
-}
-
-function calculateAutoLevel(master) {
-    let autoLevel = 0;
-
-    if (master.jobsCount > BONUS_CRITERIA.jobs.min) autoLevel += BONUS_CRITERIA.jobs.bonus;
-    if (master.monthRevenue > BONUS_CRITERIA.revenue.min) autoLevel += BONUS_CRITERIA.revenue.bonus;
-
-    // Integrate services stats
-    const stats = getServicesStats();
-    if (stats.totalServices > BONUS_CRITERIA.servicesVariety.min) autoLevel += BONUS_CRITERIA.servicesVariety.bonus;
-
-    return Math.min(Math.max(autoLevel, 0), 10);
-}
-
-function updateBonusDisplay(level, revenue) {
-    const bonusInfo = BONUS_LEVELS[level];
-    const currentBonus = document.getElementById('current-bonus');
-    const bonusAmount = document.getElementById('bonus-amount');
-    const bonusDescription = document.getElementById('bonus-description');
-
-    if (currentBonus) currentBonus.textContent = `+${bonusInfo.percent}%`;
-    if (bonusAmount) bonusAmount.textContent = formatMoney(revenue * (bonusInfo.percent / 100));
-    if (bonusDescription) bonusDescription.textContent = bonusInfo.description;
-
-    updateBonusStars(level);
-}
-
-function updateBonusStars(level) {
-    const starsContainer = document.querySelector('.bonus-stars');
-    const maxStars = 5;
-    const filledStars = Math.round((level / 10) * maxStars);
-
-    starsContainer.innerHTML = Array(maxStars)
-        .fill(null)
-        .map((_, index) => `
-            <i class="fas fa-star ${index < filledStars ? 'filled' : ''}"></i>
-        `)
-        .join('');
-}
-
-function initBonusHistoryChart(masterId) {
-    const bonusHistory = getMasterBonusHistory(masterId);
-    const ctx = document.getElementById('bonus-history-chart')?.getContext('2d');
-    if (!ctx) return;
-
-    new Chart(ctx, {
-        type: 'line',
-        data: {
-            labels: bonusHistory.map(b => formatDateDisplay(new Date(b.timestamp))),
-            datasets: [{
-                label: 'Уровень бонуса',
-                data: bonusHistory.map(b => b.level),
-                borderColor: 'var(--accent)',
-                backgroundColor: 'rgba(var(--accent-rgb), 0.1)',
-                fill: true
-            }]
-        },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            scales: {
-                y: {
-                    beginAtZero: true,
-                    max: 10
-                }
-            }
-        }
-    });
-}
-
-// Утилиты для работы с датами
+// --- Утилиты ---
 function filterEntriesByPeriod(entries, period) {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
-
+    
     const startOfWeek = new Date(today);
     startOfWeek.setDate(today.getDate() - today.getDay());
-
+    
     const startOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
-
+    
     switch (period) {
         case 'today':
             return entries.filter(e => new Date(e.date).toDateString() === today.toDateString());
@@ -614,105 +514,172 @@ function filterEntriesByPeriod(entries, period) {
     }
 }
 
-// Уведомления
-function showNotification(message, type = 'info') {
-    const notification = document.createElement('div');
-    notification.className = `notification notification-${type} animate-slide-in`;
+function updateSelectedServicesDisplay() {
+    const container = document.getElementById('selected-services');
+    const hiddenInput = document.getElementById('job-services');
     
-    notification.innerHTML = `
-        <div class="notification-content">
-            <i class="fas fa-${getNotificationIcon(type)}"></i>
-            <span>${message}</span>
-        </div>
-        <button class="notification-close">
-            <i class="fas fa-times"></i>
-        </button>
-    `;
+    if (!container) return;
+    
+    if (selectedServices.length === 0) {
+        container.innerHTML = '<span class="placeholder-text">Нажмите для выбора услуг</span>';
+        if (hiddenInput) hiddenInput.value = '';
+    } else {
+        container.innerHTML = selectedServices.map(service => 
+            `<span class="service-tag">
+                ${service}
+                <i class="fas fa-times remove-service" data-service="${service}"></i>
+            </span>`
+        ).join('');
+        
+        if (hiddenInput) hiddenInput.value = selectedServices.join(', ');
+    }
+}
 
-    document.body.appendChild(notification);
+// --- Обработка ошибок и уведомления ---
+function showNotification(message, type = 'info') {
+    // Используем функцию из utils.js или свою реализацию
+    utilsShowNotification(message, type);
+}
 
-    setTimeout(() => {
-        notification.classList.add('notification-hiding');
-        setTimeout(() => notification.remove(), 300);
-    }, 5000);
+function handleError(error, context = '') {
+    console.error(`Ошибка ${context}:`, error);
+    showNotification(`Произошла ошибка${context ? ` при ${context}` : ''}. Попробуйте позже.`, 'error');
+}
 
-    notification.querySelector('.notification-close').addEventListener('click', () => {
-        notification.classList.add('notification-hiding');
-        setTimeout(() => notification.remove(), 300);
+// --- Инициализация обработчиков событий ---
+function setupEventListeners() {
+    // Обработчики для кнопок открытия модальных окон
+    document.querySelectorAll('[data-modal]').forEach(btn => {
+        btn.addEventListener('click', () => {
+            const modalId = btn.getAttribute('data-modal');
+            openModal(modalId);
+        });
+    });
+    
+    // Обработчики для кнопок закрытия модальных окон
+    document.querySelectorAll('[data-dismiss="modal"]').forEach(btn => {
+        btn.addEventListener('click', () => {
+            // Находим ближайшее родительское модальное окно
+            const modal = btn.closest('.modal');
+            if (modal) {
+                closeModal(modal.id);
+            }
+        });
+    });
+    
+    // Закрытие модального окна по клику на оверлей
+    document.querySelectorAll('.modal').forEach(modal => {
+        modal.addEventListener('click', (e) => {
+            if (e.target === modal) {
+                closeModal(modal.id);
+            }
+        });
+    });
+    
+    // Обработчики для навигации по вкладкам
+    document.querySelectorAll('.tab-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            const tabId = btn.getAttribute('data-tab');
+            const viewName = tabId.replace('-tab', '');
+            showView(viewName);
+        });
+    });
+    
+    // Обработчики для фильтров в журнале мастера
+    const jobsSearch = document.getElementById('jobs-search');
+    if (jobsSearch) {
+        jobsSearch.addEventListener('input', debounce(() => {
+            const filter = { search: jobsSearch.value };
+            loadAndDisplayEntries(filter);
+        }, 300));
+    }
+    
+    const jobsPeriodFilter = document.getElementById('jobs-period-filter');
+    if (jobsPeriodFilter) {
+        jobsPeriodFilter.addEventListener('change', () => {
+            const filter = { period: jobsPeriodFilter.value };
+            loadAndDisplayEntries(filter);
+        });
+    }
+    
+    // Обработчики для формы добавления работы
+    const addJobForm = document.getElementById('add-job-form');
+    if (addJobForm) {
+        addJobForm.addEventListener('submit', handleJobSubmit);
+    }
+    
+    // Обработчик для кнопки выбора услуг
+    const selectServicesBtn = document.getElementById('select-services-btn');
+    if (selectServicesBtn) {
+        selectServicesBtn.addEventListener('click', () => openModal('services-modal'));
+    }
+    
+    // Обработчики для закрытия модальных окон по клавише Escape
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape' && activeModals.size > 0) {
+            // Закрываем последнее открытое модальное окно
+            const lastModalId = Array.from(activeModals).pop();
+            closeModal(lastModalId);
+        }
     });
 }
 
-function getNotificationIcon(type) {
-    switch (type) {
-        case 'success': return 'check-circle';
-        case 'error': return 'exclamation-circle';
-        case 'warning': return 'exclamation-triangle';
-        default: return 'info-circle';
+// Обработчик отправки формы добавления работы
+async function handleJobSubmit(e) {
+    e.preventDefault();
+    console.log('Handling job submit');
+    
+    const form = e.target;
+    const formData = new FormData(form);
+    
+    // Собираем данные из формы
+    const jobData = {
+        id: Date.now().toString(), // Временный ID
+        date: formData.get('job-date'),
+        car: formData.get('job-car'),
+        client: formData.get('job-client'),
+        services: selectedServices, // Получаем из состояния selectedServices
+        workCost: parseFloat(formData.get('job-work-cost')) || 0,
+        partsCost: parseFloat(formData.get('job-parts-cost')) || 0,
+        notes: formData.get('job-notes'),
+        master: currentUser.name, // Добавляем имя текущего мастера
+        timestamp: new Date().toISOString()
+    };
+    
+    // Валидация
+    if (!jobData.date || !jobData.car || selectedServices.length === 0) {
+        showNotification('Пожалуйста, заполните все обязательные поля', 'error');
+        return;
     }
-}
-
-// Анимации
-function animateNumber(element, start, end, duration = 1000) {
-    const startTime = performance.now();
-    const change = end - start;
-
-    function update(currentTime) {
-        const elapsed = currentTime - startTime;
-        const progress = Math.min(elapsed / duration, 1);
-
-        const easing = t => t < .5 ? 4 * t * t * t : (t - 1) * (2 * t - 2) * (2 * t - 2) + 1;
+    
+    try {
+        // Блокируем кнопку отправки
+        const submitBtn = form.querySelector('button[type="submit"]');
+        const originalContent = submitBtn.innerHTML;
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Сохранение...';
         
-        const currentValue = start + (change * easing(progress));
-        element.textContent = formatMoney(Math.round(currentValue));
-
-        if (progress < 1) {
-            requestAnimationFrame(update);
+        // Сохраняем запись (в localStorage через storage.js)
+        await addEntry(jobData);
+        
+        // Закрываем модальное окно
+        closeModal('add-job-modal');
+        
+        // Перезагружаем список записей
+        loadAndDisplayEntries();
+        
+        showNotification('Работа успешно добавлена!', 'success');
+    } catch (error) {
+        console.error('Error saving job:', error);
+        showNotification('Ошибка при сохранении работы', 'error');
+    } finally {
+        // Разблокируем кнопку
+        const submitBtn = form.querySelector('button[type="submit"]');
+        if (submitBtn) {
+            submitBtn.disabled = false;
+            submitBtn.innerHTML = originalContent;
         }
     }
-
-    requestAnimationFrame(update);
-}
-
-// Вспомогательные функции
-function getRoleDisplay(role) {
-    const roles = {
-        [USER_ROLES.DIRECTOR]: 'Директор',
-        [USER_ROLES.ADMIN]: 'Администратор',
-        [USER_ROLES.MASTER]: 'Мастер'
-    };
-    return roles[role] || role;
-}
-
-function getMasterData(masterId) {
-    const entries = getAllEntries().filter(e => e.master === masterId);
-    const today = new Date().toISOString().slice(0, 10);
-    
-    return {
-        id: masterId,
-        name: masterId,
-        todayRevenue: entries
-            .filter(e => e.date === today)
-            .reduce((sum, e) => sum + e.workCost + e.partsCost, 0),
-        monthRevenue: entries
-            .filter(e => {
-                const entryDate = new Date(e.date);
-                const now = new Date();
-                return entryDate.getMonth() === now.getMonth() &&
-                       entryDate.getFullYear() === now.getFullYear();
-            })
-            .reduce((sum, e) => sum + e.workCost + e.partsCost, 0),
-        jobsCount: entries.length,
-        currentBonusLevel: getCurrentBonusLevel(masterId)
-    };
-}
-
-// Обработка ошибок
-function handleError(error, context = '') {
-    console.error(`Ошибка ${context}:`, error);
-    showNotification(
-        `Произошла ошибка${context ? ` при ${context}` : ''}. Попробуйте позже.`,
-        'error'
-    );
 }
 
 // Экспорт функций
@@ -725,43 +692,3 @@ export {
     updateMasterBonus,
     handleError
 };
-
-// Инициализация обработчиков событий
-function setupEventListeners() {
-    document.addEventListener('keydown', (e) => {
-        if (e.key === 'Escape' && activeModals.size > 0) {
-            const lastModal = Array.from(activeModals).pop();
-            closeModal(lastModal);
-        }
-    });
-
-    let touchStartX = 0;
-    let touchEndX = 0;
-
-    document.addEventListener('touchstart', (e) => {
-        touchStartX = e.changedTouches[0].screenX;
-    });
-
-    document.addEventListener('touchend', (e) => {
-        touchEndX = e.changedTouches[0].screenX;
-        handleSwipe();
-    });
-
-    function handleSwipe() {
-        const SWIPE_THRESHOLD = 50;
-        const diff = touchEndX - touchStartX;
-
-        if (Math.abs(diff) > SWIPE_THRESHOLD && diff > 0 && activeModals.size > 0) {
-            const lastModal = Array.from(activeModals).pop();
-            closeModal(lastModal);
-        }
-    }
-}
-
-window.addEventListener('beforeunload', () => {
-    localStorage.setItem('vipauto_last_state', JSON.stringify({
-        currentView,
-        selectedServices,
-        activeModals: Array.from(activeModals)
-    }));
-});
