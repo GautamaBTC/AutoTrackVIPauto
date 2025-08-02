@@ -385,6 +385,7 @@ export function getRecent() {
 // --- Статистика и экспорт ---
 /**
  * Статистика и аналитика услуг (с учётом подкатегорий)
+ * ЭКСПОРТИРУЕМ ТОЛЬКО ЗДЕСЬ, ОДИН РАЗ
  */
 export function getServicesStats() {
     // TODO: Реализовать сбор статистики по услугам
@@ -446,12 +447,13 @@ function allWordsMatch(words, text) {
 }
 
 // --- Экспорт функций ---
+// ВНИМАНИЕ: getServicesStats УЖЕ ЭКСПОРТИРОВАНА ВЫШЕ, НЕ НУЖНО ЕЕ СНОВА ЭКСПОРТИРОВАТЬ ЗДЕСЬ
 export {
     loadServicesCatalog,
     searchServices,
     toggleFavorite,
     getFavorites,
     addToRecent,
-    getRecent,
-    getServicesStats
+    getRecent
+    // getServicesStats НЕ ДОЛЖНО быть здесь
 };
