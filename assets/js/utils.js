@@ -201,6 +201,33 @@ export function buildUrl(base, params) {
     return url.toString();
 }
 
+// Функция для показа уведомлений
+export function showNotification(message, type = 'error') {
+    // Удаляем предыдущие уведомления
+    const existing = document.querySelector('.notification');
+    if (existing) existing.remove();
+
+    // Создаем новое уведомление
+    const notification = document.createElement('div');
+    notification.className = `notification notification-${type}`;
+    notification.innerHTML = `
+        <div class="notification-content">
+            <i class="fas ${type === 'error' ? 'fa-exclamation-circle' : 'fa-check-circle'}"></i>
+            <span>${message}</span>
+        </div>
+    `;
+    document.body.appendChild(notification);
+
+    // Анимация появления
+    setTimeout(() => notification.classList.add('show'), 10);
+
+    // Автоматическое скрытие
+    setTimeout(() => {
+        notification.classList.remove('show');
+        setTimeout(() => notification.remove(), 300);
+    }, 3000);
+}
+
 // Экспорт всех утилит
 export {
     formatDateInput,
@@ -221,5 +248,6 @@ export {
     generateId,
     adjustColor,
     getQueryParams,
-    buildUrl
+    buildUrl,
+    showNotification
 };
