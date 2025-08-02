@@ -8,9 +8,7 @@ import { showNotification } from './utils.js';
 // --- Константы ---
 const STORAGE_KEYS = {
     FAVORITE_SERVICES: 'vipauto_favorite_services',
-    RECENT_SERVICES: 'vipauto_recent_services',
-    SERVICE_TEMPLATES: 'vipauto_service_templates',
-    CUSTOM_SERVICES: 'vipauto_custom_services'
+    RECENT_SERVICES: 'vipauto_recent_services'
 };
 
 // Метаданные категорий (иконки, цвета)
@@ -81,7 +79,6 @@ const DEFAULT_CATEGORIES = {
 let _catalog = null; // Кэш загруженного каталога
 let _favorites = new Set(); // Set с путями избранных услуг
 let _recent = []; // Массив с недавними услугами (макс. 50)
-let _templates = new Map(); // Map с шаблонами услуг
 
 // --- Загрузка и инициализация ---
 /**
@@ -91,7 +88,7 @@ export async function loadServicesCatalog() {
     if (_catalog) return _catalog;
 
     try {
-        // Загружаем базовый каталог
+        // Загружаем базовый каталог из assets/data/services.json
         const response = await fetch('assets/data/services.json');
         if (!response.ok) throw new Error('Ошибка загрузки каталога');
         let baseCatalog = await response.json();
@@ -237,52 +234,6 @@ function loadUserData() {
     if (savedRecent) {
         _recent = JSON.parse(savedRecent);
     }
-
-    // Загружаем шаблоны
-    const savedTemplates = localStorage.getItem(STORAGE_KEYS.SERVICE_TEMPLATES);
-    if (savedTemplates) {
-        _templates = new Map(JSON.parse(savedTemplates));
-    }
-
-    // Загружаем пользовательские услуги (с поддержкой подкатегорий)
-    const customServices = JSON.parse(localStorage.getItem(STORAGE_KEYS.CUSTOM_SERVICES) || '{}');
-    for (const [category, data] of Object.entries(customServices)) {
-        if (!_catalog[category]) _catalog[category] = { subcategories: {} };
-
-        // Проверяем структуру данных
-        if (data.subcategories) {
-            // Если есть подкатегории, добавляем их
-            for (const [subcat, subData] of Object.entries(data.subcategories)) {
-                if (!_catalog[category].subcategories[subcat]) {
-                    _catalog[category].subcategories[subcat] = { services: [], icon: "fa-plus-circle" };
-                }
-                subData.services.forEach(service => {
-                    if (!_catalog[category].subcategories[subcat].services.some(s => s.name === service)) {
-                        _catalog[category].subcategories[subcat].services.push({
-                            name: service,
-                            tags: generateTags(service),
-                            addedAt: Date.now()
-                        });
-                    }
-                });
-            }
-        } else {
-            // Если нет подкатегорий, добавляем в "Общее"
-            const servicesArray = Array.isArray(data) ? data : data.services || [];
-            if (!_catalog[category].subcategories['Общее']) {
-                _catalog[category].subcategories['Общее'] = { services: [], icon: "fa-plus-circle" };
-            }
-            servicesArray.forEach(service => {
-                if (!_catalog[category].subcategories['Общее'].services.some(s => s.name === service)) {
-                    _catalog[category].subcategories['Общее'].services.push({
-                        name: service,
-                        tags: generateTags(service),
-                        addedAt: Date.now()
-                    });
-                }
-            });
-        }
-    }
 }
 
 // --- Поиск и фильтрация ---
@@ -379,8 +330,6 @@ export function toggleFavorite(servicePath) {
             addToRecent(servicePath);
         }
         localStorage.setItem(STORAGE_KEYS.FAVORITE_SERVICES, JSON.stringify([..._favorites]));
-        // Update stats
-        getServicesStats();
         return true;
     } catch (error) {
         console.error('Ошибка с избранным:', error);
@@ -395,7 +344,7 @@ export function getFavorites() {
             category,
             subcat,
             service,
-            meta _catalog[category]?.subcategories[subcat]
+            metadata: _catalog[category]?.subcategories[subcat]
         };
     });
 }
@@ -427,51 +376,10 @@ export function getRecent() {
             category,
             subcat,
             service,
-            meta _catalog[category]?.subcategories[subcat],
+            metadata: _catalog[category]?.subcategories[subcat],
             isFavorite: _favorites.has(path)
         };
     });
-}
-
-/**
- * Управление шаблонами услуг (с nested)
- */
-export function saveTemplate(name, servicePaths) {
-    try {
-        console.log(`Saving template: ${name}`); // Debug
-        if (!name || !servicePaths.length) return false;
-        _templates.set(name, {
-            services: servicePaths,
-            timestamp: Date.now()
-        });
-        localStorage.setItem(STORAGE_KEYS.SERVICE_TEMPLATES, JSON.stringify([..._templates]));
-        return true;
-    } catch (error) {
-        console.error('Ошибка сохранения шаблона:', error);
-        return false;
-    }
-}
-
-export function getTemplates() {
-    return [..._templates].map(([name, data]) => ({
-        name,
-        services: data.services,
-        timestamp: data.timestamp
-    }));
-}
-
-export function deleteTemplate(name) {
-    try {
-        console.log(`Deleting template: ${name}`); // Debug
-        const result = _templates.delete(name);
-        if (result) {
-            localStorage.setItem(STORAGE_KEYS.SERVICE_TEMPLATES, JSON.stringify([..._templates]));
-        }
-        return result;
-    } catch (error) {
-        console.error('Ошибка удаления шаблона:', error);
-        return false;
-    }
 }
 
 // --- Статистика и экспорт ---
@@ -492,71 +400,52 @@ export function getServicesStats() {
     };
 }
 
-function findServiceInCatalog(serviceName) {
-    for (const [category, catData] of Object.entries(_catalog)) {
-        for (const [subcat, subData] of Object.entries(catData.subcategories)) {
-            if (subData.services.some(s => s.name === serviceName)) {
-                return { category, subcat };
+// --- Вспомогательные функции ---
+/**
+ * Расстояние Левенштейна (для неточного поиска)
+ */
+function levenshteinDistance(a, b) {
+    if (a.length === 0) return b.length;
+    if (b.length === 0) return a.length;
+
+    const matrix = [];
+
+    // Increment along the first column of each row
+    for (let i = 0; i <= b.length; i++) {
+        matrix[i] = [i];
+    }
+
+    // Increment each column in the first row
+    for (let j = 0; j <= a.length; j++) {
+        matrix[0][j] = j;
+    }
+
+    // Fill in the rest of the matrix
+    for (let i = 1; i <= b.length; i++) {
+        for (let j = 1; j <= a.length; j++) {
+            if (b.charAt(i - 1) === a.charAt(j - 1)) {
+                matrix[i][j] = matrix[i - 1][j - 1];
+            } else {
+                matrix[i][j] = Math.min(
+                    matrix[i - 1][j - 1] + 1, // substitution
+                    matrix[i][j - 1] + 1,     // insertion
+                    matrix[i - 1][j] + 1      // deletion
+                );
             }
         }
     }
-    return null;
-}
 
-function showErrorNotification(message) {
-    // Интеграция с системой уведомлений
-    if (window.showNotification) {
-        window.showNotification(message, 'error');
-    } else {
-        console.error(message);
-    }
+    return matrix[b.length][a.length];
 }
 
 /**
- * Экспорт/Импорт данных (с placeholder для cloud)
+ * Проверка, что все слова из массива words есть в тексте text
  */
-export function exportCatalogData() {
-    // Placeholder for cloud export (e.g., to Firebase)
-    const data = {
-        favorites: [..._favorites],
-        recent: [..._recent],
-        templates: [..._templates],
-        customServices: JSON.parse(localStorage.getItem(STORAGE_KEYS.CUSTOM_SERVICES) || '{}')
-    };
-    console.log('Export data (stub):', data);
-    // В реальном приложении здесь будет отправка на сервер
-    return data;
+function allWordsMatch(words, text) {
+    return words.every(word => text.includes(word));
 }
 
-export function importCatalogData(data) {
-    try {
-        if (data.favorites) {
-            _favorites = new Set(data.favorites);
-            localStorage.setItem(STORAGE_KEYS.FAVORITE_SERVICES, JSON.stringify([..._favorites]));
-        }
-        if (data.recent) {
-            _recent = data.recent;
-            localStorage.setItem(STORAGE_KEYS.RECENT_SERVICES, JSON.stringify(_recent));
-        }
-        if (data.templates) {
-            _templates = new Map(data.templates);
-            localStorage.setItem(STORAGE_KEYS.SERVICE_TEMPLATES, JSON.stringify([..._templates]));
-        }
-        if (data.customServices) {
-            localStorage.setItem(STORAGE_KEYS.CUSTOM_SERVICES, JSON.stringify(data.customServices));
-            // Перезагружаем каталог
-            _catalog = null; // Reset cache
-            return loadServicesCatalog();
-        }
-        return true;
-    } catch (error) {
-        console.error('Ошибка импорта:', error);
-        showErrorNotification('Ошибка импорта данных');
-        return false;
-    }
-}
-
-// Экспортируем основные функции (все)
+// --- Экспорт функций ---
 export {
     loadServicesCatalog,
     searchServices,
@@ -564,12 +453,5 @@ export {
     getFavorites,
     addToRecent,
     getRecent,
-    saveTemplate,
-    getTemplates,
-    deleteTemplate,
-    getServicesStats,
-    exportCatalogData,
-    importCatalogData
+    getServicesStats
 };
-
-// Добавьте больше категорий при необходимости
