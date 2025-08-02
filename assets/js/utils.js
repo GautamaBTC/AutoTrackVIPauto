@@ -250,6 +250,4 @@ export {
     generateId,
     adjustColor,
     getQueryParams,
-    buildUrl
-    // showNotification НЕ ДОЛЖНА БЫТЬ ЗДЕСЬ
 };
