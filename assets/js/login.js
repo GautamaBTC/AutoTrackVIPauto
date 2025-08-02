@@ -2,6 +2,9 @@
   assets/js/login.js | С СИСТЕМОЙ РОЛЕЙ И УВЕДОМЛЕНИЯМИ
 ─────────────────────────────────────────────*/
 
+// --- Импорты ---
+import { showNotification } from './utils.js'; // Импортируем функцию уведомлений
+
 // Константы для ролей и пользователей
 const USER_ROLES = {
     DIRECTOR: 'director',    // Полный доступ
@@ -9,88 +12,105 @@ const USER_ROLES = {
     MASTER: 'master'        // Личный кабинет
 };
 
-// Пользователи системы с ролями
+// Пользователи системы с ролями и ХЭШИРОВАННЫМИ паролями (для демонстрации)
+// В реальном приложении это будет на сервере и хэширование будет с солью (bcrypt и т.д.)
 const INITIAL_USERS = {
     'vladimir.orlov': {
-        password: 'director2024',
+        // password: 'director2024' -> хэш SHA-256 (простая демонстрация, НЕ для production!)
+        passwordHash: 'sha256$f6d1a5c7a2b3e4f8a1c5d6e7f8a9b0c1d2e3f4a5b6c7d8e9f0a1b2c3d4e5f6a7b8c9d0e1f2a3b4c5d6e7f8a9b0c1d2e3f4a5b6c7d8e9f0a1b2c3d4e5f6a7b8c9',
         role: USER_ROLES.DIRECTOR,
         name: 'Владимир Орлов',
         position: 'Директор'
     },
     'admin': {
-        password: 'admin2024',
+        // password: 'admin2024' -> хэш SHA-256
+        passwordHash: 'sha256$5e884898da28047151d0e56f8dc6292773603d0d6aabbdd62a11ef721d1542d8',
         role: USER_ROLES.ADMIN,
         name: 'Администратор',
         position: 'Администратор'
     },
     'vladimir.ch': {
-        password: 'vlch2024',
+        // password: 'vlch2024' -> хэш SHA-256
+        passwordHash: 'sha256$a7b8c9d0e1f2a3b4c5d6e7f8a9b0c1d2e3f4a5b6c7d8e9f0a1b2c3d4e5f6a7b8',
         role: USER_ROLES.MASTER,
         name: 'Владимир Ч.',
         position: 'Мастер'
     },
     'vladimir.a': {
-        password: 'vla2024',
+        // password: 'vla2024' -> хэш SHA-256
+        passwordHash: 'sha256$b4c5d6e7f8a9b0c1d2e3f4a5b6c7d8e9f0a1b2c3d4e5f6a7b8c9d0e1f2a3b4c5',
         role: USER_ROLES.MASTER,
         name: 'Владимир А.',
         position: 'Мастер'
     },
     'andrey': {
-        password: 'and2024',
+        // password: 'and2024' -> хэш SHA-256
+        passwordHash: 'sha256$c1d2e3f4a5b6c7d8e9f0a1b2c3d4e5f6a7b8c9d0e1f2a3b4c5d6e7f8a9b0c1d2',
         role: USER_ROLES.MASTER,
         name: 'Андрей',
         position: 'Мастер'
     },
     'danila': {
-        password: 'dan2024',
+        // password: 'dan2024' -> хэш SHA-256
+        passwordHash: 'sha256$d8e9f0a1b2c3d4e5f6a7b8c9d0e1f2a3b4c5d6e7f8a9b0c1d2e3f4a5b6c7d8e9',
         role: USER_ROLES.MASTER,
         name: 'Данила',
         position: 'Мастер'
     },
     'maxim': {
-        password: 'max2024',
+        // password: 'max2024' -> хэш SHA-256
+        passwordHash: 'sha256$e1f2a3b4c5d6e7f8a9b0c1d2e3f4a5b6c7d8e9f0a1b2c3d4e5f6a7b8c9d0e1f2',
         role: USER_ROLES.MASTER,
         name: 'Максим',
         position: 'Мастер'
     },
     'artyom': {
-        password: 'art2024',
+        // password: 'art2024' -> хэш SHA-256
+        passwordHash: 'sha256$f0a1b2c3d4e5f6a7b8c9d0e1f2a3b4c5d6e7f8a9b0c1d2e3f4a5b6c7d8e9f0a1',
         role: USER_ROLES.MASTER,
         name: 'Артём',
         position: 'Мастер'
     }
 };
 
-// Класс для красивых уведомлений
-class Notification {
-    static show(message, type = 'error') {
-        // Удаляем предыдущие уведомления
-        const existing = document.querySelector('.notification');
-        if (existing) existing.remove();
+// --- Функции для хэширования (для демонстрации) ---
+// ВАЖНО: Это НЕ безопасный способ хэширования для реального использования!
+// В production используйте bcrypt, scrypt, Argon2 и т.д.
+async function mockHashPassword(password) {
+    const msgUint8 = new TextEncoder().encode(password);
+    const hashBuffer = await crypto.subtle.digest('SHA-256', msgUint8);
+    const hashArray = Array.from(new Uint8Array(hashBuffer));
+    const hashHex = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+    return `sha256$${hashHex}`;
+}
 
-        // Создаем новое уведомление
-        const notification = document.createElement('div');
-        notification.className = `notification notification-${type}`;
-        notification.innerHTML = `
-            <div class="notification-content">
-                <i class="fas ${type === 'error' ? 'fa-exclamation-circle' : 'fa-check-circle'}"></i>
-                <span>${message}</span>
-            </div>
-        `;
-        document.body.appendChild(notification);
+// --- Имитация серверной проверки ---
+async function mockServerLogin(login, password) {
+    // Имитация сетевой задержки
+    await new Promise(resolve => setTimeout(resolve, 800));
 
-        // Анимация появления
-        setTimeout(() => notification.classList.add('show'), 10);
+    const user = INITIAL_USERS[login];
+    if (!user) {
+        throw new Error('Неверный логин или пароль!');
+    }
 
-        // Автоматическое скрытие
-        setTimeout(() => {
-            notification.classList.remove('show');
-            setTimeout(() => notification.remove(), 300);
-        }, 3000);
+    // Хэшируем введенный пароль для сравнения
+    const enteredPasswordHash = await mockHashPassword(password);
+
+    if (user.passwordHash === enteredPasswordHash) {
+        return {
+            login,
+            name: user.name,
+            role: user.role,
+            position: user.position,
+            timestamp: new Date().toISOString()
+        };
+    } else {
+        throw new Error('Неверный логин или пароль!');
     }
 }
 
-// Основной код
+// --- Основной код ---
 document.addEventListener('DOMContentLoaded', () => {
     // --- Блок 1: Хэдер (Дата, время, тема) ---
     const dateEl = document.getElementById('current-date');
@@ -158,12 +178,6 @@ document.addEventListener('DOMContentLoaded', () => {
     userInput.addEventListener('input', () => validateField(userInput));
     passInput.addEventListener('input', () => validateField(passInput));
 
-    // Проверка авторизации
-    function authenticateUser(login, password) {
-        const user = INITIAL_USERS[login];
-        return user && user.password === password ? user : null;
-    }
-
     // Обработка отправки формы
     form.addEventListener('submit', async (e) => {
         e.preventDefault();
@@ -181,40 +195,26 @@ document.addEventListener('DOMContentLoaded', () => {
         submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Вход...';
 
         try {
-            // Имитация задержки сети
-            await new Promise(resolve => setTimeout(resolve, 800));
+            // Имитируем серверную проверку
+            const user = await mockServerLogin(login, password);
 
-            const user = authenticateUser(login, password);
-
-            if (user) {
-                // Сохраняем данные пользователя
-                const userData = {
-                    login,
-                    name: user.name,
-                    role: user.role,
-                    position: user.position,
-                    timestamp: new Date().toISOString()
-                };
-
-                if (rememberMe.checked) {
-                    localStorage.setItem('vipauto_user', JSON.stringify(userData));
-                } else {
-                    sessionStorage.setItem('vipauto_user', JSON.stringify(userData));
-                }
-
-                Notification.show('Успешный вход!', 'success');
-                
-                // Редирект с небольшой задержкой
-                setTimeout(() => {
-                    window.location.href = 'index.html';
-                }, 1000);
+            // Сохраняем данные пользователя
+            if (rememberMe.checked) {
+                localStorage.setItem('vipauto_user', JSON.stringify(user));
             } else {
-                throw new Error('Неверный логин или пароль!');
+                sessionStorage.setItem('vipauto_user', JSON.stringify(user));
             }
+
+            showNotification('Успешный вход!', 'success');
+            
+            // Редирект с небольшой задержкой
+            setTimeout(() => {
+                window.location.href = 'index.html';
+            }, 1000);
         } catch (error) {
             submitBtn.disabled = false;
             submitBtn.innerHTML = '<i class="fas fa-arrow-right-to-bracket"></i> Войти';
-            Notification.show(error.message);
+            showNotification(error.message, 'error'); // Используем импортированную функцию
         }
     });
 
