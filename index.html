@@ -3,8 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>VIPавто — Облачный журнал</title>
-
+  <title>VIPавто облачный бортовой журнал</title>
   <link rel="stylesheet" href="assets/css/reset.css" />
   <link rel="stylesheet" href="assets/css/main.css" />
 
@@ -16,37 +15,35 @@
   <header class="page-header">
     <div class="page-header__left">
       <div class="user-menu">
-        <button id="user-menu-btn" class="user-menu-trigger" aria-haspopup="true" aria-expanded="false">
+        <button id="user-menu-btn" class="user-menu-trigger">
           <i class="fas fa-user-circle"></i>
           <span id="user-name">Загрузка...</span>
           <i class="fas fa-chevron-down menu-arrow"></i>
         </button>
-        <div class="user-menu-dropdown hidden" role="menu">
+        <div class="user-menu-dropdown hidden">
           <div class="user-info-details">
             <div class="user-avatar"><i class="fas fa-user-circle"></i></div>
             <p class="user-role" id="user-role">Загрузка...</p>
             <p class="user-position" id="user-position">Загрузка...</p>
           </div>
           <hr>
-          <button id="profile-btn" class="menu-btn" role="menuitem">
+          <button id="profile-btn" class="menu-btn">
             <i class="fas fa-user"></i>
             <span>Профиль</span>
           </button>
-          <button id="logout-btn" class="menu-btn danger" role="menuitem">
+          <button id="logout-btn" class="menu-btn danger">
             <i class="fas fa-sign-out-alt"></i>
             <span>Выйти</span>
           </button>
         </div>
       </div>
     </div>
-
     <div class="page-header__center">
-      <span id="current-date">…</span>
-      <span id="current-time">–:–:–</span>
+      <span id="current-date">Загрузка...</span>
+      <span id="current-time">Загрузка...</span>
     </div>
-
     <div class="page-header__right">
-      <label class="theme-switch" title="Сменить тему">
+      <label class="theme-switch">
         <input type="checkbox" id="theme-toggle" />
         <span class="slider">
            <span class="slider-thumb">
@@ -60,180 +57,124 @@
 
   <!-- Основной контент -->
   <main class="app-container">
-    <!-- Интерфейс мастера -->
-    <section id="master-interface" class="interface-container hidden" aria-labelledby="master-view-title">
-      <h2 id="master-view-title" class="visually-hidden">Интерфейс мастера</h2>
+    <!-- Быстрые действия -->
+    <div class="quick-actions">
+      <button id="quick-add-job" class="quick-action-btn primary">
+        <i class="fas fa-plus-circle"></i>
+        <span>Новая работа</span>
+      </button>
+      <button id="quick-stats" class="quick-action-btn">
+        <i class="fas fa-chart-bar"></i>
+        <span>Статистика</span>
+      </button>
+      <button id="quick-services" class="quick-action-btn">
+        <i class="fas fa-tools"></i>
+        <span>Услуги</span>
+      </button>
+    </div>
 
+    <!-- Интерфейс мастера -->
+    <div id="master-interface" class="interface-container hidden">
+      <!-- KPI мастера -->
       <div class="kpi-grid">
-        <div class="stat-card">
-          <div class="stat-header">
-            <i class="fas fa-sack-dollar"></i>
-            <h3>Сегодня</h3>
+        <div class="kpi-card">
+          <div class="kpi-header">
+            <i class="fas fa-money-bill-wave"></i>
+            <h3>Выручка за месяц</h3>
           </div>
-          <div class="stat-value" id="master-today-earnings">0 ₽</div>
+          <div class="kpi-value" id="master-month-revenue">Загрузка...</div>
+          <div class="kpi-trend neutral"><i class="fas fa-chart-line"></i> +0%</div>
         </div>
-        <div class="stat-card">
-          <div class="stat-header">
-            <i class="fas fa-calendar-days"></i>
-            <h3>Месяц</h3>
+        <div class="kpi-card">
+          <div class="kpi-header">
+            <i class="fas fa-folder-open"></i>
+            <h3>Работ выполнено</h3>
           </div>
-          <div class="stat-value" id="master-month-earnings">0 ₽</div>
+          <div class="kpi-value" id="master-jobs-count">Загрузка...</div>
+          <div class="kpi-trend neutral"><i class="fas fa-chart-line"></i> +0%</div>
         </div>
-        <div class="stat-card">
-          <div class="stat-header">
-            <i class="fas fa-list-check"></i>
-            <h3>Работы</h3>
-          </div>
-          <div class="stat-value" id="master-jobs-count">0</div>
-        </div>
-        <div class="stat-card">
-          <div class="stat-header">
+        <div class="kpi-card">
+          <div class="kpi-header">
             <i class="fas fa-star"></i>
             <h3>Бонус</h3>
           </div>
-          <div class="stat-value">
-            <span id="master-bonus-level">0</span>
-            <div class="bonus-stars" id="master-bonus-stars">
-              <!-- Звезды будут заполняться скриптом -->
-            </div>
-          </div>
+          <div class="kpi-value" id="master-bonus-level">Загрузка...</div>
+          <div class="kpi-trend positive"><i class="fas fa-chart-line"></i> +0%</div>
         </div>
       </div>
 
-      <div class="quick-actions">
-        <button class="quick-action-btn primary-btn" id="add-job-btn">
-          <i class="fas fa-plus"></i> Добавить работу
-        </button>
-        <button class="quick-action-btn secondary-btn" id="view-graph-btn">
-          <i class="fas fa-chart-line"></i> График активности
-        </button>
-      </div>
-
+      <!-- Список работ -->
       <div class="section-header">
-        <h3>История работ</h3>
+        <h2>Мои работы</h2>
         <div class="search-box">
           <i class="fas fa-search"></i>
-          <input type="text" id="jobs-search" placeholder="Поиск по авто или услугам...">
+          <input type="text" id="jobs-search" placeholder="Поиск по авто или услугам">
         </div>
-      </div>
-
-      <div class="filters-bar">
         <select id="jobs-period-filter">
           <option value="all">Все время</option>
           <option value="today">Сегодня</option>
           <option value="week">Неделя</option>
-          <option value="month" selected>Месяц</option>
-        </select>
-        <select id="jobs-type-filter">
-          <option value="all">Все типы</option>
-          <option value="repair">Ремонт</option>
-          <option value="service">Обслуживание</option>
-          <option value="upgrade">Улучшения</option>
+          <option value="month">Месяц</option>
         </select>
       </div>
-
-      <div id="master-jobs-list" class="entries-list" role="list" aria-live="polite">
-        <!-- Карточки работ будут добавляться сюда -->
-        <div class="no-entries" role="status">
-            <i class="fas fa-folder-open"></i>
-            <p>Нет записей для отображения</p>
-        </div>
+      <div id="master-jobs-list" class="entries-list">
+        <!-- Записи добавляются динамически -->
       </div>
-    </section>
+    </div>
 
-    <!-- Интерфейс администратора/директора -->
-    <section id="admin-interface" class="interface-container hidden" aria-labelledby="admin-view-title">
-      <h2 id="admin-view-title" class="visually-hidden">Интерфейс администратора</h2>
-
-      <div class="tab-navigation" role="tablist">
-        <button class="tab-btn active" data-tab="overview" role="tab" aria-selected="true" aria-controls="overview-tab">
+    <!-- Интерфейс администратора -->
+    <div id="admin-interface" class="interface-container hidden">
+      <!-- Вкладки -->
+      <nav class="tab-navigation">
+        <button class="tab-btn active" data-tab="overview">
           <i class="fas fa-chart-pie"></i>
           <span>Обзор</span>
         </button>
-        <button class="tab-btn" data-tab="masters" role="tab" aria-selected="false" aria-controls="masters-tab">
+        <button class="tab-btn" data-tab="masters">
           <i class="fas fa-users"></i>
           <span>Мастера</span>
         </button>
-        <button class="tab-btn" data-tab="analytics" role="tab" aria-selected="false" aria-controls="analytics-tab">
+        <button class="tab-btn" data-tab="analytics">
           <i class="fas fa-chart-line"></i>
           <span>Аналитика</span>
         </button>
-      </div>
-      <div class="tab-indicator"></div>
+        <button class="tab-btn" data-tab="settings">
+          <i class="fas fa-cog"></i>
+          <span>Настройки</span>
+        </button>
+      </nav>
 
-      <!-- Вкладка обзора -->
-      <div id="overview-tab" class="tab-pane" role="tabpanel" aria-labelledby="tab-overview">
-        <div class="kpi-grid">
-          <div class="stat-card">
-            <div class="stat-header">
-              <i class="fas fa-sack-dollar"></i>
-              <h3>Выручка за месяц</h3>
-            </div>
-            <div class="stat-value" id="total-revenue">0 ₽</div>
-          </div>
-          <div class="stat-card">
-            <div class="stat-header">
-              <i class="fas fa-users"></i>
-              <h3>Активные мастера</h3>
-            </div>
-            <div class="stat-value" id="active-masters">0</div>
-          </div>
-          <div class="stat-card">
-            <div class="stat-header">
-              <i class="fas fa-list-check"></i>
-              <h3>Работы за месяц</h3>
-            </div>
-            <div class="stat-value" id="total-jobs">0</div>
-          </div>
-          <div class="stat-card">
-            <div class="stat-header">
-              <i class="fas fa-chart-line"></i>
-              <h3>Рост (месяц к месяцу)</h3>
-            </div>
-            <div class="stat-value text-success" id="revenue-growth">+0%</div>
-          </div>
-        </div>
-
+      <!-- Контент вкладок -->
+      <div id="overview-tab" class="tab-pane">
         <div class="charts-grid">
-          <div class="chart-container">
-            <h4>Выручка по дням</h4>
-            <canvas id="revenue-chart"></canvas>
-          </div>
-          <div class="chart-container">
-            <h4>Распределение по мастерам</h4>
-            <canvas id="distribution-chart"></canvas>
-          </div>
+          <canvas id="revenue-chart" height="250"></canvas>
+          <canvas id="distribution-chart" height="250"></canvas>
         </div>
       </div>
-
-      <!-- Вкладка мастеров -->
-      <div id="masters-tab" class="tab-pane hidden" role="tabpanel" aria-labelledby="tab-masters">
+      <div id="masters-tab" class="tab-pane hidden">
         <div class="section-header">
-          <h3>Список мастеров</h3>
+          <h2>Мастера</h2>
           <div class="search-box">
             <i class="fas fa-search"></i>
-            <input type="text" id="masters-search" placeholder="Поиск мастера...">
+            <input type="text" id="masters-search" placeholder="Поиск по мастеру">
+          </div>
+          <div class="view-toggle">
+            <button id="view-cards" class="view-btn active">
+              <i class="fas fa-th-large"></i>
+            </button>
+            <button id="view-list" class="view-btn">
+              <i class="fas fa-list"></i>
+            </button>
           </div>
         </div>
-
-        <div class="view-toggle">
-          <button class="icon-btn active" id="view-cards" title="Карточки">
-            <i class="fas fa-table-cells"></i>
-          </button>
-          <button class="icon-btn" id="view-list" title="Список">
-            <i class="fas fa-list"></i>
-          </button>
-        </div>
-
         <div id="masters-grid" class="masters-grid">
-          <!-- Карточки мастеров будут добавляться сюда -->
+          <!-- Мастера добавляются динамически -->
         </div>
       </div>
-
-      <!-- Вкладка аналитики -->
-      <div id="analytics-tab" class="tab-pane hidden" role="tabpanel" aria-labelledby="tab-analytics">
-        <div class="analytics-filters">
-          <div class="filter-group">
+      <div id="analytics-tab" class="tab-pane hidden">
+        <div class="section-header">
+          <h2>Аналитика</h2>
+          <div class="filters-bar">
             <label for="period-select">Период:</label>
             <select id="period-select">
               <option value="week">Неделя</option>
@@ -242,165 +183,133 @@
               <option value="year">Год</option>
               <option value="custom">Свой период</option>
             </select>
+            <input type="date" id="date-from" placeholder="Дата начала">
+            <input type="date" id="date-to" placeholder="Дата окончания">
+            <button id="apply-filters" class="primary-btn">
+              <i class="fas fa-check"></i>
+              Применить
+            </button>
           </div>
-
-          <div id="custom-period" class="filter-group hidden">
-            <input type="date" id="date-from">
-            <span>—</span>
-            <input type="date" id="date-to">
-          </div>
-
-          <button id="apply-filters" class="primary-btn">
-            <i class="fas fa-check"></i> Применить
-          </button>
-
-          <button id="export-data" class="secondary-btn">
-            <i class="fas fa-download"></i> Экспорт
-          </button>
         </div>
-
         <div class="charts-grid">
-          <div class="chart-container">
-            <h4>ТОП услуг</h4>
-            <canvas id="services-chart"></canvas>
-          </div>
-          <div class="chart-container">
-            <h4>Динамика показателей</h4>
-            <canvas id="trends-chart"></canvas>
-          </div>
+          <canvas id="services-chart" height="250"></canvas>
+          <canvas id="trends-chart" height="250"></canvas>
         </div>
       </div>
-    </section>
+      <div id="settings-tab" class="tab-pane hidden">
+        <h2>Настройки</h2>
+        <!-- Здесь будут настройки -->
+      </div>
+    </div>
   </main>
 
   <!-- Модальные окна -->
-  <!-- Модальное окно добавления/редактирования работы -->
-  <div id="add-job-modal" class="modal" role="dialog" aria-labelledby="add-job-modal-title" aria-hidden="true" data-backdrop="static">
+  <div id="add-job-modal" class="modal">
     <div class="modal-content">
       <div class="modal-header">
-        <h3 id="add-job-modal-title">Добавить новую работу</h3>
-        <button class="icon-btn close-btn" id="close-add-job-modal" aria-label="Закрыть">&times;</button>
+        <h3>Добавить новую работу</h3>
+        <button id="close-add-job-modal" class="close-btn">
+          <i class="fas fa-times"></i>
+        </button>
       </div>
-      <div class="modal-body">
-        <form id="add-job-form">
-          <div class="form-row">
-            <div class="form-group">
-              <label for="job-date"><i class="fas fa-calendar-day"></i> Дата</label>
-              <input type="date" id="job-date" required>
-            </div>
-            <div class="form-group">
-              <label for="job-car"><i class="fas fa-car"></i> Автомобиль</label>
-              <input type="text" id="job-car" placeholder="Марка, модель, гос. номер" required>
-            </div>
+      <form id="add-job-form">
+        <div class="form-group">
+          <label for="job-date">Дата</label>
+          <input type="date" id="job-date" required>
+        </div>
+        <div class="form-group">
+          <label for="job-car">Автомобиль</label>
+          <input type="text" id="job-car" placeholder="Марка, модель, госномер" required>
+        </div>
+        <div class="form-group">
+          <label for="job-client">Клиент</label>
+          <input type="text" id="job-client" placeholder="Имя клиента">
+        </div>
+        <div class="form-group">
+          <label for="selected-services">Выбранные услуги</label>
+          <div id="selected-services" class="services-tags">
+            <span class="placeholder-text">Нажмите для выбора услуг</span>
           </div>
-
-          <div class="form-group">
-            <label for="job-client"><i class="fas fa-user"></i> Клиент</label>
-            <input type="text" id="job-client" placeholder="Имя клиента">
-          </div>
-
-          <div class="form-group">
-            <label for="job-services"><i class="fas fa-list"></i> Услуги</label>
-            <div id="selected-services" class="services-tags">
-              <!-- Выбранные услуги будут добавляться сюда -->
-              <span class="placeholder-text">Нажмите для выбора услуг</span>
-            </div>
-            <input type="hidden" id="job-services" required>
-          </div>
-          <button type="button" id="select-services-btn" class="secondary-btn full-width">
-            <i class="fas fa-plus"></i> Выбрать услуги
+          <button id="select-services-btn" class="secondary-btn full-width">
+            <i class="fas fa-plus-circle"></i>
+            Выбрать услуги
           </button>
-
-          <div class="form-row">
-            <div class="form-group">
-              <label for="job-work-cost"><i class="fas fa-wrench"></i> Стоимость работ (₽)</label>
-              <input type="number" id="job-work-cost" min="0" value="0" required>
-            </div>
-            <div class="form-group">
-              <label for="job-parts-cost"><i class="fas fa-cogs"></i> Стоимость деталей (₽)</label>
-              <input type="number" id="job-parts-cost" min="0" value="0">
-            </div>
-          </div>
-
-          <div class="form-group">
-            <label for="job-notes"><i class="fas fa-note-sticky"></i> Примечания</label>
-            <textarea id="job-notes" rows="3" placeholder="Дополнительная информация"></textarea>
-          </div>
-        </form>
-      </div>
-      <div class="modal-footer">
-        <button class="secondary-btn" id="cancel-job-btn">Отмена</button>
-        <button class="primary-btn" id="save-job-btn" form="add-job-form">Сохранить</button>
-      </div>
+        </div>
+        <div class="form-group">
+          <label for="job-work-cost">Стоимость работ</label>
+          <input type="number" id="job-work-cost" min="0" step="0.01" placeholder="0.00 ₽">
+        </div>
+        <div class="form-group">
+          <label for="job-parts-cost">Стоимость запчастей</label>
+          <input type="number" id="job-parts-cost" min="0" step="0.01" placeholder="0.00 ₽">
+        </div>
+        <div class="form-group">
+          <label for="job-notes">Примечания</label>
+          <textarea id="job-notes" rows="4" placeholder="Описание работы"></textarea>
+        </div>
+        <button type="submit" class="primary-btn full-width">
+          <i class="fas fa-save"></i>
+          Сохранить
+        </button>
+      </form>
     </div>
   </div>
 
-  <!-- Модальное окно выбора услуг -->
-  <div id="services-modal" class="modal" role="dialog" aria-labelledby="services-modal-title" aria-hidden="true">
+  <div id="services-modal" class="modal">
     <div class="modal-content">
       <div class="modal-header">
-        <h3 id="services-modal-title">Выбор услуг</h3>
-        <button class="icon-btn close-btn" id="close-services-modal" aria-label="Закрыть">&times;</button>
+        <h3>Выбор услуг</h3>
+        <button id="close-services-modal" class="close-btn">
+          <i class="fas fa-times"></i>
+        </button>
       </div>
-      <div class="modal-body">
-        <div class="search-box">
-          <i class="fas fa-search"></i>
-          <input type="text" id="service-search" placeholder="Поиск услуг...">
-        </div>
-
-        <div class="services-list" id="services-list">
-          <!-- Список услуг будет добавляться сюда -->
-        </div>
+      <div class="search-box">
+        <i class="fas fa-search"></i>
+        <input type="text" id="service-search" placeholder="Поиск услуг">
       </div>
-      <div class="modal-footer">
-        <button class="secondary-btn" id="cancel-services-btn">Отмена</button>
-        <button class="primary-btn" id="services-confirm" disabled>Выбрать</button>
+      <div id="services-list" class="services-list">
+        <!-- Услуги добавляются динамически -->
       </div>
+      <button id="services-confirm" class="primary-btn full-width" disabled>
+        <i class="fas fa-check"></i>
+        Подтвердить
+      </button>
     </div>
   </div>
 
-  <!-- Модальное окно управления бонусами -->
-  <div id="bonus-modal" class="modal" role="dialog" aria-labelledby="bonus-modal-title" aria-hidden="true">
+  <div id="bonus-modal" class="modal">
     <div class="modal-content">
       <div class="modal-header">
-        <h3 id="bonus-modal-title">Управление бонусом</h3>
-        <button class="icon-btn close-btn" id="close-bonus-modal" aria-label="Закрыть">&times;</button>
+        <h3>Управление бонусом</h3>
+        <button id="close-bonus-modal" class="close-btn">
+          <i class="fas fa-times"></i>
+        </button>
       </div>
-      <div class="modal-body">
-        <div class="form-group">
-          <label>Мастер: <span id="bonus-master-name"></span></label>
-          <p class="text-muted" id="bonus-master-stats"></p>
-        </div>
-
-        <div class="form-group">
-          <label for="bonus-slider">Уровень бонуса: <span id="bonus-amount">0</span>/10</label>
-          <input type="range" id="bonus-slider" min="0" max="10" value="0">
-          <div class="bonus-display">
-            <div class="bonus-stars" id="bonus-stars-display"></div>
-            <div class="bonus-value" id="bonus-value-display">0%</div>
-          </div>
-        </div>
-
-        <div class="form-group">
-          <label>История изменений</label>
-          <div class="chart-container small">
-            <canvas id="bonus-history-chart"></canvas>
-          </div>
+      <div class="bonus-info">
+        <h4 id="bonus-master-name">Загрузка...</h4>
+        <p id="bonus-master-stats">Загрузка...</p>
+      </div>
+      <div class="bonus-slider-wrap">
+        <input type="range" id="bonus-slider" min="0" max="10" value="0">
+        <div class="bonus-display">
+          <span class="bonus-amount" id="bonus-amount">0</span>
+          <div class="bonus-stars" id="bonus-stars-display"></div>
         </div>
       </div>
-      <div class="modal-footer">
-        <button class="secondary-btn" id="cancel-bonus-btn">Закрыть</button>
-        <button class="primary-btn" id="save-bonus-btn">Сохранить</button>
-      </div>
+      <canvas id="bonus-history-chart" height="200"></canvas>
+      <button id="save-bonus-btn" class="primary-btn full-width">
+        <i class="fas fa-save"></i>
+        Сохранить
+      </button>
     </div>
   </div>
 
   <!-- Скрипты -->
-  <script type="module" src="assets/js/theme.js"></script>
-  <script type="module" src="assets/js/utils.js"></script>
-  <script type="module" src="assets/js/storage.js"></script>
-  <script type="module" src="assets/js/servicesCatalog.js"></script>
-  <script type="module" src="assets/js/charts.js"></script>
   <script type="module" src="assets/js/app.js"></script>
+  <script type="module" src="assets/js/charts.js"></script>
+  <script type="module" src="assets/js/theme.js"></script>
+  <script type="module" src="assets/js/storage.js"></script>
+  <script type="module" src="assets/js/utils.js"></script>
+  <script type="module" src="assets/js/servicesCatalog.js"></script>
 </body>
 </html>
