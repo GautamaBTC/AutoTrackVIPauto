@@ -10,22 +10,48 @@ const USER_ROLES = {
 
 // --- Пользователи системы (логин/пароль в открытом виде для демонстрации) ---
 const USERS = {
+    // Директор
     'director': {
         password: 'director123',
         role: USER_ROLES.DIRECTOR,
         name: 'Александр Иванов',
         position: 'Директор'
     },
-    'master1': {
-        password: 'master123',
+    // Мастера
+    'vladimir.ch': {
+        password: 'vlch123',
         role: USER_ROLES.MASTER,
-        name: 'Иван Петров',
+        name: 'Владимир Ч.',
         position: 'Мастер'
     },
-    'master2': {
-        password: 'master456',
+    'vladimir.a': {
+        password: 'vla123',
         role: USER_ROLES.MASTER,
-        name: 'Михаил Сидоров',
+        name: 'Владимир А.',
+        position: 'Мастер'
+    },
+    'andrey': {
+        password: 'andrey123',
+        role: USER_ROLES.MASTER,
+        name: 'Андрей',
+        position: 'Мастер'
+    },
+    'danila': {
+        password: 'danila123',
+        role: USER_ROLES.MASTER,
+        name: 'Данила',
+        position: 'Мастер'
+    },
+    'maxim': {
+        password: 'maxim123',
+        role: USER_ROLES.MASTER,
+        name: 'Максим',
+        position: 'Мастер'
+    },
+    'artyom': {
+        password: 'artyom123',
+        role: USER_ROLES.MASTER,
+        name: 'Артём',
         position: 'Мастер'
     }
 };
@@ -54,7 +80,7 @@ class Notification {
         // Автоматическое скрытие
         setTimeout(() => {
             notification.classList.remove('show');
-            setTimeout(() => notification.remove(), 300);
+            setTimeout(() => notification.remove(), 3000);
         }, 3000);
     }
 }
@@ -141,10 +167,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Проверка авторизации
     function authenticateUser(login, password) {
-        const user = USERS[login];
+        // Приводим логин к нижнему регистру для сравнения
+        const normalizedLogin = login.toLowerCase().trim();
+        const user = USERS[normalizedLogin];
         if (user && user.password === password) {
             return {
-                login: user.login || login,
+                login: normalizedLogin,
                 name: user.name,
                 role: user.role,
                 position: user.position
