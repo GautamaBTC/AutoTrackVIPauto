@@ -1,328 +1,257 @@
 /*────────────────────────────────────────────
-  assets/js/storage.js | УЛУЧШЕННАЯ ВЕРСИЯ С FIREBASE
+  assets/js/storage.js | ЛОКАЛЬНОЕ ХРАНИЛИЩЕ С ДАННЫМИ
 ─────────────────────────────────────────────*/
 
-import { safeGetItem, safeSetItem, generateId } from './utils.js';
-import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.10/firebase-app.js";
-import { getFirestore, collection, addDoc, getDocs, updateDoc, deleteDoc, doc, query, where } from "https://www.gstatic.com/firebasejs/9.6.10/firebase-firestore.js";
-import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/9.6.10/firebase-auth.js";
-
-// Firebase config (paste your from console)
-const firebaseConfig = {
-    apiKey: "YOUR_API_KEY",
-    authDomain: "your-project.firebaseapp.com",
-    projectId: "your-project",
-    storageBucket: "your-project.appspot.com",
-    messagingSenderId: "YOUR_SENDER_ID",
-    appId: "YOUR_APP_ID"
-};
-
-// Init Firebase
-const app = initializeApp(firebaseConfig);
-const db = getFirestore(app);
-const auth = getAuth(app);
-
-// Константы
+// Константы для ключей localStorage
 const STORAGE_KEYS = {
-    USERS: 'vipauto_users',
-    ENTRIES: 'entries', // Firestore collection
-    BONUSES: 'bonuses',
+    ENTRIES: 'vipauto_entries',
+    MASTERS: 'vipauto_masters',
+    BONUSES: 'vipauto_bonuses',
     SETTINGS: 'vipauto_settings',
     BACKUP: 'vipauto_last_backup'
 };
 
-// Начальные пользователи (for local fallback, but use Auth for real)
-const INITIAL_USERS = { /* as before */ };
-
-// Инициализация (with cloud check)
-function initStorage() {
-    // Local init as fallback
-    if (!safeGetItem(STORAGE_KEYS.USERS)) safeSetItem(STORAGE_KEYS.USERS, INITIAL_USERS);
-    // ... (other local)
-
-    // Cloud init (e.g., check connection)
-    console.log('Storage init with Firebase');
-}
-
-// Init on import
-initStorage();
-
-// Users with Auth
-export async function getUsers() {
-    // Use Firebase Auth listUsers if admin, but for simple - local fallback
-    return Object.values(safeGetItem(STORAGE_KEYS.USERS));
-}
-
-export async function getUserByLogin(login) {
-    return safeGetItem(STORAGE_KEYS.USERS)[login];
-}
-
-export async function authenticateUser(login, password) {
+// Вспомогательные функции для безопасной работы с localStorage
+function safeGetItem(key) {
     try {
-        const userCredential = await signInWithEmailAndPassword(auth, login, password);
-        return userCredential.user; // Return user object
-    } catch (error) {
-        console.error('Auth error:', error);
+        return JSON.parse(localStorage.getItem(key));
+    } catch (e) {
+        console.error(`Ошибка при получении данных из localStorage по ключу ${key}:`, e);
         return null;
     }
 }
 
-// Entries with Firestore
-export async function getAllEntries() {
-    const q = query(collection(db, STORAGE_KEYS.ENTRIES));
-    const snapshot = await getDocs(q);
-    return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-}
-
-// ... (other get functions with queries, e.g., byMaster: add where("master", "==", masterName))
-
-export async function addEntry(entry) {
-    const newEntry = {
-        timestamp: Date.now(),
-        ...entry
-    };
-    const docRef = await addDoc(collection(db, STORAGE_KEYS.ENTRIES), newEntry);
-    return { id: docRef.id, ...newEntry };
-}
-
-export async function updateEntry(id, data) {
-    const entryRef = doc(db, STORAGE_KEYS.ENTRIES, id);
-    await updateDoc(entryRef, { ...data, lastModified: Date.now() });
-    return true;
-}
-
-export async function deleteEntry(id) {
-    const entryRef = doc(db, STORAGE_KEYS.ENTRIES, id);
-    await deleteDoc(entryRef);
-    return true;
-}
-
-// Bonuses similar with Firestore
-// ... (adapt get/set as above)
-
-// Settings local or cloud
-// ...
-
-// Backup to cloud
-async function createBackup() {
-    // Adapt to Firestore snapshot
-}
-
-// Export all with cloud adaptations
-
-// Entries with Firestore (async)
-export async function getAllEntries() {
+function safeSetItem(key, value) {
     try {
-        const q = query(collection(db, STORAGE_KEYS.ENTRIES));
-        const snapshot = await getDocs(q);
-        console.log('Got entries from cloud'); // Debug
-        return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-    } catch (error) {
-        console.error('Cloud get entries error:', error);
-        // Fallback to local
-        return safeGetItem(STORAGE_KEYS.ENTRIES) || [];
+        localStorage.setItem(key, JSON.stringify(value));
+        return true;
+    } catch (e) {
+        console.error(`Ошибка при сохранении данных в localStorage по ключу ${key}:`, e);
+        // TODO: Обработать переполнение localStorage
+        return false;
     }
 }
 
-export async function getEntriesByMaster(masterName) {
-    try {
-        const q = query(collection(db, STORAGE_KEYS.ENTRIES), where("master", "==", masterName));
-        const snapshot = await getDocs(q);
-        return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-    } catch (error) {
-        console.error('Error getting by master:', error);
-        return getAllEntries().filter(e => e.master === masterName);
-    }
+// --- Работа с записями (entries) ---
+export function getAllEntries() {
+    return safeGetItem(STORAGE_KEYS.ENTRIES) || [];
 }
 
-export async function getEntriesByDateRange(startDate, endDate) {
-    try {
-        const q = query(collection(db, STORAGE_KEYS.ENTRIES), 
-            where("date", ">=", startDate.toISOString().slice(0,10)),
-            where("date", "<=", endDate.toISOString().slice(0,10)));
-        const snapshot = await getDocs(q);
-        return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-    } catch (error) {
-        console.error('Error getting by date:', error);
-        return getAllEntries().filter(e => {
-            const entryDate = new Date(e.date);
-            return entryDate >= startDate && entryDate <= endDate;
-        });
-    }
-}
+export function saveEntry(entry) {
+    const entries = getAllEntries();
+    const existingIndex = entries.findIndex(e => e.id === entry.id);
 
-export async function addEntry(entry) {
-    try {
+    if (existingIndex !== -1) {
+        // Обновляем существующую запись
+        entries[existingIndex] = { ...entries[existingIndex], ...entry, timestamp: new Date().toISOString() };
+    } else {
+        // Добавляем новую запись
         const newEntry = {
-            timestamp: Date.now(),
-            ...entry
+            id: entry.id || Date.now().toString(),
+            date: entry.date,
+            car: entry.car,
+            client: entry.client || '',
+            services: entry.services || [],
+            workCost: parseFloat(entry.workCost) || 0,
+            partsCost: parseFloat(entry.partsCost) || 0,
+            notes: entry.notes || '',
+            master: entry.master, // Имя мастера
+            timestamp: entry.timestamp || new Date().toISOString()
         };
-        const docRef = await addDoc(collection(db, STORAGE_KEYS.ENTRIES), newEntry);
-        console.log('Added entry to cloud'); // Debug
-        return { id: docRef.id, ...newEntry };
-    } catch (error) {
-        console.error('Add entry error:', error);
-        // Local fallback
-        const entries = getAllEntries();
-        const localEntry = { id: generateId(), ...entry, timestamp: Date.now() };
-        entries.push(localEntry);
-        safeSetItem(STORAGE_KEYS.ENTRIES, entries);
-        return localEntry;
+        entries.push(newEntry);
     }
+
+    const success = safeSetItem(STORAGE_KEYS.ENTRIES, entries);
+    if (success) {
+        // Обновляем данные мастера
+        updateMasterData(entry.master, entry);
+    }
+    return success;
 }
 
-export async function updateEntry(id, data) {
-    try {
-        const entryRef = doc(db, STORAGE_KEYS.ENTRIES, id);
-        await updateDoc(entryRef, { ...data, lastModified: Date.now() });
-        console.log('Updated entry in cloud'); // Debug
-        return true;
-    } catch (error) {
-        console.error('Update entry error:', error);
-        // Local fallback
-        const entries = getAllEntries();
-        const index = entries.findIndex(e => e.id === id);
-        if (index !== -1) {
-            entries[index] = { ...entries[index], ...data, lastModified: Date.now() };
-            safeSetItem(STORAGE_KEYS.ENTRIES, entries);
-            return true;
+export function deleteEntry(id) {
+    const entries = getAllEntries();
+    const entryToDelete = entries.find(e => e.id === id);
+    if (!entryToDelete) return false;
+
+    const filteredEntries = entries.filter(e => e.id !== id);
+    const success = safeSetItem(STORAGE_KEYS.ENTRIES, filteredEntries);
+    if (success) {
+        // Обновляем данные мастера (удаление)
+        updateMasterData(entryToDelete.master, entryToDelete, true);
+    }
+    return success;
+}
+
+// --- Работа с данными мастеров (masters) ---
+export function getMasterData(masterName) {
+    const masters = safeGetItem(STORAGE_KEYS.MASTERS) || {};
+    return masters[masterName] || {
+        name: masterName,
+        totalRevenue: 0,
+        totalJobs: 0,
+        currentBonusLevel: 0,
+        bonusHistory: []
+    };
+}
+
+export function updateMasterData(masterName, entry, isDeletion = false) {
+    const masters = safeGetItem(STORAGE_KEYS.MASTERS) || {};
+    let masterData = masters[masterName];
+
+    if (!masterData) {
+        masterData = {
+            name: masterName,
+            totalRevenue: 0,
+            totalJobs: 0,
+            currentBonusLevel: 0,
+            bonusHistory: []
+        };
+    }
+
+    const entryValue = (parseFloat(entry.workCost) || 0) + (parseFloat(entry.partsCost) || 0);
+
+    if (isDeletion) {
+        masterData.totalRevenue -= entryValue;
+        masterData.totalJobs -= 1;
+    } else {
+        masterData.totalRevenue += entryValue;
+        masterData.totalJobs += 1;
+    }
+
+    // Пересчитываем бонус
+    const newBonusLevel = calculateAndUpdateBonus(masterName, masterData);
+    if (newBonusLevel !== masterData.currentBonusLevel) {
+        masterData.currentBonusLevel = newBonusLevel;
+        // Добавляем в историю
+        masterData.bonusHistory.push({
+            level: newBonusLevel,
+            timestamp: new Date().toISOString()
+        });
+        // Ограничиваем историю
+        if (masterData.bonusHistory.length > 50) {
+            masterData.bonusHistory = masterData.bonusHistory.slice(-50);
         }
-        return false;
     }
+
+    masters[masterName] = masterData;
+    safeSetItem(STORAGE_KEYS.MASTERS, masters);
 }
 
-export async function deleteEntry(id) {
-    try {
-        const entryRef = doc(db, STORAGE_KEYS.ENTRIES, id);
-        await deleteDoc(entryRef);
-        console.log('Deleted entry from cloud'); // Debug
-        return true;
-    } catch (error) {
-        console.error('Delete entry error:', error);
-        // Local fallback
-        const entries = getAllEntries();
-        const filtered = entries.filter(e => e.id !== id);
-        if (filtered.length !== entries.length) {
-            safeSetItem(STORAGE_KEYS.ENTRIES, filtered);
-            return true;
-        }
-        return false;
-    }
+export function getAllMastersData() {
+    return safeGetItem(STORAGE_KEYS.MASTERS) || {};
 }
 
-// Bonuses with Firestore
-export async function getBonuses(masterName, date) {
-    try {
-        const q = query(collection(db, STORAGE_KEYS.BONUSES), where("master", "==", masterName), where("date", "==", date));
-        const snapshot = await getDocs(q);
-        return snapshot.docs.map(doc => doc.data())[0] || { score: 0, amount: 0 };
-    } catch (error) {
-        console.error('Get bonuses error:', error);
-        const bonuses = safeGetItem(STORAGE_KEYS.BONUSES) || {};
-        const key = `${date}_${masterName}`;
-        return bonuses[key] || { score: 0, amount: 0 };
-    }
+export function getMasterBonusHistory(masterName) {
+    const masterData = getMasterData(masterName);
+    return masterData.bonusHistory || [];
 }
 
-export async function setBonuses(masterName, date, data) {
-    try {
-        const bonusRef = doc(db, STORAGE_KEYS.BONUSES, `${date}_${masterName}`);
-        await setDoc(bonusRef, { ...data, timestamp: Date.now(), master: masterName, date });
-        console.log('Set bonuses in cloud'); // Debug
-    } catch (error) {
-        console.error('Set bonuses error:', error);
-        // Local fallback
-        const bonuses = safeGetItem(STORAGE_KEYS.BONUSES) || {};
-        const key = `${date}_${masterName}`;
-        bonuses[key] = { ...data, timestamp: Date.now() };
-        safeSetItem(STORAGE_KEYS.BONUSES, bonuses);
+// --- Работа с бонусами (bonuses) ---
+// Критерии для автоматического расчета бонуса
+const BONUS_CRITERIA = {
+    jobs: { min: 50, bonus: 2 },
+    revenue: { min: 100000, bonus: 3 },
+    servicesVariety: { min: 20, bonus: 1 } // From stats
+};
+
+export function calculateAndUpdateBonus(masterName, masterData = null) {
+    if (!masterData) {
+        masterData = getMasterData(masterName);
     }
+
+    let bonusLevel = 0;
+
+    // Критерий 1: Количество работ
+    if (masterData.totalJobs >= BONUS_CRITERIA.jobs.min) {
+        bonusLevel += BONUS_CRITERIA.jobs.bonus;
+    }
+
+    // Критерий 2: Общая выручка
+    if (masterData.totalRevenue >= BONUS_CRITERIA.revenue.min) {
+        bonusLevel += BONUS_CRITERIA.revenue.bonus;
+    }
+
+    // TODO: Критерий 3: Разнообразие услуг (нужно собирать статистику)
+    // if (servicesVariety >= BONUS_CRITERIA.servicesVariety.min) {
+    //     bonusLevel += BONUS_CRITERIA.servicesVariety.bonus;
+    // }
+
+    // Ограничиваем максимальный уровень
+    bonusLevel = Math.min(bonusLevel, 10);
+
+    return bonusLevel;
 }
 
-// Settings (local for now, add cloud if needed)
+export function getBonusLevel(masterName, date = null) {
+    const masterData = getMasterData(masterName);
+    return masterData.currentBonusLevel || 0;
+}
+
+export function setBonusLevel(masterName, level, date = null) {
+    const masters = safeGetItem(STORAGE_KEYS.MASTERS) || {};
+    if (!masters[masterName]) {
+        masters[masterName] = {
+            name: masterName,
+            totalRevenue: 0,
+            totalJobs: 0,
+            currentBonusLevel: 0,
+            bonusHistory: []
+        };
+    }
+
+    const oldLevel = masters[masterName].currentBonusLevel;
+    masters[masterName].currentBonusLevel = level;
+
+    // Добавляем в историю
+    masters[masterName].bonusHistory.push({
+        level: level,
+        timestamp: new Date().toISOString()
+    });
+
+    // Ограничиваем историю
+    if (masters[masterName].bonusHistory.length > 50) {
+        masters[masterName].bonusHistory = masters[masterName].bonusHistory.slice(-50);
+    }
+
+    safeSetItem(STORAGE_KEYS.MASTERS, masters);
+    return oldLevel !== level;
+}
+
+// --- Настройки (settings) ---
 export function getSettings() {
-    return safeGetItem(STORAGE_KEYS.SETTINGS);
+    return safeGetItem(STORAGE_KEYS.SETTINGS) || {};
 }
 
 export function updateSettings(newSettings) {
     const settings = getSettings();
-    safeSetItem(STORAGE_KEYS.SETTINGS, { ...settings, ...newSettings });
+    const updatedSettings = { ...settings, ...newSettings };
+    return safeSetItem(STORAGE_KEYS.SETTINGS, updatedSettings);
 }
 
-// Backup (to cloud)
-async function createBackup() {
-    const settings = getSettings();
-    if (!settings.autoBackup) return;
-
-    const lastBackup = safeGetItem(STORAGE_KEYS.BACKUP);
-    const now = Date.now();
-
-    if (!lastBackup || (now - lastBackup.timestamp) > settings.backupInterval * 3600000) {
-        const backup = {
-            timestamp: now,
-            entries: await getAllEntries(),
-            bonuses: await getAllBonuses(), // Assume function
-            settings
-        };
-        // Save to cloud
-        await setDoc(doc(db, 'backups', now.toString()), backup);
-        safeSetItem(STORAGE_KEYS.BACKUP, { timestamp: now });
-    }
-}
-
-export async function restoreFromBackup() {
-    // Get latest backup from cloud
-    const q = query(collection(db, 'backups'), orderBy('timestamp', 'desc'), limit(1));
-    const snapshot = await getDocs(q);
-    const backup = snapshot.docs[0]?.data();
-
-    if (backup) {
-        // Restore to cloud/local
-        // For example, batch add entries
-        const batch = writeBatch(db);
-        backup.entries.forEach(e => {
-            const ref = doc(db, STORAGE_KEYS.ENTRIES, e.id);
-            batch.set(ref, e);
-        });
-        await batch.commit();
-
-        safeSetItem(STORAGE_KEYS.ENTRIES, backup.entries);
-        safeSetItem(STORAGE_KEYS.BONUSES, backup.bonuses);
-        safeSetItem(STORAGE_KEYS.SETTINGS, backup.settings);
-        return true;
-    }
-    return false;
-}
-
-// Export/Import (with cloud)
-export async function exportData() {
-    const data = {
-        entries: await getAllEntries(),
-        bonuses: await getAllBonuses(),
+// --- Резервное копирование (backup) ---
+export function createBackup() {
+    // Заглушка для создания резервной копии
+    const backupData = {
+        entries: getAllEntries(),
+        masters: getAllMastersData(),
         settings: getSettings(),
-        exportDate: new Date().toISOString()
+        timestamp: new Date().toISOString()
     };
-    return JSON.stringify(data);
+    // В реальном приложении здесь будет отправка на сервер
+    console.log('Backup created (stub):', backupData);
+    safeSetItem(STORAGE_KEYS.BACKUP, backupData);
+    return backupData;
 }
 
-export async function importData(jsonString) {
-    try {
-        const data = JSON.parse(jsonString);
-        // Import to cloud (batch)
-        const batch = writeBatch(db);
-        data.entries.forEach(e => {
-            const ref = doc(db, STORAGE_KEYS.ENTRIES, e.id);
-            batch.set(ref, e);
-        });
-        // Similar for bonuses
-        await batch.commit();
-
-        safeSetItem(STORAGE_KEYS.ENTRIES, data.entries);
-        safeSetItem(STORAGE_KEYS.BONUSES, data.bonuses);
-        safeSetItem(STORAGE_KEYS.SETTINGS, data.settings);
-        return true;
-    } catch (error) {
-        console.error('Import error:', error);
-        return false;
-    }
+export function restoreBackup(backupData) {
+    // Заглушка для восстановления из резервной копии
+    if (backupData.entries) safeSetItem(STORAGE_KEYS.ENTRIES, backupData.entries);
+    if (backupData.masters) safeSetItem(STORAGE_KEYS.MASTERS, backupData.masters);
+    if (backupData.settings) safeSetItem(STORAGE_KEYS.SETTINGS, backupData.settings);
+    console.log('Backup restored (stub)');
+    return true;
 }
+
+// Инициализация хранилища при импорте модуля
+console.log('Storage module initialized');
