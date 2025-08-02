@@ -1,1540 +1,390 @@
-/*────────────────────────────────────────────
-  assets/css/main.css | ЧАСТЬ 1: ОСНОВНЫЕ СТИЛИ
-─────────────────────────────────────────────*/
-
-/* 1. ЦВЕТОВЫЕ ТЕМЫ И ПЕРЕМЕННЫЕ (с бирюзовыми тонами в dark) */
-:root {
-  /* Основные цвета */
-  --bg: #F0F2F5;
-  --panel-bg: #FFFFFF;
-  --input-bg: #F0F2F5;
-  --border: #DCDFE6;
-  --text: #303133;
-  --text-muted: #909399;
-
-  /* Акцентные цвета */
-  --accent: #399D9C;
-  --accent-light: #4DBAB3;
-  --accent-dark: #2D7F7E;
-  --accent-gradient: linear-gradient(45deg, var(--accent), var(--accent-light));
-  --accent-rgb: 57, 157, 156; /* Для rgba() */
-
-  /* Статусы */
-  --success: #28a745;
-  --warning: #ffc107;
-  --danger: #dc3545;
-  --info: #17a2b8;
-
-  /* Тени */
-  --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.05);
-  --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.08);
-  --shadow-lg: 0 10px 30px rgba(0, 0, 0, 0.1);
-
-  /* Радиусы */
-  --radius-sm: 4px;
-  --radius-md: 8px;
-  --radius-lg: 16px;
-
-  /* Отступы */
-  --spacing-xs: 0.25rem;
-  --spacing-sm: 0.5rem;
-  --spacing-md: 1rem;
-  --spacing-lg: 1.5rem;
-  --spacing-xl: 2rem;
-
-  /* Анимации */
-  --transition-fast: 0.2s ease;
-  --transition-normal: 0.3s ease;
-  --transition-slow: 0.5s ease;
-}
-
-html[data-theme="dark"] {
-  --bg: #001F3F; /* Тёмно-бирюзовый фон */
-  --panel-bg: #002B55;
-  --input-bg: #003D6B;
-  --border: #005588;
-  --text: #E0FFFF; /* Светло-бирюзовый текст */
-  --text-muted: #A0D2DB;
-  --accent: #008B8B; /* Основной бирюзовый */
-  --accent-light: #00A0A0;
-  --accent-dark: #006666;
-  --accent-gradient: linear-gradient(45deg, var(--accent), var(--accent-light));
-  --accent-rgb: 0, 139, 139;
-  --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.2);
-  --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.3);
-  --shadow-lg: 0 10px 30px rgba(0, 0, 0, 0.4);
-}
-
-/* 2. БАЗА И СТРУКТУРА */
-html, body {
-  height: 100%;
-  font-family: 'Inter', sans-serif;
-  background: var(--bg);
-  color: var(--text);
-  transition: background 0.3s, color 0.3s;
-}
-
-body {
-  display: flex;
-  flex-direction: column;
-  overflow-x: hidden; /* Предотвращаем горизонтальный скролл */
-}
-
-/* 3. УТИЛИТЫ И СКРЫТИЕ */
-.hidden {
-  display: none !important;
-}
-
-.visually-hidden {
-  position: absolute;
-  width: 1px;
-  height: 1px;
-  margin: -1px;
-  padding: 0;
-  overflow: hidden;
-  clip: rect(0, 0, 0, 0);
-  border: 0;
-}
-
-.text-muted {
-  color: var(--text-muted) !important;
-}
-
-.text-success {
-  color: var(--success) !important;
-}
-
-.text-danger {
-  color: var(--danger) !important;
-}
-
-.text-center {
-  text-align: center;
-}
-
-.full-width {
-  width: 100%;
-}
-
-/* 4. ОСНОВНОЙ КОНТЕЙНЕР */
-.app-container {
-  flex-grow: 1;
-  padding: var(--spacing-lg);
-  display: flex;
-  flex-direction: column;
-  gap: var(--spacing-lg);
-}
-
-.interface-container {
-  flex-grow: 1;
-  display: flex;
-  flex-direction: column;
-  gap: var(--spacing-lg);
-}
-
-/* 5. СЕТКИ И КАРТОЧКИ */
-.kpi-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-  gap: var(--spacing-md);
-}
-
-.stat-card {
-  background: var(--panel-bg);
-  border-radius: var(--radius-lg);
-  padding: var(--spacing-md);
-  box-shadow: var(--shadow-sm);
-  transition: transform var(--transition-fast), box-shadow var(--transition-fast);
-  border: 1px solid var(--border);
-}
-
-.stat-card:hover {
-  transform: translateY(-4px);
-  box-shadow: var(--shadow-md);
-}
-
-.stat-header {
-  display: flex;
-  align-items: center;
-  gap: var(--spacing-sm);
-  margin-bottom: var(--spacing-sm);
-}
-
-.stat-header i {
-  font-size: 1.2rem;
-  color: var(--accent);
-}
-
-.stat-header h3 {
-  font-size: 0.9rem;
-  font-weight: 600;
-  color: var(--text-muted);
-  margin: 0;
-}
-
-.stat-value {
-  font-size: 1.5rem;
-  font-weight: 700;
-  color: var(--text);
-  display: flex;
-  align-items: center;
-  gap: var(--spacing-xs);
-}
-
-.bonus-stars {
-  display: flex;
-  gap: 2px;
-}
-
-.bonus-stars i {
-  color: var(--text-muted);
-  font-size: 0.9rem;
-}
-
-.bonus-stars i.filled {
-  color: var(--accent);
-}
-
-.entries-list {
-  flex-grow: 1;
-  overflow-y: auto;
-  display: flex;
-  flex-direction: column;
-  gap: var(--spacing-md);
-}
-
-.entries-group {
-  background: var(--panel-bg);
-  border-radius: var(--radius-lg);
-  padding: var(--spacing-md);
-  box-shadow: var(--shadow-sm);
-  border: 1px solid var(--border);
-}
-
-.entries-date {
-  font-size: 1rem;
-  font-weight: 600;
-  color: var(--text);
-  margin-bottom: var(--spacing-sm);
-  padding-bottom: var(--spacing-sm);
-  border-bottom: 1px solid var(--border);
-}
-
-.entries-cards {
-  display: flex;
-  flex-direction: column;
-  gap: var(--spacing-sm);
-}
-
-.entry-card {
-  background: rgba(var(--accent-rgb), 0.05);
-  border-radius: var(--radius-md);
-  padding: var(--spacing-md);
-  transition: background var(--transition-fast);
-  border: 1px solid var(--border);
-}
-
-.entry-card:hover {
-  background: rgba(var(--accent-rgb), 0.1);
-}
-
-.entry-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: var(--spacing-sm);
-}
-
-.entry-car {
-  font-size: 1.1rem;
-  font-weight: 600;
-  color: var(--text);
-  margin: 0;
-}
-
-.entry-actions {
-  display: flex;
-  gap: var(--spacing-xs);
-}
-
-.entry-details {
-  margin-bottom: var(--spacing-sm);
-}
-
-.entry-details p {
-  margin: 0 0 var(--spacing-xs);
-  font-size: 0.9rem;
-  display: flex;
-  align-items: center;
-  gap: var(--spacing-xs);
-}
-
-.entry-details i {
-  width: 16px;
-  text-align: center;
-  color: var(--text-muted);
-}
-
-.entry-cost {
-  font-weight: 600;
-  color: var(--accent) !important;
-}
-
-.entry-footer {
-  display: flex;
-  justify-content: space-between;
-  font-size: 0.8rem;
-  color: var(--text-muted);
-}
-
-.entry-footer span {
-  display: flex;
-  align-items: center;
-  gap: var(--spacing-xs);
-}
-
-.no-entries {
-  text-align: center;
-  padding: var(--spacing-xl);
-  color: var(--text-muted);
-}
-
-.no-entries i {
-  font-size: 3rem;
-  margin-bottom: var(--spacing-md);
-  opacity: 0.5;
-}
-
-/* 6. ХЕДЕР (полупрозрачный, sticky) */
-.page-header {
-  padding: var(--spacing-lg);
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  background: rgba(255, 255, 255, 0.8); /* Полупрозрачный */
-  backdrop-filter: blur(5px); /* Для стиля */
-  box-shadow: var(--shadow-sm);
-  position: sticky;
-  top: 0;
-  z-index: 100;
-  border-bottom: 1px solid var(--border);
-  transition: background 0.3s, border-color 0.3s;
-}
-
-html[data-theme="dark"] .page-header {
-  background: rgba(0, 43, 85, 0.8); /* Темная тема */
-}
-
-.page-header__left,
-.page-header__center,
-.page-header__right {
-  display: flex;
-  align-items: center;
-  gap: var(--spacing-md);
-}
-
-.page-header__center {
-  flex-direction: column;
-  flex-grow: 1;
-}
-
-#current-date {
-  font-size: 0.9rem;
-  color: var(--text-muted);
-  white-space: nowrap;
-}
-
-#current-time {
-  font-size: 1.5rem;
-  font-weight: 500;
-  color: var(--text);
-  line-height: 1.1;
-  transition: opacity var(--transition-fast);
-}
-
-/* Меню пользователя (с анимацией) */
-.user-menu {
-  position: relative;
-}
-
-.user-menu-trigger {
-  display: flex;
-  align-items: center;
-  gap: var(--spacing-sm);
-  padding: var(--spacing-sm) var(--spacing-md);
-  border-radius: var(--radius-md);
-  color: var(--text);
-  transition: background var(--transition-fast), transform var(--transition-fast);
-  cursor: pointer;
-  border: none;
-  background: none;
-}
-
-.user-menu-trigger:hover {
-  background: var(--input-bg);
-  transform: translateY(-2px);
-}
-
-.user-menu-trigger i {
-  font-size: 1.25rem;
-  color: var(--accent);
-}
-
-.menu-arrow {
-  font-size: 0.8rem;
-  transition: transform var(--transition-fast);
-}
-
-.user-menu-trigger[aria-expanded="true"] .menu-arrow {
-  transform: rotate(180deg);
-}
-
-.user-menu-dropdown {
-  position: absolute;
-  top: 100%;
-  right: 0;
-  background: var(--panel-bg);
-  border-radius: var(--radius-md);
-  box-shadow: var(--shadow-lg);
-  width: 280px;
-  padding: var(--spacing-md);
-  z-index: 1000;
-  opacity: 0;
-  visibility: hidden;
-  transform: translateY(-10px);
-  transition: opacity var(--transition-normal), visibility var(--transition-normal), transform var(--transition-normal);
-  border: 1px solid var(--border);
-}
-
-.user-menu-dropdown:not(.hidden) {
-  opacity: 1;
-  visibility: visible;
-  transform: translateY(0);
-}
-
-.user-info-details {
-  text-align: center;
-  margin-bottom: var(--spacing-md);
-}
-
-.user-avatar {
-  font-size: 3rem;
-  color: var(--accent);
-  margin-bottom: var(--spacing-sm);
-}
-
-.user-role {
-  font-weight: 600;
-  margin: 0 0 var(--spacing-xs);
-  color: var(--text);
-}
-
-.user-position {
-  font-size: 0.9rem;
-  color: var(--text-muted);
-  margin: 0;
-}
-
-.menu-btn {
-  display: flex;
-  align-items: center;
-  gap: var(--spacing-md);
-  width: 100%;
-  padding: var(--spacing-md);
-  color: var(--text);
-  transition: background var(--transition-fast), transform var(--transition-fast);
-  border: none;
-  background: none;
-  cursor: pointer;
-  text-align: left;
-  border-radius: var(--radius-sm);
-}
-
-.menu-btn:hover {
-  background: var(--input-bg);
-  transform: translateX(4px);
-}
-
-.menu-btn.danger {
-  color: var(--danger);
-}
-
-.menu-btn i {
-  width: 20px;
-  text-align: center;
-}
-
-/* Переключатель темы (с анимацией) */
-.theme-switch {
-  position: relative;
-  display: inline-block;
-  width: 54px;
-  height: 28px;
-}
-
-.theme-switch input {
-  opacity: 0;
-  width: 0;
-  height: 0;
-}
-
-.slider {
-  position: absolute;
-  inset: 0;
-  cursor: pointer;
-  background-color: var(--input-bg);
-  border-radius: 28px;
-  transition: .4s;
-  border: 1px solid var(--border);
-}
-
-.theme-switch input:focus-visible + .slider {
-  border-color: var(--accent);
-}
-
-.slider-thumb {
-  position: absolute;
-  height: 22px;
-  width: 22px;
-  left: 3px;
-  bottom: 3px;
-  background-color: var(--accent);
-  border-radius: 50%;
-  transition: .4s cubic-bezier(0.68, -0.55, 0.27, 1.55);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  overflow: hidden;
-}
-
-.slider-thumb i {
-    position: absolute;
-    color: var(--btn-text); /* Используем переменную из login.css */
-    font-size: 12px;
-    transition: opacity 0.2s ease, transform 0.4s cubic-bezier(0.68, -0.55, 0.27, 1.55);
-}
-
-html[data-theme="light"] .slider-thumb {
-  transform: translateX(26px);
-}
-
-html[data-theme="light"] .fa-sun {
-  opacity: 1;
-  transform: rotate(0deg);
-}
-
-html[data-theme="light"] .fa-moon {
-  opacity: 0;
-  transform: rotate(360deg);
-}
-
-html[data-theme="dark"] .slider-thumb {
-  transform: translateX(0px);
-}
-
-html[data-theme="dark"] .fa-sun {
-  opacity: 0;
-  transform: rotate(-360deg);
-}
-
-html[data-theme="dark"] .fa-moon {
-  opacity: 1;
-  transform: rotate(0deg);
-}
-
-/*────────────────────────────────────────────
-  assets/css/main.css | ЧАСТЬ 2: КНОПКИ, ФОРМЫ, ПОИСК
-─────────────────────────────────────────────*/
-
-/* 7. КНОПКИ (с градиентом и состояниями) */
-.btn, .primary-btn, .secondary-btn, .icon-btn {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: var(--spacing-sm);
-  padding: var(--spacing-sm) var(--spacing-md);
-  font-size: 0.9rem;
-  font-weight: 500;
-  border-radius: var(--radius-md);
-  cursor: pointer;
-  transition: transform var(--transition-fast), box-shadow var(--transition-fast), background var(--transition-fast);
-  border: none;
-  text-decoration: none;
-  white-space: nowrap;
-}
-
-.btn:hover, .primary-btn:hover, .secondary-btn:hover, .icon-btn:hover {
-  transform: translateY(-2px);
-  box-shadow: var(--shadow-md);
-}
-
-.btn:active, .primary-btn:active, .secondary-btn:active, .icon-btn:active {
-  transform: translateY(0);
-  box-shadow: var(--shadow-sm);
-}
-
-/* Основные кнопки */
-.primary-btn {
-  background: var(--accent-gradient);
-  color: var(--btn-text); /* Используем переменную из login.css */
-}
-
-.primary-btn:hover {
-  background: linear-gradient(45deg, var(--accent-dark), var(--accent));
-}
-
-/* Второстепенные кнопки */
-.secondary-btn {
-  background: var(--input-bg);
-  color: var(--text);
-  border: 1px solid var(--border);
-}
-
-.secondary-btn:hover {
-  background: var(--border);
-}
-
-/* Кнопки-иконки */
-.icon-btn {
-  width: 36px;
-  height: 36px;
-  padding: 0;
-  background: var(--input-bg);
-  color: var(--text);
-  border: 1px solid var(--border);
-  border-radius: 50%;
-  transition: transform var(--transition-fast), background var(--transition-fast);
-}
-
-.icon-btn:hover {
-  background: var(--border);
-  transform: scale(1.1);
-}
-
-.icon-btn:active {
-  transform: scale(0.95);
-}
-
-/* Состояния кнопок */
-.btn:disabled,
-.btn.loading,
-.primary-btn:disabled,
-.primary-btn.loading,
-.secondary-btn:disabled,
-.secondary-btn.loading,
-.icon-btn:disabled,
-.icon-btn.loading {
-  opacity: 0.7;
-  cursor: not-allowed;
-  pointer-events: none;
-  transform: none;
-}
-
-.btn.loading::after,
-.primary-btn.loading::after,
-.secondary-btn.loading::after,
-.icon-btn.loading::after {
-  content: '';
-  position: absolute;
-  width: 20px;
-  height: 20px;
-  border: 2px solid transparent;
-  border-top-color: currentColor;
-  border-radius: 50%;
-  animation: spin 0.8s linear infinite;
-}
-
-@keyframes spin {
-  from { transform: rotate(0deg); }
-  to { transform: rotate(360deg); }
-}
-
-/* 8. БЫСТРЫЕ ДЕЙСТВИЯ */
-.quick-actions {
-  display: flex;
-  gap: var(--spacing-md);
-  flex-wrap: wrap;
-}
-
-.quick-action-btn {
-  display: flex;
-  align-items: center;
-  gap: var(--spacing-sm);
-  padding: var(--spacing-md) var(--spacing-lg);
-  background: var(--panel-bg);
-  color: var(--text);
-  border-radius: var(--radius-lg);
-  box-shadow: var(--shadow-sm);
-  border: 1px solid var(--border);
-  transition: transform var(--transition-fast), box-shadow var(--transition-fast), background var(--transition-fast);
-  cursor: pointer;
-  font-weight: 500;
-}
-
-.quick-action-btn:hover {
-  transform: translateY(-4px);
-  box-shadow: var(--shadow-md);
-  background: var(--input-bg);
-}
-
-.quick-action-btn.primary-btn {
-  background: var(--accent-gradient);
-  color: var(--btn-text);
-  border: none;
-}
-
-.quick-action-btn.primary-btn:hover {
-  background: linear-gradient(45deg, var(--accent-dark), var(--accent));
-}
-
-/* 9. ФОРМЫ И ПОЛЯ ВВОДА */
-.form-group {
-  margin-bottom: var(--spacing-md);
-}
-
-.form-group label {
-  display: block;
-  font-size: 0.9rem;
-  font-weight: 500;
-  margin-bottom: var(--spacing-sm);
-  color: var(--text-muted);
-}
-
-.form-group input,
-.form-group select,
-.form-group textarea {
-  width: 100%;
-  padding: var(--spacing-sm) var(--spacing-md);
-  font-size: 1rem;
-  background: var(--input-bg);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-md);
-  color: var(--text);
-  transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
-}
-
-.form-group input:focus,
-.form-group select:focus,
-.form-group textarea:focus {
-  border-color: var(--accent);
-  box-shadow: 0 0 0 2px rgba(var(--accent-rgb), 0.2);
-  outline: none;
-}
-
-.form-group textarea {
-  resize: vertical;
-  min-height: 100px;
-}
-
-.form-row {
-  display: flex;
-  gap: var(--spacing-md);
-}
-
-.form-row .form-group {
-  flex: 1;
-  margin-bottom: 0;
-}
-
-/* 10. ПОИСК И ФИЛЬТРЫ (с фокус анимацией) */
-.search-box {
-  position: relative;
-  width: 100%;
-  max-width: 300px;
-  transition: box-shadow var(--transition-fast);
-}
-
-.search-box:focus-within {
-  box-shadow: 0 0 0 2px rgba(var(--accent-rgb), 0.1);
-}
-
-.search-box i {
-  position: absolute;
-  left: var(--spacing-md);
-  top: 50%;
-  transform: translateY(-50%);
-  color: var(--text-muted);
-  transition: color var(--transition-fast);
-}
-
-.search-box:focus-within i {
-  color: var(--accent);
-}
-
-.search-box input {
-  padding-left: calc(var(--spacing-md) * 2 + 16px);
-  transition: padding var(--transition-fast);
-}
-
-.filters-bar {
-  display: flex;
-  gap: var(--spacing-md);
-  flex-wrap: wrap;
-}
-
-.filters-bar select {
-  min-width: 150px;
-}
-
-/* 11. ВКЛАДКИ (с анимированным индикатором) */
-.tab-navigation {
-  display: flex;
-  background: var(--panel-bg);
-  border-radius: var(--radius-lg);
-  padding: var(--spacing-sm);
-  box-shadow: var(--shadow-sm);
-  border: 1px solid var(--border);
-  position: relative;
-}
-
-.tab-btn {
-  flex: 1;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: var(--spacing-sm);
-  padding: var(--spacing-md) var(--spacing-lg);
-  background: none;
-  border: none;
-  color: var(--text-muted);
-  font-weight: 500;
-  cursor: pointer;
-  border-radius: var(--radius-md);
-  transition: color var(--transition-fast), background var(--transition-fast);
-  position: relative;
-  z-index: 2;
-}
-
-.tab-btn:hover {
-  color: var(--text);
-  background: var(--input-bg);
-}
-
-.tab-btn.active {
-  color: var(--accent);
-  font-weight: 600;
-}
-
-.tab-indicator {
-  position: absolute;
-  height: calc(100% - var(--spacing-sm) * 2);
-  background: var(--input-bg);
-  border-radius: var(--radius-md);
-  box-shadow: var(--shadow-sm);
-  transition: width var(--transition-normal), transform var(--transition-normal);
-  z-index: 1;
-  top: var(--spacing-sm);
-}
-
-/* 12. СЕКЦИИ И ЗАГОЛОВКИ */
-.section-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: var(--spacing-md);
-  flex-wrap: wrap;
-  gap: var(--spacing-md);
-}
-
-.section-header h3 {
-  margin: 0;
-  font-size: 1.25rem;
-  font-weight: 600;
-  color: var(--text);
-}
-
-/* 13. ГРАФИКИ */
-.charts-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
-  gap: var(--spacing-lg);
-}
-
-.chart-container {
-  background: var(--panel-bg);
-  border-radius: var(--radius-lg);
-  padding: var(--spacing-md);
-  box-shadow: var(--shadow-sm);
-  border: 1px solid var(--border);
-}
-
-.chart-container h4 {
-  margin: 0 0 var(--spacing-md);
-  font-size: 1rem;
-  font-weight: 600;
-  color: var(--text);
-  text-align: center;
-}
-
-.chart-container canvas {
-  width: 100% !important;
-  height: 250px !important;
-}
-
-.chart-container.small canvas {
-  height: 150px !important;
-}
-
-.analytics-filters {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--spacing-md);
-  margin-bottom: var(--spacing-lg);
-  align-items: end;
-}
-
-.filter-group {
-  display: flex;
-  align-items: center;
-  gap: var(--spacing-sm);
-}
-
-.filter-group label {
-  margin: 0;
-  font-weight: 500;
-  color: var(--text-muted);
-}
-
-.view-toggle {
-  display: flex;
-  gap: var(--spacing-xs);
-}
-
-/*────────────────────────────────────────────
-  assets/css/main.css | ЧАСТЬ 3: МАСТЕРА, УСЛУГИ, СПИСКИ
-─────────────────────────────────────────────*/
-
-/* 14. СПИСОК МАСТЕРОВ */
-.masters-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-  gap: var(--spacing-md);
-}
-
-.master-card {
-  background: var(--panel-bg);
-  border-radius: var(--radius-lg);
-  padding: var(--spacing-md);
-  box-shadow: var(--shadow-sm);
-  border: 1px solid var(--border);
-  transition: transform var(--transition-fast), box-shadow var(--transition-fast);
-  display: flex;
-  flex-direction: column;
-}
-
-.master-card:hover {
-  transform: translateY(-4px);
-  box-shadow: var(--shadow-md);
-}
-
-.master-header {
-  display: flex;
-  align-items: center;
-  gap: var(--spacing-md);
-  margin-bottom: var(--spacing-md);
-}
-
-.master-avatar {
-  width: 50px;
-  height: 50px;
-  border-radius: 50%;
-  background: var(--accent);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: var(--btn-text);
-  font-size: 1.5rem;
-}
-
-.master-info {
-  flex-grow: 1;
-}
-
-.master-name {
-  font-size: 1.1rem;
-  font-weight: 600;
-  color: var(--text);
-  margin: 0 0 var(--spacing-xs);
-}
-
-.master-position {
-  font-size: 0.9rem;
-  color: var(--text-muted);
-  margin: 0;
-}
-
-.master-stats {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: var(--spacing-sm);
-  margin-bottom: var(--spacing-md);
-}
-
-.stat-item {
-  text-align: center;
-}
-
-.stat-value {
-  font-size: 1.2rem;
-  font-weight: 700;
-  color: var(--text);
-  margin-bottom: var(--spacing-xs);
-}
-
-.stat-label {
-  font-size: 0.8rem;
-  color: var(--text-muted);
-}
-
-.master-actions {
-  display: flex;
-  gap: var(--spacing-sm);
-  margin-top: auto;
-}
-
-/* 15. СПИСОК УСЛУГ (в модалке) */
-.services-list {
-  max-height: 400px;
-  overflow-y: auto;
-  display: flex;
-  flex-direction: column;
-  gap: var(--spacing-sm);
-  padding: var(--spacing-sm) 0;
-}
-
-.service-category {
-  margin-bottom: var(--spacing-md);
-}
-
-.service-category-header {
-  font-size: 1rem;
-  font-weight: 600;
-  color: var(--text);
-  margin: 0 0 var(--spacing-sm);
-  padding: var(--spacing-sm) var(--spacing-md);
-  background: var(--input-bg);
-  border-radius: var(--radius-md);
-  display: flex;
-  align-items: center;
-  gap: var(--spacing-sm);
-}
-
-.service-subcategory {
-  margin-left: var(--spacing-md);
-  margin-bottom: var(--spacing-sm);
-}
-
-.service-subcategory-header {
-  font-size: 0.9rem;
-  font-weight: 500;
-  color: var(--text-muted);
-  margin: 0 0 var(--spacing-xs);
-  padding: var(--spacing-xs) var(--spacing-sm);
-  display: flex;
-  align-items: center;
-  gap: var(--spacing-sm);
-}
-
-.service-item {
-  display: flex;
-  align-items: center;
-  padding: var(--spacing-sm) var(--spacing-md);
-  border-radius: var(--radius-md);
-  cursor: pointer;
-  transition: background var(--transition-fast);
-  gap: var(--spacing-sm);
-}
-
-.service-item:hover {
-  background: var(--input-bg);
-}
-
-.service-item.selected {
-  background: rgba(var(--accent-rgb), 0.1);
-  border: 1px solid var(--accent);
-}
-
-.service-item i {
-  width: 20px;
-  text-align: center;
-  color: var(--text-muted);
-}
-
-.service-item.selected i {
-  color: var(--accent);
-}
-
-.service-name {
-  flex-grow: 1;
-  font-size: 0.9rem;
-  color: var(--text);
-}
-
-.service-favorite,
-.service-recent {
-  font-size: 0.7rem;
-  padding: 2px 4px;
-  border-radius: var(--radius-sm);
-  margin-left: var(--spacing-xs);
-}
-
-.service-favorite {
-  background: rgba(255, 204, 0, 0.2);
-  color: #FFD700;
-}
-
-.service-recent {
-  background: rgba(57, 157, 156, 0.2);
-  color: var(--accent);
-}
-
-/* 16. ВЫБРАННЫЕ УСЛУГИ (в форме) */
-.services-tags {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--spacing-xs);
-  min-height: 40px;
-  padding: var(--spacing-xs);
-  background: var(--input-bg);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-md);
-  align-items: center;
-}
-
-.placeholder-text {
-  color: var(--text-muted);
-  font-size: 0.9rem;
-  padding: var(--spacing-xs) var(--spacing-sm);
-}
-
-.service-tag {
-  display: flex;
-  align-items: center;
-  gap: var(--spacing-xs);
-  padding: var(--spacing-xs) var(--spacing-sm);
-  background: var(--accent);
-  color: var(--btn-text);
-  border-radius: var(--radius-sm);
-  font-size: 0.8rem;
-}
-
-.service-tag i {
-  cursor: pointer;
-  opacity: 0.7;
-  transition: opacity var(--transition-fast);
-}
-
-.service-tag i:hover {
-  opacity: 1;
-}
-
-/* 17. СИСТЕМА БОНУСОВ */
-.bonus-display {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-top: var(--spacing-md);
-}
-
-.bonus-value {
-  font-size: 1.2rem;
-  font-weight: 700;
-  color: var(--accent);
-}
-
-/*────────────────────────────────────────────
-  assets/css/main.css | ЧАСТЬ 4: АДАПТИВНОСТЬ И ПЕЧАТЬ
-─────────────────────────────────────────────*/
-
-/* 18. АДАПТИВНОСТЬ (Mobile First) */
-
-/* Очень маленькие экраны (до 480px) */
-@media (max-width: 480px) {
-  .page-header {
-    padding: var(--spacing-md);
-    flex-direction: column;
-    gap: var(--spacing-sm);
-  }
-
-  .page-header__left,
-  .page-header__center,
-  .page-header__right {
-    width: 100%;
-    justify-content: center;
-  }
-
-  #current-date {
-    font-size: 0.8rem;
-  }
-
-  #current-time {
-    font-size: 1.2rem;
-  }
-
-  .app-container {
-    padding: var(--spacing-md);
-    gap: var(--spacing-md);
-  }
-
-  .kpi-grid {
-    grid-template-columns: 1fr;
-  }
-
-  .quick-actions {
-    flex-direction: column;
-  }
-
-  .quick-action-btn {
-    width: 100%;
-    justify-content: center;
-  }
-
-  .section-header {
-    flex-direction: column;
-    align-items: stretch;
-  }
-
-  .search-box {
-    max-width: 100%;
-  }
-
-  .filters-bar {
-    flex-direction: column;
-  }
-
-  .tab-navigation {
-    flex-wrap: wrap;
-  }
-
-  .tab-btn {
-    flex: 1 0 45%;
-    padding: var(--spacing-sm);
-    font-size: 0.8rem;
-  }
-
-  .charts-grid {
-    grid-template-columns: 1fr;
-  }
-
-  .chart-container {
-    padding: var(--spacing-sm);
-  }
-
-  .analytics-filters {
-    flex-direction: column;
-    align-items: stretch;
-  }
-
-  .filter-group {
-    flex-direction: column;
-    align-items: stretch;
-  }
-
-  .masters-grid {
-    grid-template-columns: 1fr;
-  }
-
-  .form-row {
-    flex-direction: column;
-    gap: var(--spacing-sm);
-  }
-
-  .modal-content {
-    margin: var(--spacing-sm);
-    max-height: calc(100vh - var(--spacing-sm) * 2);
-  }
-}
-
-/* Маленькие экраны (до 768px) */
-@media (max-width: 768px) {
-  .user-menu-dropdown {
-    right: 0;
-    left: 0;
-    width: auto;
-    margin: 0 var(--spacing-md);
-  }
-
-  .services-list {
-    max-height: 300px;
-  }
-}
-
-/* Средние экраны (до 1024px) */
-@media (max-width: 1024px) {
-  .charts-grid {
-    grid-template-columns: 1fr;
-  }
-}
-
-/* 19. ПЕЧАТЬ */
-@media print {
-  .page-header,
-  .quick-actions,
-  .tab-navigation,
-  .search-box,
-  .filters-bar,
-  .entry-actions,
-  .master-actions,
-  .modal,
-  .btn,
-  .icon-btn {
-    display: none !important;
-  }
-
-  .app-container {
-    padding: 0;
-    gap: 0;
-  }
-
-  .interface-container {
-    gap: 0;
-  }
-
-  .stat-card,
-  .entries-group,
-  .entry-card,
-  .chart-container {
-    box-shadow: none !important;
-    border: 1px solid #000 !important;
-  }
-
-  .stat-value,
-  .entry-car,
-  .entry-details p,
-  .entry-footer span {
-    color: #000 !important;
-  }
-
-  body {
-    background: #fff !important;
-    color: #000 !important;
-  }
-}
-
-/* 20. ДОСТУПНОСТЬ */
-@media (prefers-reduced-motion: reduce) {
-  * {
-    animation-duration: 0.01ms !important;
-    animation-iteration-count: 1 !important;
-    transition-duration: 0.01ms !important;
-  }
-}
-
-/* Фокус-видимость для клавиатуры */
-*:focus-visible {
-  outline: 2px solid var(--accent);
-  outline-offset: 2px;
-}
-
-/* Скрытие элементов только для скринридеров */
-.sr-only {
-  position: absolute;
-  width: 1px;
-  height: 1px;
-  padding: 0;
-  margin: -1px;
-  overflow: hidden;
-  clip: rect(0, 0, 0, 0);
-  white-space: nowrap;
-  border: 0;
-}
-
-/*────────────────────────────────────────────
-  assets/css/main.css | ЧАСТЬ 5: МОДАЛЬНЫЕ ОКНА И БОНУСЫ
-─────────────────────────────────────────────*/
-
-/* 21. МОДАЛЬНЫЕ ОКНА (с анимацией и мобильным fullscreen) */
-.modal {
-  position: fixed;
-  inset: 0;
-  background: rgba(0, 0, 0, 0.5);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: var(--spacing-md);
-  opacity: 0;
-  visibility: hidden;
-  transition: opacity var(--transition-normal), visibility var(--transition-normal);
-  z-index: 1000;
-  backdrop-filter: blur(4px);
-}
-
-.modal.visible {
-  opacity: 1;
-  visibility: visible;
-}
-
-.modal-content {
-  background: var(--panel-bg);
-  border-radius: var(--radius-lg);
-  width: 100%;
-  max-width: 600px;
-  max-height: 90vh;
-  overflow: hidden;
-  display: flex;
-  flex-direction: column;
-  box-shadow: var(--shadow-lg);
-  border: 1px solid var(--border);
-  transform: translateY(20px);
-  transition: transform var(--transition-normal);
-}
-
-.modal.visible .modal-content {
-  transform: translateY(0);
-}
-
-.modal-header {
-  padding: var(--spacing-lg);
-  border-bottom: 1px solid var(--border);
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.modal-header h3 {
-  margin: 0;
-  font-size: 1.25rem;
-  font-weight: 600;
-  color: var(--text);
-}
-
-.close-btn {
-  width: 32px;
-  height: 32px;
-  font-size: 1.5rem;
-  color: var(--text-muted);
-}
-
-.modal-body {
-  padding: var(--spacing-lg);
-  overflow-y: auto;
-  flex-grow: 1;
-}
-
-.modal-footer {
-  padding: var(--spacing-lg);
-  border-top: 1px solid var(--border);
-  display: flex;
-  justify-content: flex-end;
-  gap: var(--spacing-md);
-}
-
-/* Анимация появления */
-@keyframes modalSlideIn {
-  from {
-    opacity: 0;
-    transform: translateY(10px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-.modal-content {
-  animation: modalSlideIn var(--transition-normal) forwards;
-}
-
-/* ПОЛНОЭКРАННЫЙ РЕЖИМ НА МОБИЛЬНЫХ */
-@media (max-width: 768px) {
-  .modal {
-    padding: 0;
-  }
-
-  .modal-content {
-    max-width: 100%;
-    max-height: 100%;
-    height: 100%;
-    border-radius: 0;
-  }
-}
-
-/* 22. СИСТЕМА БОНУСОВ (в модалке) */
-.bonus-slider-container {
-  margin: var(--spacing-lg) 0;
-}
-
-.bonus-slider {
-  width: 100%;
-  height: 8px;
-  -webkit-appearance: none;
-  background: var(--input-bg);
-  border-radius: var(--radius-sm);
-  outline: none;
-}
-
-.bonus-slider::-webkit-slider-thumb {
-  -webkit-appearance: none;
-  width: 24px;
-  height: 24px;
-  border-radius: 50%;
-  background: var(--accent);
-  cursor: pointer;
-  border: 2px solid var(--panel-bg);
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
-}
-
-.bonus-slider::-moz-range-thumb {
-  width: 24px;
-  height: 24px;
-  border-radius: 50%;
-  background: var(--accent);
-  cursor: pointer;
-  border: 2px solid var(--panel-bg);
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
-}
-
-.bonus-info {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-top: var(--spacing-md);
-}
-
-.bonus-level {
-  font-size: 1.5rem;
-  font-weight: 700;
-  color: var(--accent);
-}
-
-.bonus-description {
-  font-size: 0.9rem;
-  color: var(--text-muted);
-  margin-top: var(--spacing-sm);
-}
-
-/* 23. АНИМАЦИИ */
-@keyframes fadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
-}
-
-@keyframes slideInUp {
-  from {
-    transform: translateY(20px);
-    opacity: 0;
-  }
-  to {
-    transform: translateY(0);
-    opacity: 1;
-  }
-}
-
-@keyframes pulse {
-  0% { transform: scale(1); }
-  50% { transform: scale(1.05); }
-  100% { transform: scale(1); }
-}
-
-.animate-fade-in {
-  animation: fadeIn var(--transition-normal) forwards;
-}
-
-.animate-slide-in {
-  animation: slideInUp var(--transition-normal) forwards;
-}
-
-.animate-pulse {
-  animation: pulse 2s infinite;
-}
-
+<!DOCTYPE html>
+<html lang="ru" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="theme-color" content="#001F3F" /> <!-- Начальный цвет для темной темы -->
+  <title>VIPавто — Облачный журнал</title>
+  
+  <!-- Стили -->
+  <link rel="stylesheet" href="assets/css/reset.css" />
+  <link rel="stylesheet" href="assets/css/main.css" />
+
+  <!-- Шрифты и иконки -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet"/>
+</head>
+<body>
+  <!-- Хедер -->
+  <header class="page-header">
+    <div class="page-header__left">
+      <div class="user-menu">
+        <button class="user-menu-trigger" id="user-menu-trigger" aria-haspopup="true" aria-expanded="false">
+          <i class="fas fa-user-circle"></i>
+          <span id="user-name">Загрузка...</span>
+          <span id="user-role" class="text-muted">Загрузка...</span>
+          <i class="fas fa-chevron-down menu-arrow"></i>
+        </button>
+        <div class="user-menu-dropdown hidden" id="user-menu-dropdown" role="menu">
+          <button class="menu-btn" id="logout-btn" role="menuitem">
+            <i class="fas fa-arrow-right-from-bracket"></i> Выйти
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <div class="page-header__center">
+      <span id="current-date">…</span>
+      <span id="current-time">–:–</span>
+    </div>
+
+    <div class="page-header__right">
+      <label class="theme-switch" title="Сменить тему">
+        <input type="checkbox" id="theme-toggle" />
+        <span class="slider">
+           <span class="slider-thumb">
+                <i class="fas fa-moon"></i>
+                <i class="fas fa-sun"></i>
+           </span>
+        </span>
+      </label>
+    </div>
+  </header>
+
+  <!-- Основной контент -->
+  <main class="app-container">
+    <!-- Интерфейс мастера -->
+    <section id="master-interface" class="interface-container hidden" aria-labelledby="master-view-title">
+      <h2 id="master-view-title" class="visually-hidden">Интерфейс мастера</h2>
+      
+      <div class="kpi-grid">
+        <div class="stat-card">
+          <div class="stat-header">
+            <i class="fas fa-sack-dollar"></i>
+            <h3>Сегодня</h3>
+          </div>
+          <div class="stat-value" id="master-today-earnings">0 ₽</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-header">
+            <i class="fas fa-calendar-days"></i>
+            <h3>Месяц</h3>
+          </div>
+          <div class="stat-value" id="master-month-earnings">0 ₽</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-header">
+            <i class="fas fa-list-check"></i>
+            <h3>Работы</h3>
+          </div>
+          <div class="stat-value" id="master-jobs-count">0</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-header">
+            <i class="fas fa-star"></i>
+            <h3>Бонус</h3>
+          </div>
+          <div class="stat-value">
+            <span id="master-bonus-level">0</span>
+            <div class="bonus-stars" id="master-bonus-stars">
+              <!-- Звезды будут заполняться скриптом -->
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="quick-actions">
+        <button class="quick-action-btn primary-btn" id="add-job-btn">
+          <i class="fas fa-plus"></i> Добавить работу
+        </button>
+        <button class="quick-action-btn secondary-btn" id="view-graph-btn">
+          <i class="fas fa-chart-line"></i> График активности
+        </button>
+      </div>
+
+      <div class="section-header">
+        <h3>История работ</h3>
+        <div class="search-box">
+          <i class="fas fa-search"></i>
+          <input type="text" id="jobs-search" placeholder="Поиск по авто или услугам...">
+        </div>
+      </div>
+
+      <div class="filters-bar">
+        <select id="jobs-period-filter">
+          <option value="all">Все время</option>
+          <option value="today">Сегодня</option>
+          <option value="week">Неделя</option>
+          <option value="month" selected>Месяц</option>
+        </select>
+        <select id="jobs-type-filter">
+          <option value="all">Все типы</option>
+          <option value="repair">Ремонт</option>
+          <option value="service">Обслуживание</option>
+          <option value="upgrade">Улучшения</option>
+        </select>
+      </div>
+
+      <div id="master-jobs-list" class="entries-list" role="list" aria-live="polite">
+        <!-- Карточки работ будут добавляться сюда -->
+        <div class="no-entries" role="status">
+            <i class="fas fa-folder-open"></i>
+            <p>Нет записей для отображения</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- Интерфейс администратора/директора -->
+    <section id="admin-interface" class="interface-container hidden" aria-labelledby="admin-view-title">
+      <h2 id="admin-view-title" class="visually-hidden">Интерфейс администратора</h2>
+      
+      <div class="tab-navigation" role="tablist">
+        <button class="tab-btn active" data-tab="overview-tab" role="tab" aria-selected="true" aria-controls="overview-tab">Обзор</button>
+        <button class="tab-btn" data-tab="masters-tab" role="tab" aria-selected="false" aria-controls="masters-tab">Мастера</button>
+        <button class="tab-btn" data-tab="analytics-tab" role="tab" aria-selected="false" aria-controls="analytics-tab">Аналитика</button>
+      </div>
+      <div class="tab-indicator"></div>
+
+      <!-- Вкладка обзора -->
+      <div id="overview-tab" class="tab-pane" role="tabpanel" aria-labelledby="tab-overview">
+        <div class="kpi-grid">
+          <div class="stat-card">
+            <div class="stat-header">
+              <i class="fas fa-sack-dollar"></i>
+              <h3>Выручка за месяц</h3>
+            </div>
+            <div class="stat-value" id="total-revenue">0 ₽</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-header">
+              <i class="fas fa-users"></i>
+              <h3>Активные мастера</h3>
+            </div>
+            <div class="stat-value" id="active-masters">0</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-header">
+              <i class="fas fa-list-check"></i>
+              <h3>Работы за месяц</h3>
+            </div>
+            <div class="stat-value" id="total-jobs">0</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-header">
+              <i class="fas fa-chart-line"></i>
+              <h3>Рост (месяц к месяцу)</h3>
+            </div>
+            <div class="stat-value text-success" id="revenue-growth">+0%</div>
+          </div>
+        </div>
+
+        <div class="charts-grid">
+          <div class="chart-container">
+            <h4>Выручка по дням</h4>
+            <canvas id="revenue-chart"></canvas>
+          </div>
+          <div class="chart-container">
+            <h4>Распределение по мастерам</h4>
+            <canvas id="distribution-chart"></canvas>
+          </div>
+        </div>
+      </div>
+
+      <!-- Вкладка мастеров -->
+      <div id="masters-tab" class="tab-pane hidden" role="tabpanel" aria-labelledby="tab-masters">
+        <div class="section-header">
+          <h3>Список мастеров</h3>
+          <div class="search-box">
+            <i class="fas fa-search"></i>
+            <input type="text" id="masters-search" placeholder="Поиск мастера...">
+          </div>
+        </div>
+        
+        <div class="view-toggle">
+          <button class="icon-btn active" id="view-cards" title="Карточки">
+            <i class="fas fa-table-cells"></i>
+          </button>
+          <button class="icon-btn" id="view-list" title="Список">
+            <i class="fas fa-list"></i>
+          </button>
+        </div>
+
+        <div id="masters-grid" class="masters-grid">
+          <!-- Карточки мастеров будут добавляться сюда -->
+        </div>
+      </div>
+
+      <!-- Вкладка аналитики -->
+      <div id="analytics-tab" class="tab-pane hidden" role="tabpanel" aria-labelledby="tab-analytics">
+        <div class="analytics-filters">
+          <div class="filter-group">
+            <label for="period-select">Период:</label>
+            <select id="period-select">
+              <option value="week">Неделя</option>
+              <option value="month" selected>Месяц</option>
+              <option value="quarter">Квартал</option>
+              <option value="year">Год</option>
+              <option value="custom">Свой период</option>
+            </select>
+          </div>
+          
+          <div id="custom-period" class="filter-group hidden">
+            <input type="date" id="date-from">
+            <span>—</span>
+            <input type="date" id="date-to">
+          </div>
+          
+          <button id="apply-filters" class="primary-btn">
+            <i class="fas fa-check"></i> Применить
+          </button>
+          
+          <button id="export-data" class="secondary-btn">
+            <i class="fas fa-download"></i> Экспорт
+          </button>
+        </div>
+
+        <div class="charts-grid">
+          <div class="chart-container">
+            <h4>ТОП услуг</h4>
+            <canvas id="services-chart"></canvas>
+          </div>
+          <div class="chart-container">
+            <h4>Динамика показателей</h4>
+            <canvas id="trends-chart"></canvas>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- Модальные окна -->
+  <!-- Модальное окно добавления/редактирования работы -->
+  <div id="add-job-modal" class="modal" role="dialog" aria-labelledby="add-job-modal-title" aria-hidden="true" data-backdrop="static">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 id="add-job-modal-title">Добавить новую работу</h3>
+        <button class="icon-btn close-btn" id="close-add-job-modal" aria-label="Закрыть">&times;</button>
+      </div>
+      <div class="modal-body">
+        <form id="add-job-form">
+          <div class="form-row">
+            <div class="form-group">
+              <label for="job-date"><i class="fas fa-calendar-day"></i> Дата</label>
+              <input type="date" id="job-date" required>
+            </div>
+            <div class="form-group">
+              <label for="job-car"><i class="fas fa-car"></i> Автомобиль</label>
+              <input type="text" id="job-car" placeholder="Марка, модель, гос. номер" required>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="job-client"><i class="fas fa-user"></i> Клиент</label>
+            <input type="text" id="job-client" placeholder="Имя клиента">
+          </div>
+
+          <div class="form-group">
+            <label for="job-services"><i class="fas fa-list"></i> Услуги</label>
+            <div id="selected-services" class="services-tags">
+              <!-- Выбранные услуги будут добавляться сюда -->
+              <span class="placeholder-text">Нажмите для выбора услуг</span>
+            </div>
+            <input type="hidden" id="job-services" required>
+          </div>
+          <button type="button" id="select-services-btn" class="secondary-btn full-width">
+            <i class="fas fa-plus"></i> Выбрать услуги
+          </button>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label for="job-work-cost"><i class="fas fa-wrench"></i> Стоимость работ (₽)</label>
+              <input type="number" id="job-work-cost" min="0" value="0" required>
+            </div>
+            <div class="form-group">
+              <label for="job-parts-cost"><i class="fas fa-cogs"></i> Стоимость деталей (₽)</label>
+              <input type="number" id="job-parts-cost" min="0" value="0">
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="job-notes"><i class="fas fa-note-sticky"></i> Примечания</label>
+            <textarea id="job-notes" rows="3" placeholder="Дополнительная информация"></textarea>
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button class="secondary-btn" id="cancel-job-btn">Отмена</button>
+        <button class="primary-btn" id="save-job-btn" form="add-job-form">Сохранить</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Модальное окно выбора услуг -->
+  <div id="services-modal" class="modal" role="dialog" aria-labelledby="services-modal-title" aria-hidden="true">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 id="services-modal-title">Выбор услуг</h3>
+        <button class="icon-btn close-btn" id="close-services-modal" aria-label="Закрыть">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div class="search-box">
+          <i class="fas fa-search"></i>
+          <input type="text" id="service-search" placeholder="Поиск услуг...">
+        </div>
+        
+        <div class="services-list" id="services-list">
+          <!-- Список услуг будет добавляться сюда -->
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="secondary-btn" id="cancel-services-btn">Отмена</button>
+        <button class="primary-btn" id="services-confirm" disabled>Выбрать</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Модальное окно управления бонусами -->
+  <div id="bonus-modal" class="modal" role="dialog" aria-labelledby="bonus-modal-title" aria-hidden="true">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 id="bonus-modal-title">Управление бонусом</h3>
+        <button class="icon-btn close-btn" id="close-bonus-modal" aria-label="Закрыть">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div class="form-group">
+          <label>Мастер: <span id="bonus-master-name"></span></label>
+          <p class="text-muted" id="bonus-master-stats"></p>
+        </div>
+
+        <div class="form-group">
+          <label for="bonus-slider">Уровень бонуса: <span id="bonus-amount">0</span>/10</label>
+          <input type="range" id="bonus-slider" min="0" max="10" value="0">
+          <div class="bonus-display">
+            <div class="bonus-stars" id="bonus-stars-display"></div>
+            <div class="bonus-value" id="bonus-value-display">0%</div>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label>История изменений</label>
+          <div class="chart-container small">
+            <canvas id="bonus-history-chart"></canvas>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="secondary-btn" id="cancel-bonus-btn">Закрыть</button>
+        <button class="primary-btn" id="save-bonus-btn">Сохранить</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Скрипты -->
+  <script type="module" src="assets/js/theme.js"></script>
+  <script type="module" src="assets/js/utils.js"></script>
+  <script type="module" src="assets/js/storage.js"></script>
+  <script type="module" src="assets/js/servicesCatalog.js"></script>
+  <script type="module" src="assets/js/charts.js"></script>
+  <script type="module" src="assets/js/app.js"></script>
+</body>
+</html>
