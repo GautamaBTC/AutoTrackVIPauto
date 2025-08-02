@@ -202,6 +202,7 @@ export function buildUrl(base, params) {
 }
 
 // --- Уведомления ---
+// ЭКСПОРТИРУЕМ ТОЛЬКО ЗДЕСЬ, ОДИН РАЗ
 export function showNotification(message, type = 'error') {
     // Удаляем предыдущие уведомления
     const existing = document.querySelector('.notification');
@@ -224,11 +225,12 @@ export function showNotification(message, type = 'error') {
     // Автоматическое скрытие
     setTimeout(() => {
         notification.classList.remove('show');
-        setTimeout(() => notification.remove(), 300);
+        setTimeout(() => notification.remove(), 3000);
     }, 3000);
 }
 
 // --- Экспорт всех утилит ---
+// ВНИМАНИЕ: showNotification УЖЕ ЭКСПОРТИРОВАНА ВЫШЕ, НЕ НУЖНО ЕЕ СНОВА ЭКСПОРТИРОВАТЬ ЗДЕСЬ
 export {
     formatDateInput,
     formatDateDisplay,
@@ -248,6 +250,6 @@ export {
     generateId,
     adjustColor,
     getQueryParams,
-    buildUrl,
-    showNotification
+    buildUrl
+    // showNotification НЕ ДОЛЖНА БЫТЬ ЗДЕСЬ
 };
