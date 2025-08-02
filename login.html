@@ -18,7 +18,7 @@
       <span id="current-time">–:–:–</span>
     </div>
     <div class="page-header__right">
-      <label class="theme-switch">
+      <label class="theme-switch" title="Сменить тему">
         <input type="checkbox" id="theme-toggle" />
         <span class="slider">
            <span class="slider-thumb">
@@ -39,7 +39,7 @@
         <label for="username">Логин</label>
         <div class="input-wrapper">
             <i class="fas fa-user input-icon"></i>
-            <input type="text" id="username" required />
+            <input type="text" id="username" placeholder="Введите логин" required />
         </div>
         <span class="error-message"></span>
       </div>
@@ -48,7 +48,7 @@
         <label for="password">Пароль</label>
         <div class="input-wrapper">
             <i class="fas fa-lock input-icon"></i>
-            <input type="password" id="password" required />
+            <input type="password" id="password" placeholder="Введите пароль" required />
             <i class="fas fa-eye toggle-password" id="toggle-password"></i>
         </div>
         <span class="error-message"></span>
@@ -73,6 +73,5 @@
   </main>
 
   <script type="module" src="assets/js/login.js"></script>
-  <script type="module" src="assets/js/theme.js"></script>
 </body>
 </html>
