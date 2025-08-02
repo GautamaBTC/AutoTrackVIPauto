@@ -2,7 +2,7 @@
   assets/js/storage.js | ЛОКАЛЬНОЕ ХРАНИЛИЩЕ С ДАННЫМИ
 ─────────────────────────────────────────────*/
 
-// Константы для ключей localStorage
+// --- Константы для ключей localStorage ---
 const STORAGE_KEYS = {
     ENTRIES: 'vipauto_entries',
     MASTERS: 'vipauto_masters',
@@ -11,7 +11,7 @@ const STORAGE_KEYS = {
     BACKUP: 'vipauto_last_backup'
 };
 
-// Вспомогательные функции для безопасной работы с localStorage
+// --- Вспомогательные функции для безопасной работы с localStorage ---
 function safeGetItem(key) {
     try {
         return JSON.parse(localStorage.getItem(key));
@@ -132,6 +132,8 @@ export function updateMasterData(masterName, entry, isDeletion = false) {
         if (masterData.bonusHistory.length > 50) {
             masterData.bonusHistory = masterData.bonusHistory.slice(-50);
         }
+        // Сохраняем историю бонусов отдельно для графика
+        safeSetItem(`vipauto_bonus_history_${masterName}`, masterData.bonusHistory);
     }
 
     masters[masterName] = masterData;
@@ -214,6 +216,9 @@ export function setBonusLevel(masterName, level, date = null) {
         masters[masterName].bonusHistory = masters[masterName].bonusHistory.slice(-50);
     }
 
+    // Сохраняем историю бонусов отдельно для графика
+    safeSetItem(`vipauto_bonus_history_${masterName}`, masters[masterName].bonusHistory);
+
     safeSetItem(STORAGE_KEYS.MASTERS, masters);
     return oldLevel !== level;
 }
@@ -253,5 +258,5 @@ export function restoreBackup(backupData) {
     return true;
 }
 
-// Инициализация хранилища при импорте модуля
+// --- Инициализация хранилища при импорте модуля ---
 console.log('Storage module initialized');
