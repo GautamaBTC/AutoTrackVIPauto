@@ -1,8 +1,8 @@
 /*────────────────────────────────────────────
-  assets/js/utils.js | УЛУЧШЕННАЯ ВЕРСИЯ
+  assets/js/utils.js | УТИЛИТЫ И ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ
 ─────────────────────────────────────────────*/
 
-// Форматирование дат
+// --- Форматирование дат ---
 export function formatDateInput(date) {
     const d = date instanceof Date ? date : new Date(date);
     return d.toISOString().slice(0, 10);
@@ -46,7 +46,7 @@ export function formatRelativeTime(date) {
     }
 }
 
-// Форматирование чисел
+// --- Форматирование чисел ---
 export function formatMoney(amount, currency = '₽') {
     return new Intl.NumberFormat('ru-RU', {
         style: 'decimal',
@@ -67,17 +67,17 @@ export function formatPercent(value) {
     return `${sign}${value.toFixed(1)}%`;
 }
 
-// Склонение числительных
+// --- Склонение числительных ---
 export function declension(number, titles) {
     const cases = [2, 0, 1, 1, 1, 2];
     return titles[
-        (number % 100 > 4 && number % 100 < 20) ?
-        2 :
+        (number % 100 > 4 && number % 100 < 20) ? 
+        2 : 
         cases[(number % 10 < 5) ? number % 10 : 5]
     ];
 }
 
-// Работа с DOM
+// --- Работа с DOM ---
 export function debounce(fn, ms = 300) {
     let timeout;
     return function(...args) {
@@ -113,7 +113,7 @@ export function throttle(fn, ms = 300) {
     return wrapper;
 }
 
-// Анимации
+// --- Анимации ---
 export function animate({
     timing = t => t,
     draw,
@@ -134,7 +134,7 @@ export function animate({
     });
 }
 
-// Работа с данными
+// --- Работа с данными ---
 export function deepClone(obj) {
     if (obj === null || typeof obj !== 'object') return obj;
     if (obj instanceof Date) return new Date(obj);
@@ -150,18 +150,18 @@ export function deepEqual(obj1, obj2) {
     if (obj1 === obj2) return true;
     if (typeof obj1 !== 'object' || typeof obj2 !== 'object') return false;
     if (obj1 === null || obj2 === null) return false;
-
+    
     const keys1 = Object.keys(obj1);
     const keys2 = Object.keys(obj2);
-
+    
     if (keys1.length !== keys2.length) return false;
-
-    return keys1.every(key =>
+    
+    return keys1.every(key => 
         keys2.includes(key) && deepEqual(obj1[key], obj2[key])
     );
 }
 
-// Валидация
+// --- Валидация ---
 export function validateEmail(email) {
     const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     return re.test(email);
@@ -172,19 +172,19 @@ export function validatePhone(phone) {
     return re.test(phone);
 }
 
-// Генерация ID
+// --- Генерация ID ---
 export function generateId() {
     return Date.now().toString(36) + Math.random().toString(36).substr(2);
 }
 
-// Работа с цветами
+// --- Работа с цветами ---
 export function adjustColor(color, amount) {
-    return '#' + color.replace(/^#/, '').replace(/../g, color =>
+    return '#' + color.replace(/^#/, '').replace(/../g, color => 
         ('0' + Math.min(255, Math.max(0, parseInt(color, 16) + amount))
         .toString(16)).substr(-2));
 }
 
-// Работа с URL
+// --- Работа с URL ---
 export function getQueryParams() {
     return Object.fromEntries(
         new URLSearchParams(window.location.search).entries()
@@ -201,7 +201,7 @@ export function buildUrl(base, params) {
     return url.toString();
 }
 
-// Функция для показа уведомлений
+// --- Уведомления ---
 export function showNotification(message, type = 'error') {
     // Удаляем предыдущие уведомления
     const existing = document.querySelector('.notification');
@@ -224,11 +224,11 @@ export function showNotification(message, type = 'error') {
     // Автоматическое скрытие
     setTimeout(() => {
         notification.classList.remove('show');
-        setTimeout(() => notification.remove(), 3000);
+        setTimeout(() => notification.remove(), 300);
     }, 3000);
 }
 
-// Экспорт всех утилит
+// --- Экспорт всех утилит ---
 export {
     formatDateInput,
     formatDateDisplay,
