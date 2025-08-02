@@ -1,79 +1,89 @@
 /*────────────────────────────────────────────
-  assets/js/servicesCatalog.js | УЛУЧШЕННАЯ ВЕРСИЯ С РАСШИРЕНИЕМ
+  assets/js/servicesCatalog.js | КАТАЛОГ УСЛУГ С ИЗБРАННЫМ
 ─────────────────────────────────────────────*/
 
-// Константы для хранилища
+// --- Импорты ---
+import { showNotification } from './utils.js';
+
+// --- Константы ---
 const STORAGE_KEYS = {
-    CUSTOM_SERVICES: 'vipauto_custom_services',
     FAVORITE_SERVICES: 'vipauto_favorite_services',
     RECENT_SERVICES: 'vipauto_recent_services',
-    SERVICE_TEMPLATES: 'vipauto_service_templates'
+    SERVICE_TEMPLATES: 'vipauto_service_templates',
+    CUSTOM_SERVICES: 'vipauto_custom_services'
 };
 
-// Кэш данных
-let _catalog = null;
-let _favorites = new Set();
-let _recent = [];
-let _templates = new Map();
-
-// Базовая структура каталога услуг с подкатегориями (метаданные)
+// Метаданные категорий (иконки, цвета)
 const DEFAULT_CATEGORIES = {
     "Автоэлектрика и Диагностика": {
         icon: "fa-bolt",
-        color: "#FFC107",
+        color: "#FF6B6B",
         subcategories: {
-            "Диагностика": { icon: "fa-search" },
-            "Ремонт электрики": { icon: "fa-tools" },
-            "Установка": { icon: "fa-plus" }
+            "Диагностика": { icon: "fa-microchip" },
+            "Электропроводка": { icon: "fa-plug" },
+            "Стартеры и генераторы": { icon: "fa-car-battery" },
+            "Системы зажигания": { icon: "fa-fire" },
+            "Электронные блоки": { icon: "fa-microchip" }
         }
     },
     "Автосвет": {
         icon: "fa-lightbulb",
-        color: "#FFEB3B",
+        color: "#FFD93D",
         subcategories: {
-            "Замена и регулировка": { icon: "fa-wrench" },
-            "Установка": { icon: "fa-plus" },
-            "Ремонт": { icon: "fa-tools" }
+            "Фары": { icon: "fa-car" },
+            "ПТФ": { icon: "fa-car-side" },
+            "ДХО": { icon: "fa-sun" },
+            "Подсветка": { icon: "fa-lightbulb" }
         }
     },
     "Охранные системы": {
         icon: "fa-shield-alt",
-        color: "#F44336",
+        color: "#6BCB77",
         subcategories: {
-            "Установка сигнализаций": { icon: "fa-plus" },
-            "Демонтаж и настройка": { icon: "fa-cog" },
-            "Дополнительные устройства": { icon: "fa-lock" }
+            "Сигнализации": { icon: "fa-bell" },
+            "Иммобилайзеры": { icon: "fa-lock" },
+            "GPS-трекеры": { icon: "fa-map-marker-alt" },
+            "Блокираторы": { icon: "fa-lock" }
         }
     },
     "Аудио- и Видеосистемы": {
         icon: "fa-music",
-        color: "#2196F3",
+        color: "#4D96FF",
         subcategories: {
-            "Установка аудио": { icon: "fa-volume-up" },
-            "Установка видео": { icon: "fa-video" },
-            "Настройка и шумоизоляция": { icon: "fa-cog" }
+            "Магнитолы": { icon: "fa-radio" },
+            "Акустика": { icon: "fa-volume-up" },
+            "Усилители": { icon: "fa-wave-square" },
+            "Видеорегистраторы": { icon: "fa-video" }
         }
     },
     "Комфорт и Доп. оборудование": {
-        icon: "fa-chair",
-        color: "#4CAF50",
+        icon: "fa-couch",
+        color: "#9A60FF",
         subcategories: {
-            "Установка датчиков": { icon: "fa-sensor" },
-            "Обогрев и комфорт": { icon: "fa-fire" },
-            "Дополнительные устройства": { icon: "fa-plus" }
+            "Парктроники": { icon: "fa-parking" },
+            "Климат": { icon: "fa-wind" },
+            "Обогрев": { icon: "fa-temperature-high" },
+            "Электроприводы": { icon: "fa-motorcycle" }
         }
     },
     "Тонировка": {
-        icon: "fa-film",
-        color: "#9C27B0",
+        icon: "fa-window-maximize",
+        color: "#FF7F50",
         subcategories: {
-            "Тонировка стекол": { icon: "fa-window" },
-            "Специальные виды": { icon: "fa-shield" }
+            "Стандартная": { icon: "fa-window-maximize" },
+            "Атермальная": { icon: "fa-sun" },
+            "Защита": { icon: "fa-shield-alt" }
         }
     }
-    // Добавьте больше категорий при необходимости
 };
 
+// --- Внутреннее состояние ---
+let _catalog = null; // Кэш загруженного каталога
+let _favorites = new Set(); // Set с путями избранных услуг
+let _recent = []; // Массив с недавними услугами (макс. 50)
+let _templates = new Map(); // Map с шаблонами услуг
+
+// --- Загрузка и инициализация ---
 /**
  * Загрузка каталога услуг (с поддержкой подкатегорий)
  */
@@ -98,8 +108,8 @@ export async function loadServicesCatalog() {
         return _catalog;
     } catch (error) {
         console.error('Ошибка инициализации каталога:', error);
-        showErrorNotification('Не удалось загрузить каталог услуг');
-        return {};
+        showNotification('Не удалось загрузить каталог услуг', 'error');
+        return {}; // Возвращаем пустой объект в случае ошибки
     }
 }
 
@@ -108,40 +118,108 @@ export async function loadServicesCatalog() {
  */
 function expandCatalog(baseCatalog) {
     const expanded = {};
-
-    for (const [category, services] of Object.entries(baseCatalog)) {
+    for (const [category, catData] of Object.entries(baseCatalog)) {
         expanded[category] = { subcategories: {} };
 
-        // Пример расширения: добавляем подкатегории и больше услуг
-        const subcats = Object.keys(DEFAULT_CATEGORIES[category]?.subcategories || {});
-        if (subcats.length > 0) {
-            subcats.forEach(subcat => {
-                expanded[category].subcategories[subcat] = [];
-                // Добавляем 5x услуг (вариации базовых + новые)
-                services.forEach(service => {
-                    expanded[category].subcategories[subcat].push(service);
-                    for (let i = 1; i < 5; i++) {
-                        expanded[category].subcategories[subcat].push(`${service} (вариант ${i})`);
-                        expanded[category].subcategories[subcat].push(`Расширенная ${service.toLowerCase()}`);
-                        expanded[category].subcategories[subcat].push(`Профессиональная ${service.toLowerCase()}`);
-                        expanded[category].subcategories[subcat].push(`Быстрая ${service.toLowerCase()}`);
-                        expanded[category].subcategories[subcat].push(`Комплексная ${service.toLowerCase()} + диагностика`);
-                    }
-                });
-            });
+        // Проверяем, есть ли уже подкатегории в данных
+        if (catData.subcategories) {
+            // Если есть, используем их
+            expanded[category].subcategories = catData.subcategories;
         } else {
-            // Если нет подкатегорий, просто расширяем список
-            expanded[category].services = services.flatMap(service => [
-                service,
-                `${service} (вариант 1)`,
-                `${service} (вариант 2)`,
-                `Расширенная ${service.toLowerCase()}`,
-                `Профессиональная ${service.toLowerCase()}`
-            ]);
+            // Если нет, создаем одну общую подкатегорию
+            const servicesArray = Array.isArray(catData) ? catData : catData.services || [];
+            expanded[category].subcategories['Общее'] = {
+                services: servicesArray.map(service => ({
+                    name: service,
+                    tags: generateTags(service), // Авто-теги
+                    addedAt: Date.now() // Для stats
+                })),
+                icon: DEFAULT_CATEGORIES[category]?.icon || "fa-tools"
+            };
+        }
+
+        // Расширяем каждую подкатегорию
+        for (const [subcat, subData] of Object.entries(expanded[category].subcategories)) {
+            const servicesArray = Array.isArray(subData) ? subData : subData.services || [];
+            const extendedServices = [];
+
+            // Добавляем 5x услуг (вариации базовых + новые)
+            servicesArray.forEach(serviceObj => {
+                const serviceName = typeof serviceObj === 'string' ? serviceObj : serviceObj.name;
+                extendedServices.push({
+                    name: serviceName,
+                    tags: generateTags(serviceName),
+                    addedAt: Date.now()
+                });
+
+                for (let i = 1; i < 5; i++) {
+                    extendedServices.push({
+                        name: `${serviceName} (вариант ${i})`,
+                        tags: [...generateTags(serviceName), `вариант-${i}`],
+                        addedAt: Date.now()
+                    });
+                    extendedServices.push({
+                        name: `Расширенная ${serviceName.toLowerCase()}`,
+                        tags: [...generateTags(serviceName), 'расширенная'],
+                        addedAt: Date.now()
+                    });
+                    extendedServices.push({
+                        name: `Профессиональная ${serviceName.toLowerCase()}`,
+                        tags: [...generateTags(serviceName), 'профессиональная'],
+                        addedAt: Date.now()
+                    });
+                    extendedServices.push({
+                        name: `Быстрая ${serviceName.toLowerCase()}`,
+                        tags: [...generateTags(serviceName), 'быстрая'],
+                        addedAt: Date.now()
+                    });
+                    extendedServices.push({
+                        name: `Комплексная ${serviceName.toLowerCase()} + диагностика`,
+                        tags: [...generateTags(serviceName), 'комплексная', 'диагностика'],
+                        addedAt: Date.now()
+                    });
+                }
+            });
+
+            expanded[category].subcategories[subcat].services = extendedServices;
         }
     }
-
     return expanded;
+}
+
+/**
+ * Обогащение каталога метаданными и тегами
+ */
+function enrichCatalogData() {
+    for (const [category, data] of Object.entries(_catalog)) {
+        const metadata = DEFAULT_CATEGORIES[category] || { icon: "fa-tools", color: "#757575", subcategories: {} };
+
+        // Добавляем метаданные категории
+        data.icon = metadata.icon;
+        data.color = metadata.color;
+
+        // Обогащаем подкатегории
+        for (const [subcat, subData] of Object.entries(data.subcategories || {})) {
+            const subMeta = metadata.subcategories?.[subcat] || { icon: metadata.icon };
+            data.subcategories[subcat] = {
+                services: subData.services.map(service => ({
+                    name: service.name,
+                    tags: service.tags || generateTags(service.name), // Авто-теги
+                    addedAt: service.addedAt || Date.now() // Для stats
+                })),
+                icon: subMeta.icon,
+                color: metadata.color
+            };
+        }
+    }
+}
+
+/**
+ * Генерация тегов для услуги
+ */
+function generateTags(service) {
+    const words = service.toLowerCase().split(/\s+/);
+    return words.filter(w => w.length > 3); // Простые теги из слов
 }
 
 /**
@@ -170,88 +248,81 @@ function loadUserData() {
     const customServices = JSON.parse(localStorage.getItem(STORAGE_KEYS.CUSTOM_SERVICES) || '{}');
     for (const [category, data] of Object.entries(customServices)) {
         if (!_catalog[category]) _catalog[category] = { subcategories: {} };
+
+        // Проверяем структуру данных
         if (data.subcategories) {
-            for (const [subcat, services] of Object.entries(data.subcategories)) {
-                if (!_catalog[category].subcategories[subcat]) _catalog[category].subcategories[subcat] = [];
-                services.forEach(service => {
-                    if (!_catalog[category].subcategories[subcat].includes(service)) {
-                        _catalog[category].subcategories[subcat].push(service);
+            // Если есть подкатегории, добавляем их
+            for (const [subcat, subData] of Object.entries(data.subcategories)) {
+                if (!_catalog[category].subcategories[subcat]) {
+                    _catalog[category].subcategories[subcat] = { services: [], icon: "fa-plus-circle" };
+                }
+                subData.services.forEach(service => {
+                    if (!_catalog[category].subcategories[subcat].services.some(s => s.name === service)) {
+                        _catalog[category].subcategories[subcat].services.push({
+                            name: service,
+                            tags: generateTags(service),
+                            addedAt: Date.now()
+                        });
                     }
                 });
             }
-        } else if (data.services) {
-            // Для backward compatibility
-            if (!_catalog[category].subcategories['Общее']) _catalog[category].subcategories['Общее'] = [];
-            data.services.forEach(service => _catalog[category].subcategories['Общее'].push(service));
+        } else {
+            // Если нет подкатегорий, добавляем в "Общее"
+            const servicesArray = Array.isArray(data) ? data : data.services || [];
+            if (!_catalog[category].subcategories['Общее']) {
+                _catalog[category].subcategories['Общее'] = { services: [], icon: "fa-plus-circle" };
+            }
+            servicesArray.forEach(service => {
+                if (!_catalog[category].subcategories['Общее'].services.some(s => s.name === service)) {
+                    _catalog[category].subcategories['Общее'].services.push({
+                        name: service,
+                        tags: generateTags(service),
+                        addedAt: Date.now()
+                    });
+                }
+            });
         }
     }
 }
 
-/**
- * Обогащение каталога метаданными и тегами
- */
-function enrichCatalogData() {
-    for (const [category, data] of Object.entries(_catalog)) {
-        const metadata = DEFAULT_CATEGORIES[category] || {
-            icon: "fa-tools",
-            color: "#757575",
-            subcategories: {}
-        };
-
-        // Добавляем метаданные категории
-        data.icon = metadata.icon;
-        data.color = metadata.color;
-
-        // Обогащаем подкатегории
-        for (const [subcat, services] of Object.entries(data.subcategories || {})) {
-            const subMeta = metadata.subcategories?.[subcat] || { icon: metadata.icon };
-            data.subcategories[subcat] = {
-                services: services.map(service => ({
-                    name: service,
-                    tags: generateTags(service), // Авто-теги
-                    addedAt: Date.now() // Для stats
-                })),
-                icon: subMeta.icon,
-                color: metadata.color
-            };
-        }
-    }
-}
-
-/**
- * Генерация тегов для услуги
- */
-function generateTags(service) {
-    const words = service.toLowerCase().split(/\s+/);
-    return words.filter(w => w.length > 3); // Простые теги из слов
-}
-
+// --- Поиск и фильтрация ---
 /**
  * Поиск услуг с fuzzy matching (Levenshtein) для большого каталога
  */
 export function searchServices(query) {
-    if (!query || !_catalog) return [];
+    if (!_catalog || !query) return [];
 
-    const results = [];
-    const searchTerm = query.toLowerCase();
-    const words = searchTerm.split(/\s+/);
+    const normalizedQuery = query.toLowerCase().trim();
+    if (!normalizedQuery) return [];
 
-    // Рекурсивный поиск по nested структуре
-    function searchInSubcats(category, subcat, service, data) {
-        const searchableText = service.name.toLowerCase();
-        
-        // Вычисляем релевантность с Levenshtein
+    const words = normalizedQuery.split(/\s+/).filter(w => w.length > 1);
+    if (words.length === 0) return [];
+
+    let results = [];
+
+    // Функция поиска внутри подкатегорий
+    function searchInSubcats(category, subcat, service, subData) {
+        const serviceName = service.name.toLowerCase();
         let relevance = 0;
-        const dist = levenshteinDistance(searchableText, searchTerm);
-        relevance += 100 - (dist * 10); // Чем меньше расстояние, тем выше
 
-        // Дополнительные баллы
-        if (allWordsMatch(words, searchableText)) relevance += 30;
+        // Точное совпадение по фразе
+        if (serviceName.includes(normalizedQuery)) {
+            relevance += 100;
+        }
+
+        // Совпадение по словам
         words.forEach(word => {
-            if (searchableText.includes(word)) relevance += 10;
+            if (serviceName.includes(word)) relevance += 20;
+            // Совпадение по тегам
+            if (service.tags && service.tags.some(tag => tag.includes(word))) relevance += 10;
         });
-        if (_favorites.has(service.name)) relevance += 25;
-        if (_recent.includes(service.name)) relevance += 15;
+
+        // Избранное
+        const servicePath = `${category}:${subcat}:${service.name}`;
+        if (_favorites.has(servicePath)) relevance += 50;
+
+        // Недавние
+        if (_recent.includes(servicePath)) relevance += 30;
 
         if (relevance > 0) {
             results.push({
@@ -259,10 +330,14 @@ export function searchServices(query) {
                 subcat,
                 service: service.name,
                 relevance,
-                isFavorite: _favorites.has(service.name),
-                isRecent: _recent.includes(service.name),
+                isFavorite: _favorites.has(servicePath),
+                isRecent: _recent.includes(servicePath),
                 tags: service.tags,
-                metadata: data
+                metadata: {
+                    categoryIcon: _catalog[category].icon,
+                    categoryColor: _catalog[category].color,
+                    subcatIcon: subData.icon
+                }
             });
         }
     }
@@ -275,40 +350,21 @@ export function searchServices(query) {
     }
 
     // Сортируем по релевантности
-    return results.sort((a, b) => b.relevance - a.relevance);
+    return results
+        .sort((a, b) => {
+            // Сначала избранные
+            if (a.isFavorite && !b.isFavorite) return -1;
+            if (!a.isFavorite && b.isFavorite) return 1;
+            // Потом недавние
+            if (a.isRecent && !b.isRecent) return -1;
+            if (!a.isRecent && b.isRecent) return 1;
+            // По релевантности
+            return b.relevance - a.relevance;
+        })
+        .slice(0, 100); // Ограничиваем количество результатов
 }
 
-/**
- * Levenshtein distance for fuzzy matching
- */
-function levenshteinDistance(s1, s2) {
-    const m = s1.length, n = s2.length;
-    const dp = Array.from({length: m+1}, () => Array(n+1).fill(0));
-
-    for (let i = 0; i <= m; i++) dp[i][0] = i;
-    for (let j = 0; j <= n; j++) dp[0][j] = j;
-
-    for (let i = 1; i <= m; i++) {
-        for (let j = 1; j <= n; j++) {
-            const cost = s1[i-1] === s2[j-1] ? 0 : 1;
-            dp[i][j] = Math.min(
-                dp[i-1][j] + 1,
-                dp[i][j-1] + 1,
-                dp[i-1][j-1] + cost
-            );
-        }
-    }
-    return dp[m][n];
-}
-
-function allWordsMatch(words, text) {
-    return words.every(word => text.includes(word));
-}
-
-/*────────────────────────────────────────────
-  assets/js/servicesCatalog.js | ЧАСТЬ 3: УПРАВЛЕНИЕ
-─────────────────────────────────────────────*/
-
+// --- Управление ---
 /**
  * Управление избранными услугами (с nested support)
  */
@@ -319,17 +375,12 @@ export function toggleFavorite(servicePath) {
             _favorites.delete(servicePath);
         } else {
             _favorites.add(servicePath);
+            // Добавляем в недавние при добавлении в избранное
             addToRecent(servicePath);
         }
-        
-        localStorage.setItem(
-            STORAGE_KEYS.FAVORITE_SERVICES, 
-            JSON.stringify([..._favorites])
-        );
-        
+        localStorage.setItem(STORAGE_KEYS.FAVORITE_SERVICES, JSON.stringify([..._favorites]));
         // Update stats
         getServicesStats();
-        
         return true;
     } catch (error) {
         console.error('Ошибка с избранным:', error);
@@ -344,7 +395,7 @@ export function getFavorites() {
             category,
             subcat,
             service,
-            metadata: _catalog[category]?.subcategories[subcat]
+            meta _catalog[category]?.subcategories[subcat]
         };
     });
 }
@@ -357,18 +408,11 @@ export function addToRecent(servicePath) {
         console.log(`Adding to recent: ${servicePath}`); // Debug
         // Удаляем дубликат
         _recent = _recent.filter(s => s !== servicePath);
-        
         // Добавляем в начало
         _recent.unshift(servicePath);
-        
         // Ограничиваем размер
         if (_recent.length > 50) _recent = _recent.slice(0, 50);
-        
-        localStorage.setItem(
-            STORAGE_KEYS.RECENT_SERVICES, 
-            JSON.stringify(_recent)
-        );
-        
+        localStorage.setItem(STORAGE_KEYS.RECENT_SERVICES, JSON.stringify(_recent));
         return true;
     } catch (error) {
         console.error('Ошибка с историей:', error);
@@ -383,7 +427,7 @@ export function getRecent() {
             category,
             subcat,
             service,
-            metadata: _catalog[category]?.subcategories[subcat],
+            meta _catalog[category]?.subcategories[subcat],
             isFavorite: _favorites.has(path)
         };
     });
@@ -396,17 +440,11 @@ export function saveTemplate(name, servicePaths) {
     try {
         console.log(`Saving template: ${name}`); // Debug
         if (!name || !servicePaths.length) return false;
-        
         _templates.set(name, {
             services: servicePaths,
             timestamp: Date.now()
         });
-        
-        localStorage.setItem(
-            STORAGE_KEYS.SERVICE_TEMPLATES,
-            JSON.stringify([..._templates])
-        );
-        
+        localStorage.setItem(STORAGE_KEYS.SERVICE_TEMPLATES, JSON.stringify([..._templates]));
         return true;
     } catch (error) {
         console.error('Ошибка сохранения шаблона:', error);
@@ -427,10 +465,7 @@ export function deleteTemplate(name) {
         console.log(`Deleting template: ${name}`); // Debug
         const result = _templates.delete(name);
         if (result) {
-            localStorage.setItem(
-                STORAGE_KEYS.SERVICE_TEMPLATES,
-                JSON.stringify([..._templates])
-            );
+            localStorage.setItem(STORAGE_KEYS.SERVICE_TEMPLATES, JSON.stringify([..._templates]));
         }
         return result;
     } catch (error) {
@@ -439,68 +474,25 @@ export function deleteTemplate(name) {
     }
 }
 
-/*────────────────────────────────────────────
-  assets/js/servicesCatalog.js | ЧАСТЬ 4: СТАТИСТИКА И ЭКСПОРТ
-─────────────────────────────────────────────*/
-
+// --- Статистика и экспорт ---
 /**
  * Статистика и аналитика услуг (с учётом подкатегорий)
  */
 export function getServicesStats() {
-    const stats = {
-        totalServices: 0,
-        byCategory: {},
-        bySubcategory: {},
-        popular: new Map(),
-        recentlyAdded: []
+    // TODO: Реализовать сбор статистики по услугам
+    // Например, сколько раз каждая услуга была выбрана
+    console.log('Services stats requested'); // Stub
+    return {
+        totalCategories: Object.keys(_catalog).length,
+        totalServices: Object.values(_catalog).reduce((acc, cat) =>
+            acc + Object.values(cat.subcategories).reduce((subAcc, sub) =>
+                subAcc + (sub.services?.length || 0), 0), 0),
+        favoriteCount: _favorites.size,
+        recentCount: _recent.length
     };
-
-    // Собираем статистику рекурсивно
-    for (const [category, catData] of Object.entries(_catalog)) {
-        stats.byCategory[category] = 0;
-        stats.bySubcategory[category] = {};
-
-        for (const [subcat, subData] of Object.entries(catData.subcategories)) {
-            const count = subData.services.length;
-            stats.byCategory[category] += count;
-            stats.bySubcategory[category][subcat] = count;
-            stats.totalServices += count;
-
-            // Недавно добавленные
-            subData.services.forEach(service => {
-                if (service.addedAt) {
-                    stats.recentlyAdded.push({
-                        service: service.name,
-                        category,
-                        subcat,
-                        addedAt: service.addedAt
-                    });
-                }
-            });
-        }
-    }
-
-    // Сортируем недавно добавленные
-    stats.recentlyAdded.sort((a, b) => b.addedAt - a.addedAt).slice(0, 20); // Top 20
-
-    // Популярные из истории (с частотой)
-    _recent.forEach(path => {
-        stats.popular.set(
-            path,
-            (stats.popular.get(path) || 0) + 1
-        );
-    });
-
-    // Сортируем popular по частоте
-    stats.popular = new Map([...stats.popular.entries()].sort((a, b) => b[1] - a[1]));
-
-    return stats;
 }
 
-/**
- * Вспомогательные функции
- */
-function findServiceCategory(serviceName) {
+function findServiceInCatalog(serviceName) {
     for (const [category, catData] of Object.entries(_catalog)) {
         for (const [subcat, subData] of Object.entries(catData.subcategories)) {
             if (subData.services.some(s => s.name === serviceName)) {
@@ -525,70 +517,37 @@ function showErrorNotification(message) {
  */
 export function exportCatalogData() {
     // Placeholder for cloud export (e.g., to Firebase)
-    // if (firebase) firebase.firestore().collection('catalog').doc('export').set(data);
-
-    return {
+    const data = {
         favorites: [..._favorites],
-        recent: _recent,
+        recent: [..._recent],
         templates: [..._templates],
-        customServices: getCustomServices(),
-        timestamp: Date.now()
+        customServices: JSON.parse(localStorage.getItem(STORAGE_KEYS.CUSTOM_SERVICES) || '{}')
     };
-}
-
-function getCustomServices() {
-    const customs = {};
-    for (const [category, catData] of Object.entries(_catalog)) {
-        customs[category] = { subcategories: {} };
-        for (const [subcat, subData] of Object.entries(catData.subcategories)) {
-            // Assume custom if addedAt exists or flag
-            customs[category].subcategories[subcat] = subData.services
-                .filter(s => s.addedAt) // Example: only user-added
-                .map(s => s.name);
-        }
-    }
-    return customs;
+    console.log('Export data (stub):', data);
+    // В реальном приложении здесь будет отправка на сервер
+    return data;
 }
 
 export function importCatalogData(data) {
     try {
-        // Placeholder for cloud import (e.g., from Firebase)
-        // if (firebase) { /* merge logic */ }
-
         if (data.favorites) {
             _favorites = new Set(data.favorites);
-            localStorage.setItem(
-                STORAGE_KEYS.FAVORITE_SERVICES,
-                JSON.stringify([..._favorites])
-            );
+            localStorage.setItem(STORAGE_KEYS.FAVORITE_SERVICES, JSON.stringify([..._favorites]));
         }
-
         if (data.recent) {
-            _recent = data.recent.slice(0, 50);
-            localStorage.setItem(
-                STORAGE_KEYS.RECENT_SERVICES,
-                JSON.stringify(_recent)
-            );
+            _recent = data.recent;
+            localStorage.setItem(STORAGE_KEYS.RECENT_SERVICES, JSON.stringify(_recent));
         }
-
         if (data.templates) {
             _templates = new Map(data.templates);
-            localStorage.setItem(
-                STORAGE_KEYS.SERVICE_TEMPLATES,
-                JSON.stringify([..._templates])
-            );
+            localStorage.setItem(STORAGE_KEYS.SERVICE_TEMPLATES, JSON.stringify([..._templates]));
         }
-
         if (data.customServices) {
-            localStorage.setItem(
-                STORAGE_KEYS.CUSTOM_SERVICES,
-                JSON.stringify(data.customServices)
-            );
+            localStorage.setItem(STORAGE_KEYS.CUSTOM_SERVICES, JSON.stringify(data.customServices));
             // Перезагружаем каталог
             _catalog = null; // Reset cache
             return loadServicesCatalog();
         }
-
         return true;
     } catch (error) {
         console.error('Ошибка импорта:', error);
@@ -613,3 +572,4 @@ export {
     importCatalogData
 };
 
+// Добавьте больше категорий при необходимости
