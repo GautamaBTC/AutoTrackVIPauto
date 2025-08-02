@@ -80,7 +80,7 @@ class Notification {
         // Автоматическое скрытие
         setTimeout(() => {
             notification.classList.remove('show');
-            setTimeout(() => notification.remove(), 3000);
+            setTimeout(() => notification.remove(), 300);
         }, 3000);
     }
 }
@@ -219,7 +219,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
 
                 Notification.show('Успешный вход!', 'success');
-                
+
                 // Редирект с небольшой задержкой
                 setTimeout(() => {
                     window.location.href = 'index.html';
@@ -243,7 +243,7 @@ document.addEventListener('DOMContentLoaded', () => {
             if (userInput) userInput.value = login;
             if (rememberMe) rememberMe.checked = true;
         } catch (e) {
-            console.error('Error parsing saved user data:', e);
+            console.error('Error parsing saved user ', e);
         }
     }
 });
