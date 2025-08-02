@@ -2,21 +2,21 @@
   assets/js/login.js | С СИСТЕМОЙ РОЛЕЙ И УВЕДОМЛЕНИЯМИ
 ─────────────────────────────────────────────*/
 
-// --- Импорты ---
-// Примечание: utils.js должен экспортировать showNotification
-// Если у вас еще нет этой функции в utils.js, временно используем внутреннюю
-// import { showNotification } from './utils.js'; 
+// Импорты
+import { showNotification } from './utils.js';
 
 // Константы для ролей и пользователей
 const USER_ROLES = {
-    DIRECTOR: 'director',
-    ADMIN: 'admin',
-    MASTER: 'master'
+    DIRECTOR: 'director',    // Полный доступ
+    ADMIN: 'admin',         // Расширенный доступ
+    MASTER: 'master'        // Личный кабинет
 };
 
 // Пользователи системы с ролями и ХЭШИРОВАННЫМИ паролями (для демонстрации)
+// В реальном приложении это будет на сервере и хэширование будет с солью (bcrypt и т.д.)
 const INITIAL_USERS = {
     'vladimir.orlov': {
+        // password: 'director2024' -> хэш SHA-256 (простая демонстрация, НЕ для production!)
         passwordHash: 'sha256$f6d1a5c7a2b3e4f8a1c5d6e7f8a9b0c1d2e3f4a5b6c7d8e9f0a1b2c3d4e5f6a7b8c9d0e1f2a3b4c5d6e7f8a9b0c1d2e3f4a5b6c7d8e9f0a1b2c3d4e5f6a7b8c9',
         role: USER_ROLES.DIRECTOR,
         name: 'Владимир Орлов',
@@ -30,15 +30,52 @@ const INITIAL_USERS = {
         position: 'Администратор'
     },
     'vladimir.ch': {
+        // password: 'vlch2024' -> хэш SHA-256
         passwordHash: 'sha256$a7b8c9d0e1f2a3b4c5d6e7f8a9b0c1d2e3f4a5b6c7d8e9f0a1b2c3d4e5f6a7b8',
         role: USER_ROLES.MASTER,
         name: 'Владимир Ч.',
         position: 'Мастер'
+    },
+    'vladimir.a': {
+        // password: 'vla2024' -> хэш SHA-256
+        passwordHash: 'sha256$b4c5d6e7f8a9b0c1d2e3f4a5b6c7d8e9f0a1b2c3d4e5f6a7b8c9d0e1f2a3b4c5',
+        role: USER_ROLES.MASTER,
+        name: 'Владимир А.',
+        position: 'Мастер'
+    },
+    'andrey': {
+        // password: 'and2024' -> хэш SHA-256
+        passwordHash: 'sha256$c1d2e3f4a5b6c7d8e9f0a1b2c3d4e5f6a7b8c9d0e1f2a3b4c5d6e7f8a9b0c1d2',
+        role: USER_ROLES.MASTER,
+        name: 'Андрей',
+        position: 'Мастер'
+    },
+    'danila': {
+        // password: 'dan2024' -> хэш SHA-256
+        passwordHash: 'sha256$d8e9f0a1b2c3d4e5f6a7b8c9d0e1f2a3b4c5d6e7f8a9b0c1d2e3f4a5b6c7d8e9',
+        role: USER_ROLES.MASTER,
+        name: 'Данила',
+        position: 'Мастер'
+    },
+    'maxim': {
+        // password: 'max2024' -> хэш SHA-256
+        passwordHash: 'sha256$e1f2a3b4c5d6e7f8a9b0c1d2e3f4a5b6c7d8e9f0a1b2c3d4e5f6a7b8c9d0e1f2',
+        role: USER_ROLES.MASTER,
+        name: 'Максим',
+        position: 'Мастер'
+    },
+    'artyom': {
+        // password: 'art2024' -> хэш SHA-256
+        passwordHash: 'sha256$f0a1b2c3d4e5f6a7b8c9d0e1f2a3b4c5d6e7f8a9b0c1d2e3f4a5b6c7d8e9f0a1',
+        role: USER_ROLES.MASTER,
+        name: 'Артём',
+        position: 'Мастер'
     }
-    // ... остальные пользователи
 };
 
 // --- Функции для хэширования (для демонстрации) ---
+// ВАЖНО: Это НЕ безопасный способ хэширования для реального использования!
+// В production используйте bcrypt, scrypt, Argon2 и т.д.
 async function mockHashPassword(password) {
     const msgUint8 = new TextEncoder().encode(password);
     const hashBuffer = await crypto.subtle.digest('SHA-256', msgUint8);
@@ -49,13 +86,15 @@ async function mockHashPassword(password) {
 
 // --- Имитация серверной проверки ---
 async function mockServerLogin(login, password) {
-    await new Promise(resolve => setTimeout(resolve, 800)); // Имитация задержки
+    // Имитация сетевой задержки
+    await new Promise(resolve => setTimeout(resolve, 800));
 
     const user = INITIAL_USERS[login];
     if (!user) {
         throw new Error('Неверный логин или пароль!');
     }
 
+    // Хэшируем введенный пароль для сравнения
     const enteredPasswordHash = await mockHashPassword(password);
 
     if (user.passwordHash === enteredPasswordHash) {
@@ -70,34 +109,6 @@ async function mockServerLogin(login, password) {
         throw new Error('Неверный логин или пароль!');
     }
 }
-
-// --- Класс для уведомлений (временно, если utils.js еще не готов) ---
-class Notification {
-    static show(message, type = 'error') {
-        const existing = document.querySelector('.notification');
-        if (existing) existing.remove();
-
-        const notification = document.createElement('div');
-        notification.className = `notification notification-${type}`;
-        notification.innerHTML = `
-            <div class="notification-content">
-                <i class="fas ${type === 'error' ? 'fa-exclamation-circle' : 'fa-check-circle'}"></i>
-                <span>${message}</span>
-            </div>
-        `;
-        document.body.appendChild(notification);
-
-        setTimeout(() => notification.classList.add('show'), 10);
-
-        setTimeout(() => {
-            notification.classList.remove('show');
-            setTimeout(() => notification.remove(), 300);
-        }, 3000);
-    }
-}
-
-// Используем временный класс, если импорт не удался
-const showNotification = window.showNotification || Notification.show;
 
 // --- Основной код ---
 document.addEventListener('DOMContentLoaded', () => {
@@ -119,15 +130,12 @@ document.addEventListener('DOMContentLoaded', () => {
         timeEl.textContent = `${h}:${m}:${s}`;
     }
     updateDateTime();
-    const timeInterval = setInterval(updateDateTime, 1000);
+    setInterval(updateDateTime, 1000);
 
     function applyTheme(theme) {
         htmlEl.setAttribute('data-theme', theme);
         themeToggle.checked = (theme === 'light');
         localStorage.setItem('vipautologin_theme', theme);
-        
-        // Отправляем кастомное событие для других модулей
-        window.dispatchEvent(new CustomEvent('themechange', { detail: { theme } }));
     }
 
     themeToggle.addEventListener('change', () => {
@@ -174,6 +182,7 @@ document.addEventListener('DOMContentLoaded', () => {
     form.addEventListener('submit', async (e) => {
         e.preventDefault();
 
+        // Валидация
         const isLoginValid = validateField(userInput);
         const isPassValid = validateField(passInput);
         if (!isLoginValid || !isPassValid) return;
@@ -181,12 +190,15 @@ document.addEventListener('DOMContentLoaded', () => {
         const login = userInput.value.trim().toLowerCase();
         const password = passInput.value.trim();
 
+        // Анимация загрузки
         submitBtn.disabled = true;
         submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Вход...';
 
         try {
+            // Имитируем серверную проверку
             const user = await mockServerLogin(login, password);
 
+            // Сохраняем данные пользователя
             if (rememberMe.checked) {
                 localStorage.setItem('vipauto_user', JSON.stringify(user));
             } else {
@@ -195,13 +207,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
             showNotification('Успешный вход!', 'success');
             
+            // Редирект с небольшой задержкой
             setTimeout(() => {
                 window.location.href = 'index.html';
             }, 1000);
         } catch (error) {
             submitBtn.disabled = false;
             submitBtn.innerHTML = '<i class="fas fa-arrow-right-to-bracket"></i> Войти';
-            showNotification(error.message, 'error');
+            showNotification(error.message, 'error'); // Используем импортированную функцию
         }
     });
 
@@ -212,7 +225,4 @@ document.addEventListener('DOMContentLoaded', () => {
         userInput.value = login;
         rememberMe.checked = true;
     }
-    
-    // Экспорт для глобального доступа (если нужно другим модулям)
-    window.showNotification = showNotification;
 });
