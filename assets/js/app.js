@@ -1,16 +1,18 @@
 /*────────────────────────────────────────────
-  assets/js/app.js | ПОЛНЫЙ ОБНОВЛЁННЫЙ ФАЙЛ
+  assets/js/app.js | ГЛАВНЫЙ МОДУЛЬ ПРИЛОЖЕНИЯ
 ─────────────────────────────────────────────*/
 
-import { initHeader } from './theme.js';
+// --- Импорты ---
+import { initHeader, getCurrentTheme } from './theme.js';
 import { loadServicesCatalog, searchServices, toggleFavorite, getFavorites, addToRecent, getRecent } from './servicesCatalog.js';
 import { getAllEntries, saveEntry, deleteEntry, getMasterData, getAllMastersData, getMasterBonusHistory, setBonusLevel, getBonusLevel } from './storage.js';
 import { formatDateInput, formatDateDisplay, formatMoney, debounce, showNotification as utilsShowNotification, animate } from './utils.js';
 import { initCharts, updateCharts } from './charts.js';
 
-// Константы
+// --- Константы ---
 const USER_ROLES = {
     DIRECTOR: 'director',
+    ADMIN: 'admin',
     MASTER: 'master'
 };
 
@@ -23,23 +25,17 @@ const BONUS_LEVELS = {
     5: { name: 'Алмаз', color: '#B9F2FF', min: 5 }
 };
 
-// Критерии для автоматического расчета бонуса
-const BONUS_CRITERIA = {
-    jobs: { min: 50, bonus: 2 },
-    revenue: { min: 100000, bonus: 3 },
-    servicesVariety: { min: 20, bonus: 1 } // From stats
-};
-
-// Состояние
+// --- Состояние ---
 let currentUser = null;
-let currentView = 'journal'; // Для мастеров это 'journal', для директора 'overview' по умолчанию
+let currentView = 'journal'; // Для мастеров это 'journal', для админов/директоров 'overview' по умолчанию
 let selectedServices = [];
 let activeModals = new Set();
 
-// Инициализация
+// --- Инициализация ---
 document.addEventListener('DOMContentLoaded', async () => {
-    console.log('App init started'); // Debug
-
+    console.log('App init started');
+    
+    // Проверяем авторизацию
     const userData = localStorage.getItem('vipauto_user') || sessionStorage.getItem('vipauto_user');
     if (!userData) {
         window.location.href = 'login.html';
@@ -51,40 +47,48 @@ document.addEventListener('DOMContentLoaded', async () => {
         await initializeApp();
     } catch (error) {
         console.error('Init error:', error);
-        showNotification('Ошибка загрузки', 'error');
+        showNotification('Ошибка загрузки приложения', 'error');
     }
 });
 
 async function initializeApp() {
-    console.log('Initializing components'); // Debug
-
+    console.log('Initializing app components');
+    
+    // Инициализируем хедер (тема, время, меню пользователя)
     initHeader();
+    
+    // Инициализируем пользовательский интерфейс
     initUserInterface();
-
+    
+    // Загружаем каталог услуг
     await loadServicesCatalog();
+    
+    // Инициализируем графики
     initCharts();
-
+    
+    // Настраиваем интерфейс в зависимости от роли
     setupRoleBasedUI();
-
+    
     // Устанавливаем начальный вид в зависимости от роли
     const initialView = currentUser.role === USER_ROLES.MASTER ? 'journal' : 'overview';
     showView(initialView);
-
+    
+    // Настраиваем обработчики событий
     setupEventListeners();
-    console.log('App initialized'); // Debug
+    
+    console.log('App initialized successfully');
 }
 
+// --- Инициализация пользовательского интерфейса ---
 function initUserInterface() {
-    console.log('Init user interface'); // Debug
-
+    console.log('Initializing user interface');
+    
     // Заполняем информацию о пользователе в хедере
     const userNameEl = document.getElementById('user-name');
     const userRoleEl = document.getElementById('user-role');
-    const userPositionEl = document.getElementById('user-position');
-
+    
     if (userNameEl) userNameEl.textContent = currentUser.name;
     if (userRoleEl) userRoleEl.textContent = getRoleDisplay(currentUser.role);
-    if (userPositionEl) userPositionEl.textContent = currentUser.position;
 
     // Инициализация меню пользователя
     initUserMenu();
@@ -94,8 +98,8 @@ function initUserInterface() {
 }
 
 function initUserMenu() {
-    const menuBtn = document.getElementById('user-menu-btn');
-    const menuDropdown = document.querySelector('.user-menu-dropdown');
+    const menuBtn = document.getElementById('user-menu-trigger');
+    const menuDropdown = document.getElementById('user-menu-dropdown');
     const logoutBtn = document.getElementById('logout-btn');
 
     if (menuBtn && menuDropdown) {
@@ -125,19 +129,16 @@ function initUserMenu() {
 }
 
 function initQuickActions() {
-    // Обработчики для быстрых действий, если они есть в интерфейсе
-    const quickAddJobBtn = document.getElementById('add-job-btn') || document.getElementById('quick-add-job');
+    const quickAddJobBtn = document.getElementById('add-job-btn');
     if (quickAddJobBtn) {
         quickAddJobBtn.addEventListener('click', () => openModal('add-job-modal'));
     }
 }
 
-/**
- * Настраивает UI в зависимости от роли пользователя
- */
+// --- Настройка интерфейса в зависимости от роли ---
 function setupRoleBasedUI() {
-    console.log('Setting up role-based UI for:', currentUser); // Debug
-
+    console.log('Setting up role-based UI for:', currentUser);
+    
     if (!currentUser) {
         console.warn('No current user, redirecting to login');
         window.location.href = 'login.html';
@@ -145,30 +146,31 @@ function setupRoleBasedUI() {
     }
 
     const isDirector = currentUser.role === USER_ROLES.DIRECTOR;
+    const isAdmin = currentUser.role === USER_ROLES.ADMIN;
     const isMaster = currentUser.role === USER_ROLES.MASTER;
-
-    console.log('User roles:', { isDirector, isMaster }); // Debug
+    
+    console.log('User roles:', { isDirector, isAdmin, isMaster });
 
     // Показываем соответствующий интерфейс
     const masterInterface = document.getElementById('master-interface');
     const adminInterface = document.getElementById('admin-interface');
-
+    
     if (masterInterface && adminInterface) {
         if (isMaster) {
-            console.log('Showing master interface'); // Debug
+            console.log('Showing master interface');
             masterInterface.classList.remove('hidden');
             adminInterface.classList.add('hidden');
             // Инициализируем интерфейс мастера
             initMasterInterface();
-        } else if (isDirector) {
-            console.log('Showing admin interface'); // Debug
+        } else if (isDirector || isAdmin) {
+            console.log('Showing admin interface');
             adminInterface.classList.remove('hidden');
             masterInterface.classList.add('hidden');
             // Инициализируем интерфейс администратора
             initAdminInterface();
         } else {
             // Если роль не определена, показываем мастерский интерфейс по умолчанию
-            console.log('Showing default master interface'); // Debug
+            console.log('Showing default master interface');
             masterInterface.classList.remove('hidden');
             adminInterface.classList.add('hidden');
             initMasterInterface();
@@ -176,39 +178,33 @@ function setupRoleBasedUI() {
     } else {
         console.error('Interface containers not found');
     }
-
-    // Обновляем информацию о пользователе в хедере (уже сделано в initUserInterface)
 }
 
 function getRoleDisplay(role) {
     const roles = {
         [USER_ROLES.DIRECTOR]: 'Директор',
+        [USER_ROLES.ADMIN]: 'Администратор',
         [USER_ROLES.MASTER]: 'Мастер'
     };
     return roles[role] || 'Пользователь';
 }
 
-// Инициализация интерфейса мастера
+// --- Инициализация интерфейсов ---
 function initMasterInterface() {
     console.log('Initializing master interface');
-    // Здесь будет код инициализации интерфейса мастера
-    loadAndDisplayEntries(); // Загружаем записи для текущего мастера
-    updateMasterKPI(); // Обновляем KPI
+    loadAndDisplayEntries();
+    updateMasterKPI();
 }
 
-// Инициализация интерфейса администратора
 function initAdminInterface() {
     console.log('Initializing admin interface');
-    // Здесь будет код инициализации интерфейса администратора
-    showView('overview'); // Показываем вкладку "Обзор" по умолчанию
-    updateAdminKPI(); // Обновляем KPI
+    showView('overview');
+    updateAdminKPI();
 }
 
-/**
- * Показывает определенный вид/вкладку
- */
+// --- Навигация по вкладкам ---
 function showView(viewName) {
-    console.log(`Switching to view: ${viewName}`); // Debug
+    console.log(`Switching to view: ${viewName}`);
     currentView = viewName;
 
     // Скрываем все вкладки админ-панели
@@ -227,7 +223,7 @@ function showView(viewName) {
         btn.classList.remove('active');
         btn.setAttribute('aria-selected', 'false');
     });
-
+    
     const activeBtn = document.querySelector(`.tab-btn[data-tab="${viewName}-tab"]`);
     if (activeBtn) {
         activeBtn.classList.add('active');
@@ -251,25 +247,23 @@ function showView(viewName) {
     }
 }
 
-// --- Функции обновления вкладок админ-панели ---
+// --- Обновление вкладок админ-панели ---
 async function updateOverviewTab() {
     console.log('Updating overview tab');
-    // Здесь будет логика обновления данных на вкладке "Обзор"
-    // Например, загрузка общей статистики и обновление графиков
     try {
         const allEntries = await getAllEntries();
         const allMastersData = getAllMastersData();
+        
         // Обновляем KPI
         document.getElementById('total-revenue').textContent = formatMoney(
-            allEntries.reduce((sum, e) => sum + (parseFloat(e.workCost) || 0) + (parseFloat(e.partsCost) || 0), 0)
+            allEntries.reduce((sum, e) => sum + (e.workCost || 0) + (e.partsCost || 0), 0)
         );
         document.getElementById('total-jobs').textContent = allEntries.length;
         document.getElementById('active-masters').textContent = Object.keys(allMastersData).length;
-        // TODO: Рассчитать рост
         document.getElementById('revenue-growth').textContent = '+0%';
-
+        
         // Обновляем графики
-        updateCharts('month'); // Заглушка для периода
+        updateCharts('month');
     } catch (error) {
         console.error('Error updating overview:', error);
         showNotification('Ошибка при обновлении данных обзора', 'error');
@@ -278,14 +272,12 @@ async function updateOverviewTab() {
 
 async function updateMastersTab() {
     console.log('Updating masters tab');
-    // Здесь будет логика обновления данных на вкладке "Мастера"
-    // Например, загрузка списка мастеров и их статистики
     try {
         const mastersData = getAllMastersData();
         const mastersGrid = document.getElementById('masters-grid');
         if (!mastersGrid) return;
 
-        mastersGrid.innerHTML = ''; // Очищаем
+        mastersGrid.innerHTML = '';
 
         Object.values(mastersData).forEach(master => {
             const masterCard = document.createElement('div');
@@ -302,20 +294,20 @@ async function updateMastersTab() {
                 </div>
                 <div class="master-stats">
                     <div class="stat-item">
-                        <div class="stat-value">${formatMoney(master.totalRevenue)}</div>
+                        <div class="stat-value">${formatMoney(master.totalRevenue || 0)}</div>
                         <div class="stat-label">Выручка</div>
                     </div>
                     <div class="stat-item">
-                        <div class="stat-value">${master.totalJobs}</div>
+                        <div class="stat-value">${master.totalJobs || 0}</div>
                         <div class="stat-label">Работы</div>
                     </div>
                     <div class="stat-item">
-                        <div class="stat-value">${master.currentBonusLevel}</div>
+                        <div class="stat-value">${master.currentBonusLevel || 0}</div>
                         <div class="stat-label">Бонус</div>
                     </div>
                 </div>
                 <div class="master-actions">
-                    <button class="icon-btn" onclick="openBonusModal('${master.name}')">
+                    <button class="icon-btn" onclick="window.openBonusModal('${master.name}')">
                         <i class="fas fa-star"></i>
                     </button>
                     <button class="icon-btn">
@@ -333,37 +325,34 @@ async function updateMastersTab() {
 
 async function updateAnalyticsTab() {
     console.log('Updating analytics tab');
-    // Здесь будет логика обновления данных на вкладке "Аналитика"
-    // Например, загрузка и отображение графиков
-    updateCharts('month'); // Заглушка для периода
+    updateCharts('month');
 }
 
-// --- Функции работы с журналом мастера ---
+// --- Работа с журналом мастера ---
 async function loadAndDisplayEntries(filter = {}) {
     console.log('Loading entries for master:', currentUser.name);
     try {
         let allEntries = await getAllEntries();
-
+        
         // Фильтруем записи только для текущего мастера
         const masterEntries = allEntries.filter(entry => entry.master === currentUser.name);
-
-        // Применяем дополнительные фильтры, если они есть
+        
+        // Применяем дополнительные фильтры
         let filteredEntries = masterEntries;
         if (filter.period) {
             filteredEntries = filterEntriesByPeriod(filteredEntries, filter.period);
         }
         if (filter.search) {
-            // Простая текстовая фильтрация
             const searchTerm = filter.search.toLowerCase();
-            filteredEntries = filteredEntries.filter(entry =>
+            filteredEntries = filteredEntries.filter(entry => 
                 entry.car.toLowerCase().includes(searchTerm) ||
                 (entry.client && entry.client.toLowerCase().includes(searchTerm)) ||
                 entry.services.some(service => service.toLowerCase().includes(searchTerm))
             );
         }
-
+        
         renderGroupedEntries(filteredEntries);
-        updateMasterKPI(); // Обновляем KPI после загрузки записей
+        updateMasterKPI();
     } catch (error) {
         console.error('Error loading entries:', error);
         showNotification('Ошибка загрузки записей', 'error');
@@ -403,11 +392,11 @@ function renderGroupedEntries(entries) {
         html += `<div class="entries-group">
                     <h4 class="entries-date">${formatDateDisplay(date)}</h4>
                     <div class="entries-cards">`;
-
+        
         grouped[date].forEach(entry => {
             html += createEntryCard(entry);
         });
-
+        
         html += `</div></div>`;
     });
 
@@ -431,7 +420,7 @@ function createEntryCard(entry) {
             <div class="entry-details">
                 <p><i class="fas fa-user"></i> ${entry.client || 'Клиент не указан'}</p>
                 <p><i class="fas fa-list"></i> ${entry.services.join(', ')}</p>
-                <p class="entry-cost"><i class="fas fa-sack-dollar"></i> ${formatMoney((parseFloat(entry.workCost) || 0) + (parseFloat(entry.partsCost) || 0))}</p>
+                <p class="entry-cost"><i class="fas fa-sack-dollar"></i> ${formatMoney((entry.workCost || 0) + (entry.partsCost || 0))}</p>
             </div>
             <div class="entry-footer">
                 <span class="entry-master"><i class="fas fa-user-tag"></i> ${entry.master}</span>
@@ -442,15 +431,12 @@ function createEntryCard(entry) {
 }
 
 function updateMasterKPI() {
-    // Заглушка для обновления KPI мастера
-    // В реальной реализации здесь будет логика расчета статистики
     if (currentUser.role !== USER_ROLES.MASTER) return;
 
     const masterData = getMasterData(currentUser.name);
     document.getElementById('master-today-earnings').textContent = formatMoney(0); // TODO: Реализовать
-    document.getElementById('master-month-earnings').textContent = formatMoney(masterData.totalRevenue);
-    document.getElementById('master-jobs-count').textContent = masterData.totalJobs;
-    // Бонусы обновляются отдельно
+    document.getElementById('master-month-earnings').textContent = formatMoney(masterData.totalRevenue || 0);
+    document.getElementById('master-jobs-count').textContent = masterData.totalJobs || 0;
     updateMasterBonus();
 }
 
@@ -461,7 +447,6 @@ async function updateMasterBonus() {
     const bonusLevel = masterData.currentBonusLevel || 0;
     document.getElementById('master-bonus-level').textContent = bonusLevel;
 
-    // Обновление звездочек бонуса
     const starsContainer = document.getElementById('master-bonus-stars');
     if (starsContainer) {
         starsContainer.innerHTML = '';
@@ -479,19 +464,19 @@ async function updateMasterBonus() {
 function openModal(modalId) {
     const modal = document.getElementById(modalId);
     if (!modal) return;
-
-    console.log(`Opening modal: ${modalId}`); // Debug
+    
+    console.log(`Opening modal: ${modalId}`);
     modal.classList.remove('hidden');
     requestAnimationFrame(() => {
         modal.classList.add('visible');
     });
-
+    
     modal.setAttribute('aria-modal', 'true');
     modal.setAttribute('role', 'dialog');
     activeModals.add(modalId);
-
+    
     document.body.style.overflow = 'hidden';
-
+    
     switch(modalId) {
         case 'add-job-modal':
             initAddJobModal();
@@ -508,8 +493,8 @@ function openModal(modalId) {
 function closeModal(modalId) {
     const modal = document.getElementById(modalId);
     if (!modal) return;
-
-    console.log(`Closing modal: ${modalId}`); // Debug
+    
+    console.log(`Closing modal: ${modalId}`);
     modal.classList.remove('visible');
     setTimeout(() => {
         modal.classList.add('hidden');
@@ -526,19 +511,15 @@ function initAddJobModal() {
     const form = document.getElementById('add-job-form');
     const dateInput = document.getElementById('job-date');
 
-    // Устанавливаем сегодняшнюю дату по умолчанию
     if (dateInput) {
         dateInput.value = formatDateInput(new Date());
     }
 
-    // Очищаем выбранные услуги
     selectedServices = [];
     updateSelectedServicesDisplay();
 
-    // Сброс формы (если нужно)
     if (form) {
         form.reset();
-        // Но восстанавливаем дату
         if (dateInput) {
             dateInput.value = formatDateInput(new Date());
         }
@@ -546,20 +527,16 @@ function initAddJobModal() {
 }
 
 function initServicesModal() {
-    // Логика инициализации модального окна выбора услуг
     console.log('Initializing services modal');
     const serviceSearch = document.getElementById('service-search');
     const servicesList = document.getElementById('services-list');
 
     if (serviceSearch && servicesList) {
-        // Загружаем последние и избранные
         const recentServices = getRecent();
         const favoriteServices = getFavorites();
 
-        // Очищаем список
         servicesList.innerHTML = '';
 
-        // Добавляем избранные (если есть)
         if (favoriteServices.length > 0) {
             const favCategory = document.createElement('div');
             favCategory.className = 'service-category';
@@ -584,7 +561,6 @@ function initServicesModal() {
             servicesList.appendChild(favCategory);
         }
 
-        // Добавляем недавние (если есть и не пересекаются с избранными)
         const recentSet = new Set(recentServices.map(r => r.service));
         const favSet = new Set(favoriteServices.map(f => f.service));
         const uniqueRecent = recentServices.filter(r => !favSet.has(r.service));
@@ -613,14 +589,12 @@ function initServicesModal() {
             servicesList.appendChild(recCategory);
         }
 
-        // Обработчик поиска
         serviceSearch.addEventListener('input', debounce(() => {
             const query = serviceSearch.value;
             if (query.length > 1) {
                 const results = searchServices(query);
                 displaySearchResults(results);
             } else {
-                // Если запрос короткий, показываем избранные и недавние
                 servicesList.innerHTML = '';
                 if (favoriteServices.length > 0) {
                     // ... (повтор кода добавления избранных)
@@ -644,7 +618,6 @@ function displaySearchResults(results) {
         return;
     }
 
-    // Группируем результаты по категориям и подкатегориям
     const grouped = {};
     results.forEach(result => {
         if (!grouped[result.category]) {
@@ -656,16 +629,15 @@ function displaySearchResults(results) {
         grouped[result.category][result.subcat].push(result);
     });
 
-    // Отображаем результаты
     for (const [category, subcats] of Object.entries(grouped)) {
         const categoryEl = document.createElement('div');
         categoryEl.className = 'service-category';
-        categoryEl.innerHTML = `<div class="service-category-header"><i class="fas ${getCategoryIcon(category)}"></i> ${category}</div>`;
+        categoryEl.innerHTML = `<div class="service-category-header"><i class="fas fa-tools"></i> ${category}</div>`;
 
         for (const [subcat, services] of Object.entries(subcats)) {
             const subcatEl = document.createElement('div');
             subcatEl.className = 'service-subcategory';
-            subcatEl.innerHTML = `<div class="service-subcategory-header"><i class="fas ${getSubcategoryIcon(category, subcat)}"></i> ${subcat}</div>`;
+            subcatEl.innerHTML = `<div class="service-subcategory-header"><i class="fas fa-toolbox"></i> ${subcat}</div>`;
 
             services.forEach(service => {
                 const serviceEl = document.createElement('div');
@@ -693,36 +665,22 @@ function displaySearchResults(results) {
     }
 }
 
-function getCategoryIcon(category) {
-    // TODO: Реализовать получение иконки категории из каталога
-    return 'fa-tools';
-}
-
-function getSubcategoryIcon(category, subcat) {
-    // TODO: Реализовать получение иконки подкатегории из каталога
-    return 'fa-toolbox';
-}
-
 function selectServiceInModal(serviceElement) {
     const serviceName = serviceElement.dataset.service;
     const category = serviceElement.dataset.category;
     const subcategory = serviceElement.dataset.subcategory;
 
-    // Переключаем состояние выбран/не выбран
     serviceElement.classList.toggle('selected');
 
-    // Добавляем или удаляем из selectedServices
     const servicePath = `${category}:${subcategory}:${serviceName}`;
     const index = selectedServices.findIndex(s => s.path === servicePath);
     if (index !== -1) {
         selectedServices.splice(index, 1);
     } else {
         selectedServices.push({ name: serviceName, path: servicePath });
-        // Добавляем в историю
         addToRecent(servicePath);
     }
 
-    // Обновляем состояние кнопки "Выбрать"
     const confirmBtn = document.getElementById('services-confirm');
     if (confirmBtn) {
         confirmBtn.disabled = selectedServices.length === 0;
@@ -740,7 +698,7 @@ function initBonusModal(masterName) {
     if (!masterData) return;
 
     document.getElementById('bonus-master-name').textContent = masterData.name;
-    document.getElementById('bonus-master-stats').textContent = `Выручка за всё время: ${formatMoney(masterData.totalRevenue)}`;
+    document.getElementById('bonus-master-stats').textContent = `Выручка за всё время: ${formatMoney(masterData.totalRevenue || 0)}`;
 
     const slider = document.getElementById('bonus-slider');
     const bonusAmount = document.getElementById('bonus-amount');
@@ -750,11 +708,8 @@ function initBonusModal(masterName) {
     if (slider) {
         slider.value = masterData.currentBonusLevel || 0;
         bonusAmount.textContent = slider.value;
-
-        // Обновляем отображение звезд и значения
         updateBonusModalDisplay(slider.value, bonusStarsDisplay, bonusValueDisplay);
 
-        // Обработчик изменения слайдера
         slider.addEventListener('input', (e) => {
             const level = e.target.value;
             bonusAmount.textContent = level;
@@ -762,10 +717,8 @@ function initBonusModal(masterName) {
         });
     }
 
-    // Инициализируем график истории бонусов
     initBonusHistoryChart(masterName);
 
-    // Обработчик кнопки сохранения
     const saveBtn = document.getElementById('save-bonus-btn');
     if (saveBtn) {
         saveBtn.onclick = () => {
@@ -774,7 +727,6 @@ function initBonusModal(masterName) {
             if (newLevel !== oldLevel) {
                 setBonusLevel(masterName, newLevel);
                 showNotification(`Уровень бонуса для ${masterData.name} изменен на ${newLevel}`, 'success');
-                // Обновляем вкладку "Мастера", если она активна
                 if (currentView === 'masters') {
                     updateMastersTab();
                 }
@@ -785,7 +737,6 @@ function initBonusModal(masterName) {
 }
 
 function updateBonusModalDisplay(level, starsContainer, valueContainer) {
-    // Обновляем звезды
     if (starsContainer) {
         starsContainer.innerHTML = '';
         const maxStars = 10;
@@ -793,21 +744,18 @@ function updateBonusModalDisplay(level, starsContainer, valueContainer) {
         for (let i = 0; i < maxStars; i++) {
             const star = document.createElement('i');
             star.className = `fas fa-star${i < filledStars ? '' : '-empty'}`;
-            // Добавляем цвет для уровней
             if (i < filledStars) {
-                if (i < 2) star.style.color = '#CD7F32'; // Бронза
-                else if (i < 4) star.style.color = '#C0C0C0'; // Серебро
-                else if (i < 6) star.style.color = '#FFD700'; // Золото
-                else if (i < 8) star.style.color = '#E5E4E2'; // Платина
-                else star.style.color = '#B9F2FF'; // Алмаз
+                if (i < 2) star.style.color = '#CD7F32';
+                else if (i < 4) star.style.color = '#C0C0C0';
+                else if (i < 6) star.style.color = '#FFD700';
+                else if (i < 8) star.style.color = '#E5E4E2';
+                else star.style.color = '#B9F2FF';
             }
             starsContainer.appendChild(star);
         }
     }
 
-    // Обновляем значение бонуса (процент)
     if (valueContainer) {
-        // Простая логика: 1 уровень = 1%
         const percent = level * 1;
         valueContainer.textContent = `${percent}%`;
         valueContainer.style.color = level > 5 ? '#FFD700' : '#399D9C';
@@ -819,26 +767,23 @@ function initBonusHistoryChart(masterName) {
     const ctx = document.getElementById('bonus-history-chart')?.getContext('2d');
     if (!ctx) return;
 
-    // Уничтожаем предыдущий график, если он есть
     if (window.bonusHistoryChartInstance) {
         window.bonusHistoryChartInstance.destroy();
     }
 
-    // Подготавливаем данные
     const labels = bonusHistory.map(b => {
         const date = new Date(b.timestamp);
         return date.toLocaleDateString('ru-RU', { day: 'numeric', month: 'short' });
     });
     const data = bonusHistory.map(b => b.level);
 
-    // Создаем новый график
     window.bonusHistoryChartInstance = new Chart(ctx, {
         type: 'line',
         data: {
             labels: labels,
             datasets: [{
                 label: 'Уровень бонуса',
-                 data,
+                data: data,
                 borderColor: '#399D9C',
                 backgroundColor: 'rgba(57, 157, 156, 0.1)',
                 borderWidth: 2,
@@ -896,7 +841,7 @@ function filterEntriesByPeriod(entries, period) {
     today.setHours(0, 0, 0, 0);
 
     const startOfWeek = new Date(today);
-    startOfWeek.setDate(today.getDate() - today.getDay() + (today.getDay() === 0 ? -6 : 1)); // Начало недели - понедельник
+    startOfWeek.setDate(today.getDate() - today.getDay() + (today.getDay() === 0 ? -6 : 1));
 
     const startOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
 
@@ -932,7 +877,6 @@ function updateSelectedServicesDisplay() {
         if (hiddenInput) hiddenInput.value = selectedServices.map(s => s.name).join(', ');
     }
 
-    // Добавляем обработчики для удаления услуг
     container.querySelectorAll('.remove-service').forEach(btn => {
         btn.addEventListener('click', (e) => {
             e.stopPropagation();
@@ -945,7 +889,6 @@ function updateSelectedServicesDisplay() {
 
 // --- Обработка ошибок и уведомления ---
 function showNotification(message, type = 'info') {
-    // Используем функцию из utils.js
     utilsShowNotification(message, type);
 }
 
@@ -967,7 +910,6 @@ function setupEventListeners() {
     // Обработчики для кнопок закрытия модальных окон
     document.querySelectorAll('[data-dismiss="modal"]').forEach(btn => {
         btn.addEventListener('click', () => {
-            // Находим ближайшее родительское модальное окно
             const modal = btn.closest('.modal');
             if (modal) {
                 closeModal(modal.id);
@@ -1026,7 +968,6 @@ function setupEventListeners() {
     const servicesConfirmBtn = document.getElementById('services-confirm');
     if (servicesConfirmBtn) {
         servicesConfirmBtn.addEventListener('click', () => {
-            // selectedServices уже обновлен в selectServiceInModal
             updateSelectedServicesDisplay();
             closeModal('services-modal');
         });
@@ -1035,7 +976,6 @@ function setupEventListeners() {
     // Обработчики для закрытия модальных окон по клавише Escape
     document.addEventListener('keydown', (e) => {
         if (e.key === 'Escape' && activeModals.size > 0) {
-            // Закрываем последнее открытое модальное окно
             const lastModalId = Array.from(activeModals).pop();
             closeModal(lastModalId);
         }
@@ -1045,7 +985,6 @@ function setupEventListeners() {
     const mastersSearch = document.getElementById('masters-search');
     if (mastersSearch) {
         mastersSearch.addEventListener('input', debounce(() => {
-            // TODO: Реализовать поиск по мастерам
             console.log('Masters search:', mastersSearch.value);
         }, 300));
     }
@@ -1056,12 +995,10 @@ function setupEventListeners() {
         viewCardsBtn.addEventListener('click', () => {
             viewCardsBtn.classList.add('active');
             viewListBtn.classList.remove('active');
-            // TODO: Переключить вид на карточки
         });
         viewListBtn.addEventListener('click', () => {
             viewListBtn.classList.add('active');
             viewCardsBtn.classList.remove('active');
-            // TODO: Переключить вид на список
         });
     }
 
@@ -1080,7 +1017,6 @@ function setupEventListeners() {
     const applyFiltersBtn = document.getElementById('apply-filters');
     if (applyFiltersBtn) {
         applyFiltersBtn.addEventListener('click', () => {
-            // TODO: Применить фильтры аналитики
             updateCharts(periodSelect.value);
             showNotification('Фильтры применены', 'success');
         });
@@ -1089,7 +1025,6 @@ function setupEventListeners() {
     const exportDataBtn = document.getElementById('export-data');
     if (exportDataBtn) {
         exportDataBtn.addEventListener('click', () => {
-            // TODO: Экспорт данных
             showNotification('Данные экспортированы (заглушка)', 'success');
         });
     }
@@ -1103,40 +1038,33 @@ async function handleJobSubmit(e) {
     const form = e.target;
     const formData = new FormData(form);
 
-    // Собираем данные из формы
     const jobData = {
-        id: Date.now().toString(), // Временный ID
+        id: Date.now().toString(),
         date: formData.get('job-date'),
         car: formData.get('job-car'),
         client: formData.get('job-client'),
-        services: selectedServices.map(s => s.name), // Получаем из состояния selectedServices
+        services: selectedServices.map(s => s.name),
         workCost: parseFloat(formData.get('job-work-cost')) || 0,
         partsCost: parseFloat(formData.get('job-parts-cost')) || 0,
         notes: formData.get('job-notes'),
-        master: currentUser.name, // Добавляем имя текущего мастера
+        master: currentUser.name,
         timestamp: new Date().toISOString()
     };
 
-    // Валидация
     if (!jobData.date || !jobData.car || selectedServices.length === 0) {
         showNotification('Пожалуйста, заполните все обязательные поля', 'error');
         return;
     }
 
     try {
-        // Блокируем кнопку отправки
         const submitBtn = form.querySelector('button[type="submit"]');
         const originalContent = submitBtn.innerHTML;
         submitBtn.disabled = true;
         submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Сохранение...';
 
-        // Сохраняем запись (в localStorage через storage.js)
         await saveEntry(jobData);
 
-        // Закрываем модальное окно
         closeModal('add-job-modal');
-
-        // Перезагружаем список записей
         loadAndDisplayEntries();
 
         showNotification('Работа успешно добавлена!', 'success');
@@ -1144,7 +1072,6 @@ async function handleJobSubmit(e) {
         console.error('Error saving job:', error);
         showNotification('Ошибка при сохранении работы', 'error');
     } finally {
-        // Разблокируем кнопку
         const submitBtn = form.querySelector('button[type="submit"]');
         if (submitBtn) {
             submitBtn.disabled = false;
@@ -1153,7 +1080,7 @@ async function handleJobSubmit(e) {
     }
 }
 
-// Экспорт функций
+// --- Экспорт функций ---
 export {
     initializeApp,
     showView,
