@@ -3,14 +3,11 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <meta name="theme-color" content="#001F3F" /> <!-- Начальный цвет для темной темы -->
   <title>VIPавто — Облачный журнал</title>
-  
-  <!-- Стили -->
+
   <link rel="stylesheet" href="assets/css/reset.css" />
   <link rel="stylesheet" href="assets/css/main.css" />
 
-  <!-- Шрифты и иконки -->
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet"/>
   <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet"/>
 </head>
@@ -19,15 +16,25 @@
   <header class="page-header">
     <div class="page-header__left">
       <div class="user-menu">
-        <button class="user-menu-trigger" id="user-menu-trigger" aria-haspopup="true" aria-expanded="false">
+        <button id="user-menu-btn" class="user-menu-trigger" aria-haspopup="true" aria-expanded="false">
           <i class="fas fa-user-circle"></i>
           <span id="user-name">Загрузка...</span>
-          <span id="user-role" class="text-muted">Загрузка...</span>
           <i class="fas fa-chevron-down menu-arrow"></i>
         </button>
-        <div class="user-menu-dropdown hidden" id="user-menu-dropdown" role="menu">
-          <button class="menu-btn" id="logout-btn" role="menuitem">
-            <i class="fas fa-arrow-right-from-bracket"></i> Выйти
+        <div class="user-menu-dropdown hidden" role="menu">
+          <div class="user-info-details">
+            <div class="user-avatar"><i class="fas fa-user-circle"></i></div>
+            <p class="user-role" id="user-role">Загрузка...</p>
+            <p class="user-position" id="user-position">Загрузка...</p>
+          </div>
+          <hr>
+          <button id="profile-btn" class="menu-btn" role="menuitem">
+            <i class="fas fa-user"></i>
+            <span>Профиль</span>
+          </button>
+          <button id="logout-btn" class="menu-btn danger" role="menuitem">
+            <i class="fas fa-sign-out-alt"></i>
+            <span>Выйти</span>
           </button>
         </div>
       </div>
@@ -35,7 +42,7 @@
 
     <div class="page-header__center">
       <span id="current-date">…</span>
-      <span id="current-time">–:–</span>
+      <span id="current-time">–:–:–</span>
     </div>
 
     <div class="page-header__right">
@@ -56,7 +63,7 @@
     <!-- Интерфейс мастера -->
     <section id="master-interface" class="interface-container hidden" aria-labelledby="master-view-title">
       <h2 id="master-view-title" class="visually-hidden">Интерфейс мастера</h2>
-      
+
       <div class="kpi-grid">
         <div class="stat-card">
           <div class="stat-header">
@@ -137,11 +144,20 @@
     <!-- Интерфейс администратора/директора -->
     <section id="admin-interface" class="interface-container hidden" aria-labelledby="admin-view-title">
       <h2 id="admin-view-title" class="visually-hidden">Интерфейс администратора</h2>
-      
+
       <div class="tab-navigation" role="tablist">
-        <button class="tab-btn active" data-tab="overview-tab" role="tab" aria-selected="true" aria-controls="overview-tab">Обзор</button>
-        <button class="tab-btn" data-tab="masters-tab" role="tab" aria-selected="false" aria-controls="masters-tab">Мастера</button>
-        <button class="tab-btn" data-tab="analytics-tab" role="tab" aria-selected="false" aria-controls="analytics-tab">Аналитика</button>
+        <button class="tab-btn active" data-tab="overview" role="tab" aria-selected="true" aria-controls="overview-tab">
+          <i class="fas fa-chart-pie"></i>
+          <span>Обзор</span>
+        </button>
+        <button class="tab-btn" data-tab="masters" role="tab" aria-selected="false" aria-controls="masters-tab">
+          <i class="fas fa-users"></i>
+          <span>Мастера</span>
+        </button>
+        <button class="tab-btn" data-tab="analytics" role="tab" aria-selected="false" aria-controls="analytics-tab">
+          <i class="fas fa-chart-line"></i>
+          <span>Аналитика</span>
+        </button>
       </div>
       <div class="tab-indicator"></div>
 
@@ -199,7 +215,7 @@
             <input type="text" id="masters-search" placeholder="Поиск мастера...">
           </div>
         </div>
-        
+
         <div class="view-toggle">
           <button class="icon-btn active" id="view-cards" title="Карточки">
             <i class="fas fa-table-cells"></i>
@@ -227,17 +243,17 @@
               <option value="custom">Свой период</option>
             </select>
           </div>
-          
+
           <div id="custom-period" class="filter-group hidden">
             <input type="date" id="date-from">
             <span>—</span>
             <input type="date" id="date-to">
           </div>
-          
+
           <button id="apply-filters" class="primary-btn">
             <i class="fas fa-check"></i> Применить
           </button>
-          
+
           <button id="export-data" class="secondary-btn">
             <i class="fas fa-download"></i> Экспорт
           </button>
@@ -331,7 +347,7 @@
           <i class="fas fa-search"></i>
           <input type="text" id="service-search" placeholder="Поиск услуг...">
         </div>
-        
+
         <div class="services-list" id="services-list">
           <!-- Список услуг будет добавляться сюда -->
         </div>
