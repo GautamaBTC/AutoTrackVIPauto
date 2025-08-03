@@ -1,8 +1,9 @@
-/*─────────────────────────────────────────────────────────────
-  reset.css — САМАЯ НАДЕЖНАЯ ВЕРСИЯ
-────────────────────────────────────────────────────────────────*/
+/*────────────────────────────────────────────
+  assets/css/reset.css
+  Базовый сброс стилей браузера.
+─────────────────────────────────────────────*/
 
-/* Обнуляем отступы и padding всех элементов, задаём box-sizing */
+/* 1. Глобальный сброс и box-sizing */
 *,
 *::before,
 *::after {
@@ -11,45 +12,73 @@
   box-sizing: border-box;
 }
 
-/* Убираем стандартные стили ссылок и кнопок */
-a,
-a:visited {
-  text-decoration: none;
-  color: inherit;
-}
-button {
-  background: none;
-  border: none;
-  cursor: pointer;
-  padding: 0;
+/* 2. Основные элементы страницы */
+html {
+  /* Плавный скроллинг по якорям */
+  scroll-behavior: smooth;
 }
 
-/* Убираем скролл по горизонтали */
-html, body {
+body {
+  /* Запрещаем горизонтальный скролл */
   overflow-x: hidden;
+  /* Устанавливаем базовую высоту строки для наследования */
+  line-height: 1.5;
+  /* Улучшаем рендеринг шрифтов */
+  -webkit-font-smoothing: antialiased;
 }
 
-/* Обрабатываем заголовки и списки */
+/* 3. Типография */
 h1, h2, h3, h4, h5, h6 {
   font-weight: normal;
   font-size: 1em;
+  line-height: 1.2;
 }
+
+/* 4. Списки */
 ul, ol {
   list-style: none;
 }
 
-/*
-  ФИНАЛЬНОЕ ИСПРАВЛЕНИЕ:
-  Жестко убираем синюю подсветку и стандартную рамку фокуса
-  для всех интерактивных элементов на всех страницах.
-  Это правило гарантирует, что браузер ничего не добавит от себя.
-*/
-* {
-  -webkit-tap-highlight-color: transparent !important;
-  outline: none !important;
+/* 5. Интерактивные элементы */
+a {
+  text-decoration: none;
+  color: inherit;
 }
 
-*:focus, *:focus-visible, *:focus-within {
-   outline: none !important;
-   box-shadow: none !important;
+button {
+  font-family: inherit; /* Наследуем шрифт */
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  color: inherit;
+}
+
+img, picture, video, canvas, svg {
+  display: block;
+  max-width: 100%;
+}
+
+input, button, textarea, select {
+  font: inherit;
+}
+
+/*
+  6. Сброс для доступности и мобильных устройств
+*/
+*:focus-visible {
+  /*
+    Это правило будет переопределено в main.css.
+    Здесь мы просто задаем базовый, но заметный фокус.
+  */
+  outline: 2px solid dodgerblue;
+  outline-offset: 2px;
+}
+
+/*
+  Убираем синюю подсветку при тапе на мобильных устройствах,
+  которая часто мешает дизайну.
+*/
+* {
+  -webkit-tap-highlight-color: transparent;
 }
