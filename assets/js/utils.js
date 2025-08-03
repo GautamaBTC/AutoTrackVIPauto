@@ -1,253 +1,128 @@
 /*────────────────────────────────────────────
-  assets/js/utils.js | УТИЛИТЫ И ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ
+  assets/js/utils.js
+  Вспомогательные функции, используемые во всем приложении.
 ─────────────────────────────────────────────*/
 
-// --- Форматирование дат ---
+/**
+ * Форматирует дату в строку 'YYYY-MM-DD' для input[type="date"].
+ * @param {Date|string} date - Исходная дата.
+ * @returns {string}
+ */
 export function formatDateInput(date) {
-    const d = date instanceof Date ? date : new Date(date);
-    return d.toISOString().slice(0, 10);
+  const d = date instanceof Date ? date : new Date(date);
+  return d.toISOString().slice(0, 10);
 }
 
+/**
+ * Форматирует дату в читаемый вид (напр., "1 января 2025 г.").
+ * @param {Date|string} dateValue - Исходная дата.
+ * @returns {string}
+ */
 export function formatDateDisplay(dateValue) {
-    const d = dateValue instanceof Date ? dateValue : new Date(dateValue);
-    return d.toLocaleDateString('ru-RU', {
-        day: 'numeric',
-        month: 'long',
-        year: 'numeric'
-    });
+  const d = dateValue instanceof Date ? dateValue : new Date(dateValue);
+  return d.toLocaleDateString('ru-RU', {
+    day: 'numeric',
+    month: 'long',
+    year: 'numeric'
+  });
 }
 
-export function formatDateWithTime(dateValue) {
-    const d = dateValue instanceof Date ? dateValue : new Date(dateValue);
-    return d.toLocaleString('ru-RU', {
-        day: 'numeric',
-        month: 'long',
-        year: 'numeric',
-        hour: '2-digit',
-        minute: '2-digit'
-    });
-}
-
-export function formatRelativeTime(date) {
-    const now = new Date();
-    const diff = now - (date instanceof Date ? date : new Date(date));
-    const minutes = Math.floor(diff / 60000);
-    const hours = Math.floor(diff / 3600000);
-    const days = Math.floor(diff / 86400000);
-
-    if (minutes < 60) {
-        return `${minutes} ${declension(minutes, ['минуту', 'минуты', 'минут'])} назад`;
-    } else if (hours < 24) {
-        return `${hours} ${declension(hours, ['час', 'часа', 'часов'])} назад`;
-    } else if (days < 7) {
-        return `${days} ${declension(days, ['день', 'дня', 'дней'])} назад`;
-    } else {
-        return formatDateDisplay(date);
-    }
-}
-
-// --- Форматирование чисел ---
+/**
+ * Форматирует денежную сумму с разделителями и знаком валюты.
+ * @param {number} amount - Число для форматирования.
+ * @param {string} [currency='₽'] - Знак валюты.
+ * @returns {string}
+ */
 export function formatMoney(amount, currency = '₽') {
-    return new Intl.NumberFormat('ru-RU', {
-        style: 'decimal',
-        minimumFractionDigits: 0,
-        maximumFractionDigits: 0
-    }).format(amount) + ' ' + currency;
+  return new Intl.NumberFormat('ru-RU', {
+    style: 'decimal',
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 0
+  }).format(amount) + ' ' + currency;
 }
 
+/**
+ * Форматирует число с разделителями.
+ * @param {number} num - Число для форматирования.
+ * @param {number} [decimals=0] - Количество знаков после запятой.
+ * @returns {string}
+ */
 export function formatNumber(num, decimals = 0) {
-    return new Intl.NumberFormat('ru-RU', {
-        minimumFractionDigits: decimals,
-        maximumFractionDigits: decimals
-    }).format(num);
+  return new Intl.NumberFormat('ru-RU', {
+    minimumFractionDigits: decimals,
+    maximumFractionDigits: decimals
+  }).format(num);
 }
 
-export function formatPercent(value) {
-    const sign = value > 0 ? '+' : '';
-    return `${sign}${value.toFixed(1)}%`;
-}
-
-// --- Склонение числительных ---
-export function declension(number, titles) {
-    const cases = [2, 0, 1, 1, 1, 2];
-    return titles[
-        (number % 100 > 4 && number % 100 < 20) ? 
-        2 : 
-        cases[(number % 10 < 5) ? number % 10 : 5]
-    ];
-}
-
-// --- Работа с DOM ---
+/**
+ * Функция "debounce" для задержки выполнения функции (например, при вводе в поиске).
+ * @param {Function} fn - Функция для выполнения.
+ * @param {number} [ms=300] - Задержка в миллисекундах.
+ * @returns {Function}
+ */
 export function debounce(fn, ms = 300) {
-    let timeout;
-    return function(...args) {
-        clearTimeout(timeout);
-        timeout = setTimeout(() => fn.apply(this, args), ms);
-    };
+  let timeout;
+  return function(...args) {
+    clearTimeout(timeout);
+    timeout = setTimeout(() => fn.apply(this, args), ms);
+  };
 }
 
-export function throttle(fn, ms = 300) {
-    let isThrottled = false;
-    let savedArgs;
-    let savedThis;
-
-    function wrapper() {
-        if (isThrottled) {
-            savedArgs = arguments;
-            savedThis = this;
-            return;
-        }
-
-        fn.apply(this, arguments);
-        isThrottled = true;
-
-        setTimeout(() => {
-            isThrottled = false;
-            if (savedArgs) {
-                wrapper.apply(savedThis, savedArgs);
-                savedArgs = savedThis = null;
-            }
-        }, ms);
+/**
+ * Анимирует изменение значения с помощью requestAnimationFrame.
+ * @param {Object} options - Опции анимации.
+ * @param {Function} options.timing - Функция временной зависимости.
+ * @param {Function} options.draw - Функция отрисовки.
+ * @param {number} [options.duration=300] - Длительность анимации.
+ */
+export function animate({ timing = t => t, draw, duration = 300 }) {
+  const start = performance.now();
+  requestAnimationFrame(function animate(time) {
+    let timeFraction = (time - start) / duration;
+    if (timeFraction > 1) timeFraction = 1;
+    const progress = timing(timeFraction);
+    draw(progress);
+    if (timeFraction < 1) {
+      requestAnimationFrame(animate);
     }
-
-    return wrapper;
+  });
 }
 
-// --- Анимации ---
-export function animate({
-    timing = t => t,
-    draw,
-    duration = 300
-}) {
-    const start = performance.now();
+/**
+ * Показывает всплывающее уведомление.
+ * @param {string} message - Текст сообщения.
+ * @param {'success'|'error'|'warning'} [type='info'] - Тип уведомления.
+ */
+export function showNotification(message, type = 'success') {
+  const existing = document.querySelector('.notification');
+  if (existing) {
+    existing.remove();
+  }
 
-    requestAnimationFrame(function animate(time) {
-        let timeFraction = (time - start) / duration;
-        if (timeFraction > 1) timeFraction = 1;
+  const notification = document.createElement('div');
+  const iconClass = {
+    success: 'fa-check-circle',
+    error: 'fa-exclamation-circle',
+    warning: 'fa-exclamation-triangle',
+    info: 'fa-info-circle'
+  }[type] || 'fa-info-circle';
 
-        const progress = timing(timeFraction);
-        draw(progress);
+  notification.className = `notification notification-${type}`;
+  notification.innerHTML = `
+    <i class="fas ${iconClass}"></i>
+    <span>${message}</span>
+  `;
+  document.body.appendChild(notification);
 
-        if (timeFraction < 1) {
-            requestAnimationFrame(animate);
-        }
-    });
+  // Анимация появления
+  setTimeout(() => {
+    notification.classList.add('show');
+  }, 10);
+
+  // Автоматическое скрытие
+  setTimeout(() => {
+    notification.classList.remove('show');
+    // Удаляем элемент из DOM после завершения анимации
+    notification.addEventListener('transitionend', () => notification.remove());
+  }, 4000);
 }
-
-// --- Работа с данными ---
-export function deepClone(obj) {
-    if (obj === null || typeof obj !== 'object') return obj;
-    if (obj instanceof Date) return new Date(obj);
-    if (obj instanceof Array) return obj.map(item => deepClone(item));
-    if (obj instanceof Object) {
-        return Object.fromEntries(
-            Object.entries(obj).map(([key, value]) => [key, deepClone(value)])
-        );
-    }
-}
-
-export function deepEqual(obj1, obj2) {
-    if (obj1 === obj2) return true;
-    if (typeof obj1 !== 'object' || typeof obj2 !== 'object') return false;
-    if (obj1 === null || obj2 === null) return false;
-    
-    const keys1 = Object.keys(obj1);
-    const keys2 = Object.keys(obj2);
-    
-    if (keys1.length !== keys2.length) return false;
-    
-    return keys1.every(key => 
-        keys2.includes(key) && deepEqual(obj1[key], obj2[key])
-    );
-}
-
-// --- Валидация ---
-export function validateEmail(email) {
-    const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    return re.test(email);
-}
-
-export function validatePhone(phone) {
-    const re = /^\+?[1-9]\d{10}$/;
-    return re.test(phone);
-}
-
-// --- Генерация ID ---
-export function generateId() {
-    return Date.now().toString(36) + Math.random().toString(36).substr(2);
-}
-
-// --- Работа с цветами ---
-export function adjustColor(color, amount) {
-    return '#' + color.replace(/^#/, '').replace(/../g, color => 
-        ('0' + Math.min(255, Math.max(0, parseInt(color, 16) + amount))
-        .toString(16)).substr(-2));
-}
-
-// --- Работа с URL ---
-export function getQueryParams() {
-    return Object.fromEntries(
-        new URLSearchParams(window.location.search).entries()
-    );
-}
-
-export function buildUrl(base, params) {
-    const url = new URL(base, window.location.origin);
-    Object.entries(params).forEach(([key, value]) => {
-        if (value !== undefined && value !== null) {
-            url.searchParams.append(key, value);
-        }
-    });
-    return url.toString();
-}
-
-// --- Уведомления ---
-// ЭКСПОРТИРУЕМ ТОЛЬКО ЗДЕСЬ, ОДИН РАЗ
-export function showNotification(message, type = 'error') {
-    // Удаляем предыдущие уведомления
-    const existing = document.querySelector('.notification');
-    if (existing) existing.remove();
-
-    // Создаем новое уведомление
-    const notification = document.createElement('div');
-    notification.className = `notification notification-${type}`;
-    notification.innerHTML = `
-        <div class="notification-content">
-            <i class="fas ${type === 'error' ? 'fa-exclamation-circle' : 'fa-check-circle'}"></i>
-            <span>${message}</span>
-        </div>
-    `;
-    document.body.appendChild(notification);
-
-    // Анимация появления
-    setTimeout(() => notification.classList.add('show'), 10);
-
-    // Автоматическое скрытие
-    setTimeout(() => {
-        notification.classList.remove('show');
-        setTimeout(() => notification.remove(), 3000);
-    }, 3000);
-}
-
-// --- Экспорт всех утилит ---
-export {
-    formatDateInput,
-    formatDateDisplay,
-    formatDateWithTime,
-    formatRelativeTime,
-    formatMoney,
-    formatNumber,
-    formatPercent,
-    declension,
-    debounce,
-    throttle,
-    animate,
-    deepClone,
-    deepEqual,
-    validateEmail,
-    validatePhone,
-    generateId,
-    adjustColor,
-    getQueryParams,
-    showNotification
-};
