@@ -82,6 +82,7 @@
             <i class="fas fa-money-bill-wave"></i>
             <h3>Выручка за месяц</h3>
           </div>
+          <!-- [FIX] ID элемента соответствует тому, что ищет JS -->
           <div class="kpi-value" id="master-month-revenue">Загрузка...</div>
           <div class="kpi-trend neutral"><i class="fas fa-chart-line"></i> +0%</div>
         </div>
@@ -90,6 +91,7 @@
             <i class="fas fa-folder-open"></i>
             <h3>Работ выполнено</h3>
           </div>
+           <!-- [FIX] ID элемента соответствует тому, что ищет JS -->
           <div class="kpi-value" id="master-jobs-count">Загрузка...</div>
           <div class="kpi-trend neutral"><i class="fas fa-chart-line"></i> +0%</div>
         </div>
@@ -98,6 +100,7 @@
             <i class="fas fa-star"></i>
             <h3>Бонус</h3>
           </div>
+          <!-- [FIX] ID элемента соответствует тому, что ищет JS -->
           <div class="kpi-value" id="master-bonus-level">Загрузка...</div>
           <div class="kpi-trend positive"><i class="fas fa-chart-line"></i> +0%</div>
         </div>
@@ -126,6 +129,7 @@
     <div id="admin-interface" class="interface-container hidden">
       <!-- Вкладки -->
       <nav class="tab-navigation">
+        <!-- [FIX] Атрибут data-tab теперь соответствует имени view в JS ('overview', 'masters' и т.д.) -->
         <button class="tab-btn active" data-tab="overview">
           <i class="fas fa-chart-pie"></i>
           <span>Обзор</span>
@@ -146,6 +150,24 @@
 
       <!-- Контент вкладок -->
       <div id="overview-tab" class="tab-pane">
+        <!-- [NEW] Добавлены недостающие KPI-карточки для администратора -->
+        <div class="kpi-grid">
+          <div class="kpi-card">
+            <div class="kpi-header"><i class="fas fa-money-bill-wave"></i><h3>Общая выручка</h3></div>
+            <div class="kpi-value" id="admin-total-revenue">Загрузка...</div>
+            <div class="kpi-trend positive"><i class="fas fa-chart-line"></i> +0%</div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-header"><i class="fas fa-folder-open"></i><h3>Всего работ</h3></div>
+            <div class="kpi-value" id="admin-total-jobs">Загрузка...</div>
+            <div class="kpi-trend neutral"><i class="fas fa-chart-line"></i> +0%</div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-header"><i class="fas fa-users"></i><h3>Активных мастеров</h3></div>
+            <div class="kpi-value" id="admin-active-masters">Загрузка...</div>
+            <div class="kpi-trend neutral"><i class="fas fa-chart-line"></i> +0%</div>
+          </div>
+        </div>
         <div class="charts-grid">
           <canvas id="revenue-chart" height="250"></canvas>
           <canvas id="distribution-chart" height="250"></canvas>
@@ -208,50 +230,56 @@
     <div class="modal-content">
       <div class="modal-header">
         <h3>Добавить новую работу</h3>
-        <button id="close-add-job-modal" class="close-btn">
-          <i class="fas fa-times"></i>
+        <button class="close-btn"><i class="fas fa-times"></i></button>
+      </div>
+      <!-- [FIX] Форма теперь находится внутри .modal-body для правильного скроллинга и отступов -->
+      <div class="modal-body">
+        <form id="add-job-form" novalidate>
+          <div class="form-group">
+            <label for="job-date">Дата</label>
+            <input type="date" id="job-date" required>
+          </div>
+          <div class="form-group">
+            <label for="job-car">Автомобиль</label>
+            <input type="text" id="job-car" placeholder="Марка, модель, госномер" required>
+          </div>
+          <div class="form-group">
+            <label for="job-client">Клиент</label>
+            <input type="text" id="job-client" placeholder="Имя клиента">
+          </div>
+          <div class="form-group">
+            <label for="selected-services">Выбранные услуги</label>
+            <div id="selected-services" class="services-tags">
+              <span class="placeholder-text">Нажмите для выбора услуг</span>
+            </div>
+            <button type="button" id="select-services-btn" class="secondary-btn full-width">
+              <i class="fas fa-plus-circle"></i>
+              Выбрать услуги
+            </button>
+          </div>
+          <div class="form-group">
+            <label for="job-work-cost">Стоимость работ</label>
+            <input type="number" id="job-work-cost" min="0" step="0.01" placeholder="0.00 ₽">
+          </div>
+          <div class="form-group">
+            <label for="job-parts-cost">Стоимость запчастей</label>
+            <input type="number" id="job-parts-cost" min="0" step="0.01" placeholder="0.00 ₽">
+          </div>
+          <div class="form-group">
+            <label for="job-notes">Примечания</label>
+            <textarea id="job-notes" rows="4" placeholder="Описание работы"></textarea>
+          </div>
+          <!-- Кнопка submit убрана отсюда и перенесена в футер -->
+        </form>
+      </div>
+      <!-- [NEW] Добавлен футер для кнопок, что является стандартной практикой для модальных окон -->
+      <div class="modal-footer">
+        <button type="button" class="secondary-btn close-btn">Отмена</button>
+        <button type="submit" form="add-job-form" class="primary-btn">
+          <i class="fas fa-save"></i>
+          <span>Сохранить</span>
         </button>
       </div>
-      <form id="add-job-form">
-        <div class="form-group">
-          <label for="job-date">Дата</label>
-          <input type="date" id="job-date" required>
-        </div>
-        <div class="form-group">
-          <label for="job-car">Автомобиль</label>
-          <input type="text" id="job-car" placeholder="Марка, модель, госномер" required>
-        </div>
-        <div class="form-group">
-          <label for="job-client">Клиент</label>
-          <input type="text" id="job-client" placeholder="Имя клиента">
-        </div>
-        <div class="form-group">
-          <label for="selected-services">Выбранные услуги</label>
-          <div id="selected-services" class="services-tags">
-            <span class="placeholder-text">Нажмите для выбора услуг</span>
-          </div>
-          <button id="select-services-btn" class="secondary-btn full-width">
-            <i class="fas fa-plus-circle"></i>
-            Выбрать услуги
-          </button>
-        </div>
-        <div class="form-group">
-          <label for="job-work-cost">Стоимость работ</label>
-          <input type="number" id="job-work-cost" min="0" step="0.01" placeholder="0.00 ₽">
-        </div>
-        <div class="form-group">
-          <label for="job-parts-cost">Стоимость запчастей</label>
-          <input type="number" id="job-parts-cost" min="0" step="0.01" placeholder="0.00 ₽">
-        </div>
-        <div class="form-group">
-          <label for="job-notes">Примечания</label>
-          <textarea id="job-notes" rows="4" placeholder="Описание работы"></textarea>
-        </div>
-        <button type="submit" class="primary-btn full-width">
-          <i class="fas fa-save"></i>
-          Сохранить
-        </button>
-      </form>
     </div>
   </div>
 
@@ -259,21 +287,23 @@
     <div class="modal-content">
       <div class="modal-header">
         <h3>Выбор услуг</h3>
-        <button id="close-services-modal" class="close-btn">
-          <i class="fas fa-times"></i>
+        <button class="close-btn"><i class="fas fa-times"></i></button>
+      </div>
+      <div class="modal-body">
+        <div class="search-box">
+          <i class="fas fa-search"></i>
+          <input type="text" id="service-search" placeholder="Поиск услуг">
+        </div>
+        <div id="services-list" class="services-list">
+          <!-- Услуги добавляются динамически -->
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button id="services-confirm" class="primary-btn full-width" disabled>
+          <i class="fas fa-check"></i>
+          Подтвердить
         </button>
       </div>
-      <div class="search-box">
-        <i class="fas fa-search"></i>
-        <input type="text" id="service-search" placeholder="Поиск услуг">
-      </div>
-      <div id="services-list" class="services-list">
-        <!-- Услуги добавляются динамически -->
-      </div>
-      <button id="services-confirm" class="primary-btn full-width" disabled>
-        <i class="fas fa-check"></i>
-        Подтвердить
-      </button>
     </div>
   </div>
 
@@ -281,35 +311,33 @@
     <div class="modal-content">
       <div class="modal-header">
         <h3>Управление бонусом</h3>
-        <button id="close-bonus-modal" class="close-btn">
-          <i class="fas fa-times"></i>
+        <button class="close-btn"><i class="fas fa-times"></i></button>
+      </div>
+      <div class="modal-body">
+        <div class="bonus-info">
+          <h4 id="bonus-master-name">Загрузка...</h4>
+          <p id="bonus-master-stats">Загрузка...</p>
+        </div>
+        <div class="bonus-slider-wrap">
+          <input type="range" id="bonus-slider" min="0" max="10" value="0">
+          <div class="bonus-display">
+            <span class="bonus-amount" id="bonus-amount">0</span>
+            <div class="bonus-stars" id="bonus-stars-display"></div>
+          </div>
+        </div>
+        <canvas id="bonus-history-chart" height="200"></canvas>
+      </div>
+      <div class="modal-footer">
+        <button id="save-bonus-btn" class="primary-btn full-width">
+          <i class="fas fa-save"></i>
+          Сохранить
         </button>
       </div>
-      <div class="bonus-info">
-        <h4 id="bonus-master-name">Загрузка...</h4>
-        <p id="bonus-master-stats">Загрузка...</p>
-      </div>
-      <div class="bonus-slider-wrap">
-        <input type="range" id="bonus-slider" min="0" max="10" value="0">
-        <div class="bonus-display">
-          <span class="bonus-amount" id="bonus-amount">0</span>
-          <div class="bonus-stars" id="bonus-stars-display"></div>
-        </div>
-      </div>
-      <canvas id="bonus-history-chart" height="200"></canvas>
-      <button id="save-bonus-btn" class="primary-btn full-width">
-        <i class="fas fa-save"></i>
-        Сохранить
-      </button>
     </div>
   </div>
 
   <!-- Скрипты -->
   <script type="module" src="assets/js/app.js"></script>
-  <script type="module" src="assets/js/charts.js"></script>
-  <script type="module" src="assets/js/theme.js"></script>
-  <script type="module" src="assets/js/storage.js"></script>
-  <script type="module" src="assets/js/utils.js"></script>
-  <script type="module" src="assets/js/servicesCatalog.js"></script>
+  <!-- [NOTE] Остальные скрипты импортируются внутри app.js, нет необходимости подключать их здесь -->
 </body>
 </html>
