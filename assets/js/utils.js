@@ -230,7 +230,6 @@ export function showNotification(message, type = 'error') {
 }
 
 // --- Экспорт всех утилит ---
-// ВНИМАНИЕ: showNotification УЖЕ ЭКСПОРТИРОВАНА ВЫШЕ, НЕ НУЖНО ЕЕ СНОВА ЭКСПОРТИРОВАТЬ ЗДЕСЬ
 export {
     formatDateInput,
     formatDateDisplay,
@@ -250,4 +249,5 @@ export {
     generateId,
     adjustColor,
     getQueryParams,
+    showNotification
 };
