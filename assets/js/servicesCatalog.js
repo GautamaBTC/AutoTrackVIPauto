@@ -447,11 +447,11 @@ function allWordsMatch(words, text) {
 }
 
 // --- Экспорт функций ---
-// ВНИМАНИЕ: getServicesStats УЖЕ ЭКСПОРТИРОВАНА ВЫШЕ, НЕ НУЖНО ЕЕ СНОВА ЭКСПОРТИРОВАТЬ ЗДЕСЬ
 export {
     loadServicesCatalog,
     searchServices,
     toggleFavorite,
     getFavorites,
     addToRecent,
+    getServicesStats
 };
