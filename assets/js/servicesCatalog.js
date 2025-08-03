@@ -160,3 +160,5 @@ export function getServicesStats() {
     favoriteCount: favorites.size
   };
 }
+
+// [FIX] Дублирующийся блок экспорта в конце файла полностью удален.
