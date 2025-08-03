@@ -165,7 +165,6 @@ function initTrendsChart(ctx, colors) {
  */
 export function updateCharts(period = 'month') {
   console.log(`Updating charts for period: ${period}`);
-  // [FIX] Используем реальные данные из хранилища
   const allEntries = getAllEntries();
   // TODO: Реализовать фильтрацию по периоду
   // const filteredEntries = filterEntriesByPeriod(allEntries, period);
@@ -224,9 +223,11 @@ function updateTrendsChart(entries) {
     if (!trendsChart) return;
     const weeklyData = entries.reduce((acc, entry) => {
         const d = new Date(entry.date);
-        const day = d.getDay();
-        const diff = d.getDate() - day + (day === 0 ? -6 : 1);
+        // Корректное определение начала недели (понедельник)
+        const day = d.getDay() || 7; // Делаем воскресенье 7-м днем
+        const diff = d.getDate() - day + 1;
         const startOfWeek = new Date(d.setDate(diff)).toISOString().split('T')[0];
+        
         if (!acc[startOfWeek]) acc[startOfWeek] = { total: 0, count: 0 };
         acc[startOfWeek].total += (entry.workCost || 0) + (entry.partsCost || 0);
         acc[startOfWeek].count += 1;
@@ -251,20 +252,29 @@ export function updateChartsTheme(colors) {
   const allCharts = [revenueChart, mastersChart, servicesChart, trendsChart];
   allCharts.forEach(chart => {
     if (chart) {
-      chart.options.scales.x.ticks.color = colors.text;
-      chart.options.scales.y.ticks.color = colors.text;
-      chart.options.scales.y.grid.color = colors.grid;
+      if (chart.options.scales.x) chart.options.scales.x.ticks.color = colors.text;
+      if (chart.options.scales.y) {
+          chart.options.scales.y.ticks.color = colors.text;
+          chart.options.scales.y.grid.color = colors.grid;
+      }
       if (chart.options.scales.y1) {
           chart.options.scales.y1.ticks.color = colors.text;
       }
-      chart.options.plugins.legend.labels.color = colors.text;
-      chart.options.plugins.tooltip.backgroundColor = colors.tooltip;
-      chart.options.plugins.tooltip.titleColor = colors.tooltipText;
-      chart.options.plugins.tooltip.bodyColor = colors.tooltipText;
+      if (chart.options.plugins.legend) chart.options.plugins.legend.labels.color = colors.text;
+      if (chart.options.plugins.tooltip) {
+          chart.options.plugins.tooltip.backgroundColor = colors.tooltip;
+          chart.options.plugins.tooltip.titleColor = colors.tooltipText;
+          chart.options.plugins.tooltip.bodyColor = colors.tooltipText;
+      }
       
-      chart.data.datasets.forEach(dataset => {
-        if(dataset.borderColor) dataset.borderColor = colors.primary;
-        if(chart.config.type !== 'doughnut') dataset.backgroundColor = colors.primary;
+      chart.data.datasets.forEach((dataset, index) => {
+        if(chart.config.type === 'line') {
+          // Для линейных графиков используем разные цвета
+          dataset.borderColor = index === 0 ? colors.primary : colors.secondary;
+        } else if (chart.config.type !== 'doughnut') {
+          // Для bar-графика
+          dataset.backgroundColor = colors.primary;
+        }
       });
 
       if(chart === revenueChart) {
@@ -272,11 +282,12 @@ export function updateChartsTheme(colors) {
         gradient.addColorStop(0, colors.background);
         gradient.addColorStop(1, 'rgba(0,0,0,0)');
         chart.data.datasets[0].backgroundColor = gradient;
+        chart.data.datasets[0].borderColor = colors.primary;
       }
       
-      chart.update();
+      chart.update('none'); // Обновляем без анимации для плавной смены темы
     }
   });
 }
 
-// [FIX] Дублирующийся экспорт удален
+// [FIX] Весь блок с дублирующимися экспортами был удален.
