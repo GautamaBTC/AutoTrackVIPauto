@@ -1,9 +1,11 @@
 /*────────────────────────────────────────────
-  assets/js/charts.js | ГРАФИКИ С Chart.js
+  assets/js/charts.js
+  Управление графиками с помощью Chart.js.
 ─────────────────────────────────────────────*/
 
 // --- Импорты ---
-import { formatMoney, formatNumber } from './utils.js';
+import { getAllEntries } from './storage.js';
+import { formatMoney } from './utils.js';
 
 // --- Глобальные переменные для хранения экземпляров графиков ---
 let revenueChart = null;
@@ -11,561 +13,270 @@ let mastersChart = null;
 let servicesChart = null;
 let trendsChart = null;
 
-// --- Цветовые схемы (с бирюзовыми тонами в dark) ---
+// --- Цветовые схемы для графиков ---
 const chartColors = {
-    light: {
-        primary: '#399D9C',
-        secondary: '#4DBAB3',
-        accent: '#2D7F7E',
-        background: 'rgba(57, 157, 156, 0.1)',
-        grid: 'rgba(0, 0, 0, 0.05)',
-        text: '#303133'
-    },
-    dark: {
-        primary: '#008B8B', // Основной бирюзовый
-        secondary: '#00A0A0',
-        accent: '#006666',
-        background: 'rgba(0, 139, 139, 0.1)',
-        grid: 'rgba(255, 255, 255, 0.05)',
-        text: '#E0FFFF' // Светло-бирюзовый текст
-    }
+  light: {
+    primary: '#399D9C',
+    secondary: '#4DBAB3',
+    accent: '#2D7F7E',
+    background: 'rgba(57, 157, 156, 0.1)',
+    grid: 'rgba(0, 0, 0, 0.05)',
+    text: '#303133',
+    tooltip: '#303133',
+    tooltipText: '#FFFFFF',
+  },
+  dark: {
+    primary: '#FFD166',
+    secondary: '#00A0A0',
+    accent: '#e6b847',
+    background: 'rgba(255, 209, 102, 0.1)',
+    grid: 'rgba(255, 255, 255, 0.1)',
+    text: '#E5EAF3',
+    tooltip: '#1D1D1D',
+    tooltipText: '#E5EAF3',
+  }
 };
 
 /**
- * Инициализация графиков
+ * Инициализация всех графиков на странице.
  */
 export function initCharts() {
-    console.log('Initializing charts');
+  const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+  const colors = isDark ? chartColors.dark : chartColors.light;
 
-    // Получаем текущие цвета темы
-    const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
-    const colors = isDark ? chartColors.dark : chartColors.light;
+  const revenueCtx = document.getElementById('revenue-chart')?.getContext('2d');
+  const mastersCtx = document.getElementById('distribution-chart')?.getContext('2d');
+  const servicesCtx = document.getElementById('services-chart')?.getContext('2d');
+  const trendsCtx = document.getElementById('trends-chart')?.getContext('2d');
 
-    // Получаем контексты canvas
-    const revenueCtx = document.getElementById('revenue-chart')?.getContext('2d');
-    const mastersCtx = document.getElementById('distribution-chart')?.getContext('2d');
-    const servicesCtx = document.getElementById('services-chart')?.getContext('2d');
-    const trendsCtx = document.getElementById('trends-chart')?.getContext('2d');
+  if (revenueCtx) revenueChart = initRevenueChart(revenueCtx, colors);
+  if (mastersCtx) mastersChart = initMastersChart(mastersCtx, colors);
+  if (servicesCtx) servicesChart = initServicesChart(servicesCtx, colors);
+  if (trendsCtx) trendsChart = initTrendsChart(trendsCtx, colors);
 
-    // Инициализируем каждый график
-    if (revenueCtx) revenueChart = initRevenueChart(revenueCtx, colors);
-    if (mastersCtx) mastersChart = initMastersChart(mastersCtx, colors);
-    if (servicesCtx) servicesChart = initServicesChart(servicesCtx, colors);
-    if (trendsCtx) trendsChart = initTrendsChart(trendsCtx, colors);
-
-    // Слушатель события смены темы для динамического обновления цветов
-    window.addEventListener('themechange', (e) => {
-        console.log('Theme change detected for charts');
-        const newTheme = e.detail.theme;
-        const newColors = newTheme === 'dark' ? chartColors.dark : chartColors.light;
-        updateChartsTheme(newColors);
-    });
+  // Слушатель для смены темы
+  window.addEventListener('themechange', (e) => {
+    const newColors = e.detail.theme === 'dark' ? chartColors.dark : chartColors.light;
+    updateChartsTheme(newColors);
+  });
 }
 
-// --- Функции инициализации отдельных графиков ---
-function initRevenueChart(ctx, colors) {
-    console.log('Init revenue chart');
-    // Создаем градиент для фона
-    const gradient = ctx.createLinearGradient(0, 0, 0, 400);
-    gradient.addColorStop(0, colors.background);
-    gradient.addColorStop(1, 'rgba(0, 0, 0, 0)');
+// --- Функции инициализации для каждого графика ---
 
-    return new Chart(ctx, {
-        type: 'line',
-        data: {
-            labels: [], // Будут заполнены позже
-            datasets: [{
-                label: 'Выручка (₽)',
-                data: [], // <-- ИСПРАВЛЕНО: Правильное имя свойства
-                borderColor: colors.primary,
-                backgroundColor: gradient, // <-- ИСПРАВЛЕНО: Используем градиент
-                borderWidth: 3,
-                pointBackgroundColor: colors.primary,
-                pointRadius: 4,
-                pointHoverRadius: 6,
-                tension: 0.4,
-                fill: true
-            }]
-        },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            plugins: {
-                legend: {
-                    display: false
-                },
-                tooltip: {
-                    backgroundColor: colors.accent,
-                    titleColor: '#fff',
-                    bodyColor: '#fff',
-                    padding: 12,
-                    borderWidth: 0,
-                    cornerRadius: 8,
-                    callbacks: {
-                        label: function(context) {
-                            return `Выручка: ${formatMoney(context.parsed.y)}`;
-                        }
-                    }
-                }
-            },
-            scales: {
-                y: {
-                    beginAtZero: true,
-                    grid: {
-                        color: colors.grid
-                    },
-                    ticks: {
-                        callback: function(value) {
-                            return formatMoney(value);
-                        }
-                    }
-                },
-                x: {
-                    grid: {
-                        display: false
-                    }
-                }
-            },
-            animation: {
-                duration: 1000,
-                easing: 'easeInOutQuart'
-            }
-        }
-    });
+function initRevenueChart(ctx, colors) {
+  const gradient = ctx.createLinearGradient(0, 0, 0, 300);
+  gradient.addColorStop(0, colors.background);
+  gradient.addColorStop(1, 'rgba(0,0,0,0)');
+
+  return new Chart(ctx, {
+    type: 'line',
+    data: { labels: [], datasets: [{
+      label: 'Выручка',
+      data: [],
+      borderColor: colors.primary,
+      backgroundColor: gradient,
+      borderWidth: 3,
+      pointBackgroundColor: colors.primary,
+      tension: 0.4,
+      fill: true
+    }]},
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { display: false }, tooltip: {
+        backgroundColor: colors.tooltip, titleColor: colors.tooltipText, bodyColor: colors.tooltipText,
+        callbacks: { label: (c) => `Выручка: ${formatMoney(c.parsed.y)}` }
+      }},
+      scales: {
+        y: { beginAtZero: true, grid: { color: colors.grid }, ticks: { color: colors.text, callback: (v) => formatMoney(v) }},
+        x: { grid: { display: false }, ticks: { color: colors.text }}
+      }
+    }
+  });
 }
 
 function initMastersChart(ctx, colors) {
-    console.log('Init masters chart');
-    return new Chart(ctx, {
-        type: 'doughnut',
-        data: {
-            labels: [], // Будут заполнены позже
-            datasets: [{
-                data: [],
-                backgroundColor: [
-                    colors.primary,
-                    colors.secondary,
-                    colors.accent,
-                    '#FF6B6B',
-                    '#4D96FF',
-                    '#FFD93D'
-                ],
-                borderWidth: 0,
-                hoverOffset: 10
-            }]
-        },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            plugins: {
-                legend: {
-                    position: 'bottom',
-                    labels: {
-                        padding: 20,
-                        usePointStyle: true,
-                        pointStyle: 'circle'
-                    }
-                },
-                tooltip: {
-                    backgroundColor: colors.accent,
-                    titleColor: '#fff',
-                    bodyColor: '#fff',
-                    padding: 12,
-                    borderWidth: 0,
-                    cornerRadius: 8,
-                    callbacks: {
-                        label: function(context) {
-                            const label = context.label || '';
-                            const value = context.parsed || 0;
-                            return `${label}: ${formatMoney(value)}`;
-                        }
-                    }
-                }
-            },
-            animation: {
-                animateRotate: true,
-                animateScale: true,
-                duration: 1000,
-                easing: 'easeInOutQuart'
-            },
-            cutout: '60%'
+  return new Chart(ctx, {
+    type: 'doughnut',
+    data: { labels: [], datasets: [{
+      data: [],
+      backgroundColor: [colors.primary, colors.secondary, '#4D96FF', '#FF6B6B', '#6BCB77', '#9A60FF'],
+      borderWidth: 0, hoverOffset: 8
+    }]},
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: {
+        legend: { position: 'bottom', labels: { color: colors.text, usePointStyle: true, pointStyle: 'circle', padding: 20 }},
+        tooltip: {
+          backgroundColor: colors.tooltip, titleColor: colors.tooltipText, bodyColor: colors.tooltipText,
+          callbacks: { label: (c) => `${c.label}: ${formatMoney(c.parsed || 0)}` }
         }
-    });
+      },
+      cutout: '60%'
+    }
+  });
 }
 
 function initServicesChart(ctx, colors) {
-    console.log('Init services chart');
-    return new Chart(ctx, {
-        type: 'bar',
-        data: {
-            labels: [], // Будут заполнены позже
-            datasets: [{
-                label: 'Количество заказов',
-                data: [], // <-- ИСПРАВЛЕНО: Правильное имя свойства
-                backgroundColor: colors.primary,
-                borderRadius: 6,
-                borderSkipped: false
-            }]
-        },
-        options: {
-            indexAxis: 'y',
-            plugins: {
-                legend: {
-                    display: false
-                },
-                tooltip: {
-                    backgroundColor: colors.accent,
-                    titleColor: '#fff',
-                    bodyColor: '#fff',
-                    padding: 12,
-                    borderWidth: 0,
-                    cornerRadius: 8
-                }
-            },
-            scales: {
-                x: {
-                    grid: {
-                        display: false
-                    },
-                    ticks: {
-                        font: {
-                            size: 12
-                        }
-                    }
-                },
-                y: {
-                    grid: {
-                        display: false
-                    },
-                    ticks: {
-                        font: {
-                            size: 12
-                        }
-                    }
-                }
-            },
-            animation: {
-                duration: 1000,
-                easing: 'easeInOutQuart'
-            }
-        }
-    });
+  return new Chart(ctx, {
+    type: 'bar',
+    data: { labels: [], datasets: [{
+      label: 'Количество заказов',
+      data: [],
+      backgroundColor: colors.primary,
+      borderRadius: 4
+    }]},
+    options: {
+      indexAxis: 'y', responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { display: false }, tooltip: {
+        backgroundColor: colors.tooltip, titleColor: colors.tooltipText, bodyColor: colors.tooltipText
+      }},
+      scales: {
+        x: { grid: { display: false }, ticks: { color: colors.text }},
+        y: { grid: { color: colors.grid }, ticks: { color: colors.text }}
+      }
+    }
+  });
 }
 
 function initTrendsChart(ctx, colors) {
-    console.log('Init trends chart');
     return new Chart(ctx, {
         type: 'line',
-        data: {
-            labels: [], // Будут заполнены позже
-            datasets: [
-                {
-                    label: 'Средний чек (₽)',
-                    data: [], // <-- ИСПРАВЛЕНО: Правильное имя свойства
-                    borderColor: colors.primary,
-                    backgroundColor: 'rgba(0, 0, 0, 0)', // Прозрачный фон
-                    borderWidth: 3,
-                    pointBackgroundColor: colors.primary,
-                    pointRadius: 4,
-                    pointHoverRadius: 6,
-                    tension: 0.4,
-                    yAxisID: 'y'
-                },
-                {
-                    label: 'Кол-во работ',
-                    data: [], // <-- ИСПРАВЛЕНО: Правильное имя свойства
-                    borderColor: colors.secondary,
-                    backgroundColor: 'rgba(0, 0, 0, 0)',
-                    borderWidth: 3,
-                    borderDash: [5, 5], // Пунктирная линия
-                    pointBackgroundColor: colors.secondary,
-                    pointRadius: 4,
-                    pointHoverRadius: 6,
-                    tension: 0.4,
-                    yAxisID: 'y1'
-                }
-            ]
-        },
+        data: { labels: [], datasets: [
+            { label: 'Средний чек', data: [], borderColor: colors.primary, yAxisID: 'y' },
+            { label: 'Кол-во работ', data: [], borderColor: colors.secondary, borderDash: [5, 5], yAxisID: 'y1' }
+        ]},
         options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            plugins: {
-                legend: {
-                    position: 'top',
-                },
-                tooltip: {
-                    backgroundColor: colors.accent,
-                    titleColor: '#fff',
-                    bodyColor: '#fff',
-                    padding: 12,
-                    borderWidth: 0,
-                    cornerRadius: 8
-                }
-            },
+            responsive: true, maintainAspectRatio: false,
+            plugins: { legend: { position: 'top', labels: { color: colors.text }}, tooltip: {
+              backgroundColor: colors.tooltip, titleColor: colors.tooltipText, bodyColor: colors.tooltipText, mode: 'index', intersect: false
+            }},
             scales: {
-                x: {
-                    grid: {
-                        color: colors.grid
-                    }
-                },
-                y: {
-                    type: 'linear',
-                    display: true,
-                    position: 'left',
-                    grid: {
-                        color: colors.grid
-                    },
-                    ticks: {
-                        callback: function(value) {
-                            return formatMoney(value);
-                        }
-                    }
-                },
-                y1: {
-                    type: 'linear',
-                    display: true,
-                    position: 'right',
-                    grid: {
-                        drawOnChartArea: false, // Не рисуем сетку для второй оси
-                    },
-                    ticks: {
-                        // Убираем форматирование для количества
-                    }
-                }
-            },
-            animation: {
-                duration: 1000,
-                easing: 'easeInOutQuart'
+                x: { grid: { color: colors.grid }, ticks: { color: colors.text }},
+                y: { type: 'linear', position: 'left', grid: { color: colors.grid }, ticks: { color: colors.text, callback: (v) => formatMoney(v) }},
+                y1: { type: 'linear', position: 'right', grid: { drawOnChartArea: false }, ticks: { color: colors.text }}
             }
         }
     });
 }
 
-// --- Обновление данных графиков ---
 /**
- * Обновление графиков с новыми данными
- * @param {string} period - Период для фильтрации данных ('week', 'month', 'quarter', 'year')
+ * Обновляет все графики на основе переданных данных.
+ * @param {string} period - Период для фильтрации ('month', 'week', etc.).
  */
 export function updateCharts(period = 'month') {
-    console.log(`Updating charts for period: ${period}`);
+  console.log(`Updating charts for period: ${period}`);
+  // [FIX] Используем реальные данные из хранилища
+  const allEntries = getAllEntries();
+  // TODO: Реализовать фильтрацию по периоду
+  // const filteredEntries = filterEntriesByPeriod(allEntries, period);
 
-    // Получаем все записи (в реальном приложении фильтрация будет здесь)
-    // const allEntries = getAllEntries();
-    // const filteredEntries = filterEntriesByPeriod(allEntries, period);
-
-    // Для демонстрации используем фиктивные данные
-    const dummyEntries = generateDummyData();
-
-    // Обновляем каждый график
-    updateRevenueChart(dummyEntries);
-    updateMastersChart(dummyEntries);
-    updateServicesChart(dummyEntries);
-    updateTrendsChart(dummyEntries);
+  updateRevenueChart(allEntries);
+  updateMastersChart(allEntries);
+  updateServicesChart(allEntries);
+  updateTrendsChart(allEntries);
 }
 
-
-function generateDummyData() {
-    // Генерация фиктивных данных для демонстрации
-    const masters = ['Владимир Ч.', 'Владимир А.', 'Андрей', 'Данила', 'Максим', 'Артём'];
-    const services = ['Диагностика', 'Замена масла', 'Ремонт тормозов', 'Замена фар', 'Установка сигнализации'];
-    const entries = [];
-    const today = new Date();
-
-    for (let i = 0; i < 100; i++) {
-        const date = new Date(today);
-        date.setDate(today.getDate() - Math.floor(Math.random() * 30)); // Последние 30 дней
-        entries.push({
-            id: `entry_${i}`,
-            date: date.toISOString().split('T')[0],
-            car: `Авто ${i}`,
-            client: `Клиент ${i}`,
-            services: [services[Math.floor(Math.random() * services.length)]],
-            workCost: Math.floor(Math.random() * 5000) + 1000,
-            partsCost: Math.floor(Math.random() * 2000),
-            notes: `Заметка ${i}`,
-            master: masters[Math.floor(Math.random() * masters.length)],
-            timestamp: date.toISOString()
-        });
-    }
-    return entries;
-}
+// --- Функции обновления данных для каждого графика ---
 
 function updateRevenueChart(entries) {
-    if (!revenueChart) return;
-
-    // Агрегируем данные по дням
-    const dailyData = {};
-    entries.forEach(entry => {
-        const date = entry.date;
-        const value = (parseFloat(entry.workCost) || 0) + (parseFloat(entry.partsCost) || 0);
-        if (!dailyData[date]) {
-            dailyData[date] = 0;
-        }
-        dailyData[date] += value;
-    });
-
-    // Сортируем даты
-    const sortedDates = Object.keys(dailyData).sort();
-
-    // Подготавливаем данные для графика
-    const labels = sortedDates.map(date => {
-        const d = new Date(date);
-        return d.toLocaleDateString('ru-RU', { day: 'numeric', month: 'short' });
-    });
-    const data = sortedDates.map(date => dailyData[date]);
-
-    // Обновляем данные графика
-    revenueChart.data.labels = labels;
-    revenueChart.data.datasets[0].data = data;
-    revenueChart.update();
+  if (!revenueChart) return;
+  const dailyData = entries.reduce((acc, entry) => {
+    const date = entry.date;
+    const value = (entry.workCost || 0) + (entry.partsCost || 0);
+    acc[date] = (acc[date] || 0) + value;
+    return acc;
+  }, {});
+  const sortedDates = Object.keys(dailyData).sort();
+  const labels = sortedDates.map(d => new Date(d).toLocaleDateString('ru-RU', { day: '2-digit', month: 'short' }));
+  const data = sortedDates.map(d => dailyData[d]);
+  revenueChart.data.labels = labels;
+  revenueChart.data.datasets[0].data = data;
+  revenueChart.update();
 }
 
 function updateMastersChart(entries) {
-    if (!mastersChart) return;
-
-    // Агрегируем данные по мастерам
-    const masterData = {};
-    entries.forEach(entry => {
-        const master = entry.master;
-        const value = (parseFloat(entry.workCost) || 0) + (parseFloat(entry.partsCost) || 0);
-        if (!masterData[master]) {
-            masterData[master] = 0;
-        }
-        masterData[master] += value;
-    });
-
-    // Подготавливаем данные для графика
-    const labels = Object.keys(masterData);
-    const data = Object.values(masterData);
-
-    // Обновляем данные графика
-    mastersChart.data.labels = labels;
-    mastersChart.data.datasets[0].data = data;
-    mastersChart.update();
+  if (!mastersChart) return;
+  const masterData = entries.reduce((acc, entry) => {
+    const value = (entry.workCost || 0) + (entry.partsCost || 0);
+    acc[entry.master] = (acc[entry.master] || 0) + value;
+    return acc;
+  }, {});
+  mastersChart.data.labels = Object.keys(masterData);
+  mastersChart.data.datasets[0].data = Object.values(masterData);
+  mastersChart.update();
 }
 
 function updateServicesChart(entries) {
-    if (!servicesChart) return;
-
-    // Агрегируем данные по услугам
-    const serviceData = {};
-    entries.forEach(entry => {
-        entry.services.forEach(service => {
-            if (!serviceData[service]) {
-                serviceData[service] = 0;
-            }
-            serviceData[service] += 1;
-        });
+  if (!servicesChart) return;
+  const serviceData = entries.reduce((acc, entry) => {
+    (entry.services || []).forEach(service => {
+      acc[service] = (acc[service] || 0) + 1;
     });
-
-    // Сортируем по количеству и берем топ-10
-    const sortedServices = Object.entries(serviceData)
-        .sort((a, b) => b[1] - a[1])
-        .slice(0, 10);
-
-    // Подготавливаем данные для графика
-    const labels = sortedServices.map(([service]) => service);
-    const data = sortedServices.map(([, count]) => count);
-
-    // Обновляем данные графика
-    servicesChart.data.labels = labels;
-    servicesChart.data.datasets[0].data = data;
-    servicesChart.update();
+    return acc;
+  }, {});
+  const sortedServices = Object.entries(serviceData).sort((a, b) => b[1] - a[1]).slice(0, 10);
+  servicesChart.data.labels = sortedServices.map(([service]) => service);
+  servicesChart.data.datasets[0].data = sortedServices.map(([, count]) => count);
+  servicesChart.update();
 }
 
 function updateTrendsChart(entries) {
     if (!trendsChart) return;
-
-    // Агрегируем данные по неделям
-    const weeklyData = {};
-    entries.forEach(entry => {
-        const entryDate = new Date(entry.date);
-        // Определяем начало недели (понедельник)
-        const startOfWeek = new Date(entryDate);
-        const day = startOfWeek.getDay();
-        const diff = startOfWeek.getDate() - day + (day === 0 ? -6 : 1); // Корректировка для понедельника
-        startOfWeek.setDate(diff);
-        startOfWeek.setHours(0, 0, 0, 0);
-
-        const weekKey = startOfWeek.toISOString().split('T')[0]; // Формат YYYY-MM-DD
-
-        if (!weeklyData[weekKey]) {
-            weeklyData[weekKey] = { total: 0, count: 0 };
-        }
-        const value = (parseFloat(entry.workCost) || 0) + (parseFloat(entry.partsCost) || 0);
-        weeklyData[weekKey].total += value;
-        weeklyData[weekKey].count += 1;
-    });
-
-    // Сортируем недели
+    const weeklyData = entries.reduce((acc, entry) => {
+        const d = new Date(entry.date);
+        const day = d.getDay();
+        const diff = d.getDate() - day + (day === 0 ? -6 : 1);
+        const startOfWeek = new Date(d.setDate(diff)).toISOString().split('T')[0];
+        if (!acc[startOfWeek]) acc[startOfWeek] = { total: 0, count: 0 };
+        acc[startOfWeek].total += (entry.workCost || 0) + (entry.partsCost || 0);
+        acc[startOfWeek].count += 1;
+        return acc;
+    }, {});
     const sortedWeeks = Object.keys(weeklyData).sort();
-
-    // Подготавливаем данные для графика
-    const labels = sortedWeeks.map(week => {
-        const d = new Date(week);
-        return d.toLocaleDateString('ru-RU', { day: 'numeric', month: 'short' });
-    });
-    const avgCheckData = sortedWeeks.map(week => {
-        const data = weeklyData[week];
-        return data.count > 0 ? data.total / data.count : 0;
-    });
-    const countData = sortedWeeks.map(week => weeklyData[week].count);
-
-    // Обновляем данные графика
+    const labels = sortedWeeks.map(w => new Date(w).toLocaleDateString('ru-RU', { day: '2-digit', month: 'short' }));
+    const avgCheckData = sortedWeeks.map(w => weeklyData[w].total / weeklyData[w].count);
+    const countData = sortedWeeks.map(w => weeklyData[w].count);
     trendsChart.data.labels = labels;
-    trendsChart.data.datasets[0].data = avgCheckData; // Средний чек
-    trendsChart.data.datasets[1].data = countData;   // Количество работ
+    trendsChart.data.datasets[0].data = avgCheckData;
+    trendsChart.data.datasets[1].data = countData;
     trendsChart.update();
 }
 
 
 /**
- * Обновление темы графиков
+ * Обновляет цвета на всех графиках при смене темы.
+ * @param {object} colors - Объект с новыми цветами.
  */
-function updateChartsTheme(colors) {
-    console.log('Updating charts theme');
+export function updateChartsTheme(colors) {
+  const allCharts = [revenueChart, mastersChart, servicesChart, trendsChart];
+  allCharts.forEach(chart => {
+    if (chart) {
+      chart.options.scales.x.ticks.color = colors.text;
+      chart.options.scales.y.ticks.color = colors.text;
+      chart.options.scales.y.grid.color = colors.grid;
+      if (chart.options.scales.y1) {
+          chart.options.scales.y1.ticks.color = colors.text;
+      }
+      chart.options.plugins.legend.labels.color = colors.text;
+      chart.options.plugins.tooltip.backgroundColor = colors.tooltip;
+      chart.options.plugins.tooltip.titleColor = colors.tooltipText;
+      chart.options.plugins.tooltip.bodyColor = colors.tooltipText;
+      
+      chart.data.datasets.forEach(dataset => {
+        if(dataset.borderColor) dataset.borderColor = colors.primary;
+        if(chart.config.type !== 'doughnut') dataset.backgroundColor = colors.primary;
+      });
 
-    // Обновляем каждый график с новыми цветами
-    if (revenueChart) {
-        const gradient = revenueChart.ctx.createLinearGradient(0, 0, 0, 400);
+      if(chart === revenueChart) {
+        const gradient = chart.ctx.createLinearGradient(0, 0, 0, 300);
         gradient.addColorStop(0, colors.background);
-        gradient.addColorStop(1, 'rgba(0, 0, 0, 0)');
-        
-        revenueChart.data.datasets[0].borderColor = colors.primary;
-        revenueChart.data.datasets[0].backgroundColor = gradient;
-        revenueChart.data.datasets[0].pointBackgroundColor = colors.primary;
-        revenueChart.options.scales.y.grid.color = colors.grid;
-        revenueChart.options.plugins.tooltip.backgroundColor = colors.accent;
-        revenueChart.update();
+        gradient.addColorStop(1, 'rgba(0,0,0,0)');
+        chart.data.datasets[0].backgroundColor = gradient;
+      }
+      
+      chart.update();
     }
-
-    if (mastersChart) {
-        // Цвета сегментов задаются при инициализации, для динамического изменения
-        // нужно обновить весь массив backgroundColor
-        mastersChart.options.plugins.legend.labels.color = colors.text;
-        mastersChart.options.plugins.tooltip.backgroundColor = colors.accent;
-        mastersChart.update();
-    }
-
-    if (servicesChart) {
-        servicesChart.data.datasets[0].backgroundColor = colors.primary;
-        servicesChart.options.plugins.tooltip.backgroundColor = colors.accent;
-        servicesChart.update();
-    }
-
-    if (trendsChart) {
-        trendsChart.data.datasets[0].borderColor = colors.primary;
-        trendsChart.data.datasets[1].borderColor = colors.secondary;
-        trendsChart.options.scales.x.grid.color = colors.grid;
-        trendsChart.options.scales.y.grid.color = colors.grid;
-        trendsChart.options.plugins.tooltip.backgroundColor = colors.accent;
-        trendsChart.update();
-    }
+  });
 }
 
-// --- Экспорт функций ---
-export {
-    initCharts,
-    updateCharts,
-    updateChartsTheme
-};
+// [FIX] Дублирующийся экспорт удален
