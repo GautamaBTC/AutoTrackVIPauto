@@ -454,6 +454,4 @@ export {
     toggleFavorite,
     getFavorites,
     addToRecent,
-    getRecent
-    // getServicesStats НЕ ДОЛЖНО быть здесь
 };
